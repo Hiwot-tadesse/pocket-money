@@ -5,6 +5,7 @@ import { AuthProvider } from './src/context/AuthContext';
 import { LanguageProvider } from './src/context/LanguageContext';
 import { GamificationProvider } from './src/context/GamificationContext';
 import { SmartAlertsProvider } from './src/context/SmartAlertsContext';
+import { CustomCategoriesProvider } from './src/context/CustomCategoriesContext';
 import AppNavigator from './src/navigation/AppNavigator';
 
 export default function App() {
@@ -14,8 +15,10 @@ export default function App() {
         <AuthProvider>
           <GamificationProvider>
             <SmartAlertsProvider>
-              <StatusBar style="auto" />
-              <AppNavigator />
+              <CustomCategoriesProvider>
+                <StatusBar style="auto" />
+                <AppNavigator />
+              </CustomCategoriesProvider>
             </SmartAlertsProvider>
           </GamificationProvider>
         </AuthProvider>

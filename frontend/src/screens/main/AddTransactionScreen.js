@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -16,6 +16,7 @@ import { transactionAPI } from '../../services/api';
 import { COLORS, SIZES, CATEGORIES } from '../../constants/theme';
 import { useLanguage } from '../../context/LanguageContext';
 import { useGamification } from '../../context/GamificationContext';
+import { useCustomCategories } from '../../context/CustomCategoriesContext';
 
 const EXPENSE_CATEGORIES = [
   'Food & Drinks', 'Transport', 'Entertainment', 'Shopping',
@@ -31,15 +32,25 @@ const INCOME_CATEGORIES = [
 const AddTransactionScreen = ({ navigation, route }) => {
   const { t } = useLanguage();
   const { onTransactionAdded } = useGamification();
+  const { getCategories, addCustomCategory } = useCustomCategories();
   const initialType = route.params?.type || 'expense';
   const [type, setType] = useState(initialType);
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('');
+  const [customCategoryName, setCustomCategoryName] = useState('');
   const [tags, setTags] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const categories = type === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
+  const isOtherSelected = category === 'Other Expense' || category === 'Other Income';
+
+  const categories = useMemo(() => {
+    const base = type === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
+    const custom = getCategories(type);
+    const otherKey = type === 'income' ? 'Other Income' : 'Other Expense';
+    const withoutOther = base.filter((c) => c !== otherKey);
+    return [...withoutOther, ...custom, otherKey];
+  }, [type, getCategories]);
 
   const handleSubmit = async () => {
     if (!amount || parseFloat(amount) <= 0) {
@@ -51,12 +62,22 @@ const AddTransactionScreen = ({ navigation, route }) => {
       return;
     }
 
+    let finalCategory = category;
+    if (isOtherSelected) {
+      if (!customCategoryName.trim()) {
+        Alert.alert(t('error'), t('enterCustomCategory'));
+        return;
+      }
+      finalCategory = customCategoryName.trim();
+      addCustomCategory(type, finalCategory);
+    }
+
     setLoading(true);
     try {
       const data = {
         type,
         amount: parseFloat(amount),
-        category,
+        category: finalCategory,
         description: description.trim(),
         tags: tags
           .split(',')
@@ -172,6 +193,25 @@ const AddTransactionScreen = ({ navigation, route }) => {
               );
             })}
           </View>
+
+          {/* Custom category input when "Other" is selected */}
+          {isOtherSelected && (
+            <View style={styles.customCatContainer}>
+              <View style={styles.customCatInput}>
+                <Ionicons name="add-circle-outline" size={20} color="#6366F1" style={styles.inputIcon} />
+                <TextInput
+                  style={styles.input}
+                  placeholder={t('customCategoryPlaceholder')}
+                  placeholderTextColor={COLORS.placeholder}
+                  value={customCategoryName}
+                  onChangeText={setCustomCategoryName}
+                  autoFocus
+                  maxLength={30}
+                />
+              </View>
+              <Text style={styles.customCatHint}>{t('customCategoryHint')}</Text>
+            </View>
+          )}
         </View>
 
         {/* Tags */}
@@ -359,6 +399,26 @@ const styles = StyleSheet.create({
     color: COLORS.white,
     fontSize: SIZES.lg,
     fontWeight: 'bold',
+  },
+  customCatContainer: {
+    marginTop: 12,
+  },
+  customCatInput: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.white,
+    borderRadius: SIZES.borderRadius,
+    paddingHorizontal: 16,
+    height: 52,
+    borderWidth: 1.5,
+    borderColor: '#6366F1',
+    borderStyle: 'dashed',
+  },
+  customCatHint: {
+    fontSize: SIZES.xs,
+    color: COLORS.textLight,
+    marginTop: 6,
+    marginLeft: 4,
   },
 });
 

@@ -166,6 +166,11 @@ const translations = {
     reminderTitle: 'Reminder Title',
     tapToSet: 'Tap to set',
     reminderTitlePlaceholder: 'e.g. Log your daily spending',
+
+    // Custom Categories
+    enterCustomCategory: 'Please enter a category name',
+    customCategoryPlaceholder: 'Enter custom category name',
+    customCategoryHint: 'This will be saved for future use',
   },
 
   am: {
@@ -335,6 +340,11 @@ const translations = {
     reminderTitle: 'የማስታወሻ ርዕስ',
     tapToSet: 'ለማዘጋጀት ይንኩ',
     reminderTitlePlaceholder: 'ለምሳሌ: ዕለታዊ ወጪዎን ያስገቡ',
+
+    // Custom Categories
+    enterCustomCategory: 'እባክዎ የምድብ ስም ያስገቡ',
+    customCategoryPlaceholder: 'ብጁ የምድብ ስም ያስገቡ',
+    customCategoryHint: 'ይህ ለወደፊት አገልግሎት ይቀመጣል',
   },
 
   om: {
@@ -504,6 +514,11 @@ const translations = {
     reminderTitle: 'Mata Duree Yaadachiisaa',
     tapToSet: 'Qindeessuuf tuqi',
     reminderTitlePlaceholder: 'Fkn: Baasii guyyaa kee galchi',
+
+    // Custom Categories
+    enterCustomCategory: 'Maaloo maqaa ramaddii galchi',
+    customCategoryPlaceholder: 'Maqaa ramaddii haaraa galchi',
+    customCategoryHint: 'Kun gara fuula duraatti siif qusatama',
   },
 };
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -16,6 +16,7 @@ import { budgetAPI } from '../../services/api';
 import { COLORS, SIZES, CATEGORIES } from '../../constants/theme';
 import { useLanguage } from '../../context/LanguageContext';
 import { useGamification } from '../../context/GamificationContext';
+import { useCustomCategories } from '../../context/CustomCategoriesContext';
 
 const BUDGET_CATEGORIES = [
   'Food & Drinks', 'Transport', 'Entertainment', 'Shopping',
@@ -32,15 +33,34 @@ const PERIOD_KEYS = [
 const AddBudgetScreen = ({ navigation }) => {
   const { t } = useLanguage();
   const { onBudgetCreated } = useGamification();
+  const { getCategories, addCustomCategory } = useCustomCategories();
   const [category, setCategory] = useState('');
+  const [customCategoryName, setCustomCategoryName] = useState('');
   const [limit, setLimit] = useState('');
   const [period, setPeriod] = useState('monthly');
   const [loading, setLoading] = useState(false);
+
+  const isOtherSelected = category === 'Other Expense';
+
+  const allBudgetCategories = useMemo(() => {
+    const custom = getCategories('expense');
+    const withoutOther = BUDGET_CATEGORIES.filter((c) => c !== 'Other Expense');
+    return [...withoutOther, ...custom, 'Other Expense'];
+  }, [getCategories]);
 
   const handleSubmit = async () => {
     if (!category) {
       Alert.alert(t('error'), t('selectCategory'));
       return;
+    }
+    let finalCategory = category;
+    if (isOtherSelected) {
+      if (!customCategoryName.trim()) {
+        Alert.alert(t('error'), t('enterCustomCategory'));
+        return;
+      }
+      finalCategory = customCategoryName.trim();
+      addCustomCategory('expense', finalCategory);
     }
     if (!limit || parseFloat(limit) <= 0) {
       Alert.alert(t('error'), t('enterValidBudgetLimit'));
@@ -50,7 +70,7 @@ const AddBudgetScreen = ({ navigation }) => {
     setLoading(true);
     try {
       await budgetAPI.create({
-        category,
+        category: finalCategory,
         limit: parseFloat(limit),
         period,
       });
@@ -118,7 +138,7 @@ const AddBudgetScreen = ({ navigation }) => {
         <View style={styles.inputGroup}>
           <Text style={styles.label}>{t('category')}</Text>
           <View style={styles.categoryGrid}>
-            {BUDGET_CATEGORIES.map((cat) => {
+            {allBudgetCategories.map((cat) => {
               const catInfo = CATEGORIES[cat] || { icon: 'ellipse', color: COLORS.textLight };
               const isSelected = category === cat;
               return (
@@ -145,6 +165,27 @@ const AddBudgetScreen = ({ navigation }) => {
               );
             })}
           </View>
+
+          {/* Custom category input when "Other" is selected */}
+          {isOtherSelected && (
+            <View style={{ marginTop: 12 }}>
+              <View style={[styles.inputContainer, { borderWidth: 1.5, borderColor: '#6366F1', borderStyle: 'dashed' }]}>
+                <Ionicons name="add-circle-outline" size={20} color="#6366F1" style={{ marginRight: 12 }} />
+                <TextInput
+                  style={{ flex: 1, fontSize: SIZES.base, color: COLORS.text }}
+                  placeholder={t('customCategoryPlaceholder')}
+                  placeholderTextColor={COLORS.placeholder}
+                  value={customCategoryName}
+                  onChangeText={setCustomCategoryName}
+                  autoFocus
+                  maxLength={30}
+                />
+              </View>
+              <Text style={{ fontSize: SIZES.xs, color: COLORS.textLight, marginTop: 6, marginLeft: 4 }}>
+                {t('customCategoryHint')}
+              </Text>
+            </View>
+          )}
         </View>
 
         {/* Submit */}
