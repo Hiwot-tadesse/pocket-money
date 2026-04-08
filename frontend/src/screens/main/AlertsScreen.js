@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, RefreshControl, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, StyleSheet, SectionList, TouchableOpacity, RefreshControl, ActivityIndicator, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { alertAPI } from '../../services/api';
 import { COLORS, SIZES, SHADOWS } from '../../constants/theme';
 import { useLanguage } from '../../context/LanguageContext';
+import { useSmartAlerts } from '../../context/SmartAlertsContext';
 
 const ALERT_ICONS = {
   budget_warning: { icon: 'warning', color: COLORS.warning },
@@ -11,18 +12,25 @@ const ALERT_ICONS = {
   inactivity: { icon: 'time', color: COLORS.secondary },
   milestone: { icon: 'trophy', color: COLORS.income },
   general: { icon: 'notifications', color: COLORS.primary },
+  expense_reminder: { icon: 'alarm', color: '#6366F1' },
+  daily_tip: { icon: 'bulb', color: '#F59E0B' },
+  version_update: { icon: 'rocket', color: '#8B5CF6' },
+  no_savings: { icon: 'trending-down', color: COLORS.danger },
 };
 
 const AlertsScreen = ({ navigation }) => {
-  const { t } = useLanguage();
-  const [alerts, setAlerts] = useState([]);
+  const { t, language } = useLanguage();
+  const {
+    localAlerts, markAlertRead, markAllAlertsRead, deleteAlert: deleteLocalAlert,
+  } = useSmartAlerts();
+  const [serverAlerts, setServerAlerts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   const fetchAlerts = async () => {
     try {
       const res = await alertAPI.getAll({ limit: 50 });
-      setAlerts(res.data);
+      setServerAlerts(res.data);
     } catch (e) {
       console.error('Alerts error:', e.message);
     } finally {
@@ -33,10 +41,20 @@ const AlertsScreen = ({ navigation }) => {
 
   useEffect(() => { fetchAlerts(); }, []);
 
-  const handleMarkRead = async (id) => {
+  const getLocalTitle = (item) => {
+    if (typeof item.title === 'object') return item.title[language] || item.title.en;
+    return item.title;
+  };
+
+  const getLocalMessage = (item) => {
+    if (typeof item.message === 'object') return item.message[language] || item.message.en;
+    return item.message;
+  };
+
+  const handleMarkReadServer = async (id) => {
     try {
       await alertAPI.markAsRead(id);
-      setAlerts((prev) => prev.map((a) => a._id === id ? { ...a, isRead: true } : a));
+      setServerAlerts((prev) => prev.map((a) => a._id === id ? { ...a, isRead: true } : a));
     } catch (e) {
       Alert.alert(t('error'), e.message);
     }
@@ -45,13 +63,14 @@ const AlertsScreen = ({ navigation }) => {
   const handleMarkAllRead = async () => {
     try {
       await alertAPI.markAllAsRead();
-      setAlerts((prev) => prev.map((a) => ({ ...a, isRead: true })));
+      setServerAlerts((prev) => prev.map((a) => ({ ...a, isRead: true })));
     } catch (e) {
-      Alert.alert(t('error'), e.message);
+      // ignore if server fails
     }
+    markAllAlertsRead();
   };
 
-  const handleDelete = (id) => {
+  const handleDeleteServer = (id) => {
     Alert.alert(t('deleteAlert'), t('removeAlert'), [
       { text: t('cancel'), style: 'cancel' },
       {
@@ -59,10 +78,17 @@ const AlertsScreen = ({ navigation }) => {
         onPress: async () => {
           try {
             await alertAPI.delete(id);
-            setAlerts((prev) => prev.filter((a) => a._id !== id));
+            setServerAlerts((prev) => prev.filter((a) => a._id !== id));
           } catch (e) { Alert.alert(t('error'), e.message); }
         },
       },
+    ]);
+  };
+
+  const handleDeleteLocal = (id) => {
+    Alert.alert(t('deleteAlert'), t('removeAlert'), [
+      { text: t('cancel'), style: 'cancel' },
+      { text: t('delete'), style: 'destructive', onPress: () => deleteLocalAlert(id) },
     ]);
   };
 
@@ -75,13 +101,49 @@ const AlertsScreen = ({ navigation }) => {
     return `${Math.floor(hrs / 24)}${t('dAgo')}`;
   };
 
+  // Merge and build sections
+  const smartItems = localAlerts.map((a) => ({
+    ...a,
+    _key: a.id,
+    _source: 'local',
+    _title: getLocalTitle(a),
+    _message: getLocalMessage(a),
+    _date: a.date,
+  }));
+  const serverItems = serverAlerts.map((a) => ({
+    ...a,
+    _key: a._id,
+    _source: 'server',
+    _title: a.title,
+    _message: a.message,
+    _date: a.createdAt,
+  }));
+  const allAlerts = [...smartItems, ...serverItems].sort(
+    (a, b) => new Date(b._date) - new Date(a._date)
+  );
+
+  const sections = [];
+  if (allAlerts.length > 0) {
+    const unread = allAlerts.filter((a) => !a.isRead);
+    const read = allAlerts.filter((a) => a.isRead);
+    if (unread.length > 0) sections.push({ title: t('newAlerts'), data: unread });
+    if (read.length > 0) sections.push({ title: t('earlier'), data: read });
+  }
+
   const renderAlert = ({ item }) => {
     const info = ALERT_ICONS[item.type] || ALERT_ICONS.general;
+    const isLocal = item._source === 'local';
     return (
       <TouchableOpacity
         style={[st.alertCard, SHADOWS.small, !item.isRead && st.unread]}
-        onPress={() => handleMarkRead(item._id)}
-        onLongPress={() => handleDelete(item._id)}
+        onPress={() => {
+          if (isLocal) markAlertRead(item.id);
+          else handleMarkReadServer(item._id);
+        }}
+        onLongPress={() => {
+          if (isLocal) handleDeleteLocal(item.id);
+          else handleDeleteServer(item._id);
+        }}
         activeOpacity={0.7}
       >
         <View style={[st.iconWrap, { backgroundColor: info.color + '20' }]}>
@@ -89,15 +151,37 @@ const AlertsScreen = ({ navigation }) => {
         </View>
         <View style={{ flex: 1 }}>
           <View style={st.alertTop}>
-            <Text style={st.alertTitle}>{item.title}</Text>
-            <Text style={st.alertTime}>{timeAgo(item.createdAt)}</Text>
+            <Text style={st.alertTitle} numberOfLines={1}>{item._title}</Text>
+            <Text style={st.alertTime}>{timeAgo(item._date)}</Text>
           </View>
-          <Text style={st.alertMsg} numberOfLines={2}>{item.message}</Text>
+          <Text style={st.alertMsg} numberOfLines={3}>{item._message}</Text>
+          {item.type === 'daily_tip' && (
+            <View style={st.tipBadge}>
+              <Ionicons name="bulb" size={10} color="#F59E0B" />
+              <Text style={st.tipBadgeText}>{t('dailyTip')}</Text>
+            </View>
+          )}
+          {item.type === 'version_update' && (
+            <View style={[st.tipBadge, { backgroundColor: '#EDE9FE' }]}>
+              <Ionicons name="rocket" size={10} color="#8B5CF6" />
+              <Text style={[st.tipBadgeText, { color: '#8B5CF6' }]}>{t('newVersion')}</Text>
+            </View>
+          )}
+          {item.type === 'expense_reminder' && (
+            <View style={[st.tipBadge, { backgroundColor: '#EEF2FF' }]}>
+              <Ionicons name="alarm" size={10} color="#6366F1" />
+              <Text style={[st.tipBadgeText, { color: '#6366F1' }]}>{t('reminder')}</Text>
+            </View>
+          )}
         </View>
         {!item.isRead && <View style={st.unreadDot} />}
       </TouchableOpacity>
     );
   };
+
+  const renderSectionHeader = ({ section: { title } }) => (
+    <Text style={st.sectionTitle}>{title}</Text>
+  );
 
   return (
     <View style={st.container}>
@@ -113,19 +197,20 @@ const AlertsScreen = ({ navigation }) => {
 
       {loading ? (
         <View style={st.center}><ActivityIndicator size="large" color={COLORS.primary} /></View>
+      ) : sections.length === 0 ? (
+        <View style={st.empty}>
+          <Ionicons name="notifications-off-outline" size={48} color={COLORS.textLight} />
+          <Text style={st.emptyText}>{t('noNotifications')}</Text>
+        </View>
       ) : (
-        <FlatList
-          data={alerts}
+        <SectionList
+          sections={sections}
           renderItem={renderAlert}
-          keyExtractor={(item) => item._id}
+          renderSectionHeader={renderSectionHeader}
+          keyExtractor={(item) => item._key}
           contentContainerStyle={st.list}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchAlerts(); }} colors={[COLORS.primary]} />}
-          ListEmptyComponent={
-            <View style={st.empty}>
-              <Ionicons name="notifications-off-outline" size={48} color={COLORS.textLight} />
-              <Text style={st.emptyText}>{t('noNotifications')}</Text>
-            </View>
-          }
+          stickySectionHeadersEnabled={false}
         />
       )}
     </View>
@@ -140,15 +225,18 @@ const st = StyleSheet.create({
   headerTitle: { fontSize: SIZES.xl, fontWeight: 'bold', color: COLORS.white },
   markAll: { fontSize: SIZES.sm, color: 'rgba(255,255,255,0.8)', fontWeight: '500' },
   list: { padding: SIZES.margin, paddingBottom: 30 },
-  alertCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.white, borderRadius: SIZES.borderRadius, padding: 14, marginBottom: 8, gap: 12 },
+  sectionTitle: { fontSize: SIZES.sm, fontWeight: '600', color: COLORS.textSecondary, textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 12, marginBottom: 8 },
+  alertCard: { flexDirection: 'row', alignItems: 'flex-start', backgroundColor: COLORS.white, borderRadius: SIZES.borderRadius, padding: 14, marginBottom: 8, gap: 12 },
   unread: { borderLeftWidth: 3, borderLeftColor: COLORS.primary },
-  iconWrap: { width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center' },
+  iconWrap: { width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center', marginTop: 2 },
   alertTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  alertTitle: { fontSize: SIZES.md, fontWeight: '600', color: COLORS.text, flex: 1 },
+  alertTitle: { fontSize: SIZES.md, fontWeight: '600', color: COLORS.text, flex: 1, marginRight: 8 },
   alertTime: { fontSize: 10, color: COLORS.textLight },
   alertMsg: { fontSize: SIZES.sm, color: COLORS.textSecondary, marginTop: 4, lineHeight: 18 },
-  unreadDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: COLORS.primary },
-  empty: { alignItems: 'center', paddingVertical: 60 },
+  unreadDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: COLORS.primary, marginTop: 6 },
+  tipBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFBEB', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3, marginTop: 6, alignSelf: 'flex-start', gap: 4 },
+  tipBadgeText: { fontSize: 10, fontWeight: '600', color: '#D97706' },
+  empty: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 60 },
   emptyText: { fontSize: SIZES.base, color: COLORS.textSecondary, marginTop: 12 },
 });
 

@@ -13,8 +13,11 @@ import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
+import { useGamification } from '../../context/GamificationContext';
+import { useSmartAlerts } from '../../context/SmartAlertsContext';
 import { reportAPI, transactionAPI, alertAPI } from '../../services/api';
 import { COLORS, SIZES, SHADOWS, CATEGORIES } from '../../constants/theme';
+import GamificationBanner from '../../components/GamificationBanner';
 
 const LANGUAGES = [
   { code: 'en', label: 'English', flag: 'EN' },
@@ -25,6 +28,11 @@ const LANGUAGES = [
 const DashboardScreen = ({ navigation }) => {
   const { user } = useAuth();
   const { language, setLanguage, t } = useLanguage();
+  const { onDailyLogin, onBudgetUnderControl } = useGamification();
+  const {
+    generateDailyTip, generateVersionAlert, generateExpenseReminder,
+    checkBudgetAlerts, checkNoSavingsAlert, checkInactivityAlert, unreadCount: smartUnread,
+  } = useSmartAlerts();
   const [langModalVisible, setLangModalVisible] = useState(false);
   const [summary, setSummary] = useState(null);
   const [recentTransactions, setRecentTransactions] = useState([]);
@@ -41,7 +49,16 @@ const DashboardScreen = ({ navigation }) => {
       ]);
       setSummary(summaryRes.data);
       setRecentTransactions(transactionsRes.data);
-      setUnreadAlerts(alertsRes.unreadCount || 0);
+      setUnreadAlerts((alertsRes.unreadCount || 0));
+
+      // Smart alerts
+      generateDailyTip();
+      generateVersionAlert();
+      generateExpenseReminder();
+      if (summaryRes.data) checkNoSavingsAlert(summaryRes.data);
+      if (transactionsRes.data && transactionsRes.data.length > 0) {
+        checkInactivityAlert(transactionsRes.data[0].date);
+      }
     } catch (error) {
       console.error('Dashboard fetch error:', error.message);
     } finally {
@@ -53,6 +70,7 @@ const DashboardScreen = ({ navigation }) => {
   useFocusEffect(
     useCallback(() => {
       fetchData();
+      onDailyLogin();
     }, [])
   );
 
@@ -120,13 +138,16 @@ const DashboardScreen = ({ navigation }) => {
         </TouchableOpacity>
         <TouchableOpacity style={styles.alertButton} onPress={() => navigation.navigate('Alerts')}>
           <Ionicons name="notifications-outline" size={24} color={COLORS.white} />
-          {unreadAlerts > 0 && (
+          {(unreadAlerts + smartUnread) > 0 && (
             <View style={styles.alertBadge}>
-              <Text style={styles.alertBadgeText}>{unreadAlerts}</Text>
+              <Text style={styles.alertBadgeText}>{unreadAlerts + smartUnread}</Text>
             </View>
           )}
         </TouchableOpacity>
       </View>
+
+      {/* Gamification Banner */}
+      <GamificationBanner />
 
       {/* Balance Card */}
       <View style={styles.balanceCard}>

@@ -15,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { budgetAPI } from '../../services/api';
 import { COLORS, SIZES, CATEGORIES } from '../../constants/theme';
 import { useLanguage } from '../../context/LanguageContext';
+import { useGamification } from '../../context/GamificationContext';
 
 const BUDGET_CATEGORIES = [
   'Food & Drinks', 'Transport', 'Entertainment', 'Shopping',
@@ -30,6 +31,7 @@ const PERIOD_KEYS = [
 
 const AddBudgetScreen = ({ navigation }) => {
   const { t } = useLanguage();
+  const { onBudgetCreated } = useGamification();
   const [category, setCategory] = useState('');
   const [limit, setLimit] = useState('');
   const [period, setPeriod] = useState('monthly');
@@ -52,6 +54,7 @@ const AddBudgetScreen = ({ navigation }) => {
         limit: parseFloat(limit),
         period,
       });
+      onBudgetCreated();
       Alert.alert(t('success'), t('budgetCreated'), [
         { text: t('ok'), onPress: () => navigation.goBack() },
       ]);

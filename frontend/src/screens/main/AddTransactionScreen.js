@@ -15,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { transactionAPI } from '../../services/api';
 import { COLORS, SIZES, CATEGORIES } from '../../constants/theme';
 import { useLanguage } from '../../context/LanguageContext';
+import { useGamification } from '../../context/GamificationContext';
 
 const EXPENSE_CATEGORIES = [
   'Food & Drinks', 'Transport', 'Entertainment', 'Shopping',
@@ -29,6 +30,7 @@ const INCOME_CATEGORIES = [
 
 const AddTransactionScreen = ({ navigation, route }) => {
   const { t } = useLanguage();
+  const { onTransactionAdded } = useGamification();
   const initialType = route.params?.type || 'expense';
   const [type, setType] = useState(initialType);
   const [amount, setAmount] = useState('');
@@ -63,6 +65,7 @@ const AddTransactionScreen = ({ navigation, route }) => {
       };
 
       await transactionAPI.create(data);
+      onTransactionAdded(type, parseFloat(amount));
       Alert.alert(t('success'), t('transactionAdded'), [
         { text: t('ok'), onPress: () => navigation.goBack() },
       ]);

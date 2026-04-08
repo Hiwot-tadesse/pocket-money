@@ -145,6 +145,27 @@ const translations = {
     tabBudgets: 'Budgets',
     tabReports: 'Reports',
     tabSettings: 'Settings',
+
+    // Gamification
+    level: 'Level',
+    points: 'pts',
+    achievements: 'Achievements',
+    dayStreak: 'Day Streak',
+    badges: 'Badges',
+    maxLevel: 'MAX',
+    achievementUnlocked: 'Achievement Unlocked!',
+
+    // Smart Notifications
+    newAlerts: 'New',
+    earlier: 'Earlier',
+    dailyTip: 'Daily Tip',
+    newVersion: 'New Version',
+    reminder: 'Reminder',
+    expenseReminder: 'Expense Reminder',
+    dailyReminder: 'Daily Reminder',
+    reminderTitle: 'Reminder Title',
+    tapToSet: 'Tap to set',
+    reminderTitlePlaceholder: 'e.g. Log your daily spending',
   },
 
   am: {
@@ -293,6 +314,27 @@ const translations = {
     tabBudgets: 'በጀቶች',
     tabReports: 'ሪፖርቶች',
     tabSettings: 'ቅንብሮች',
+
+    // Gamification
+    level: 'ደረጃ',
+    points: 'ነጥብ',
+    achievements: 'ስኬቶች',
+    dayStreak: 'ተከታታይ ቀን',
+    badges: 'ሜዳሊያ',
+    maxLevel: 'ከፍተኛ',
+    achievementUnlocked: 'ስኬት ተከፍቷል!',
+
+    // Smart Notifications
+    newAlerts: 'አዲስ',
+    earlier: 'ቀደም ሲል',
+    dailyTip: 'ዕለታዊ ምክር',
+    newVersion: 'አዲስ ስሪት',
+    reminder: 'ማስታወሻ',
+    expenseReminder: 'የወጪ ማስታወሻ',
+    dailyReminder: 'ዕለታዊ ማስታወሻ',
+    reminderTitle: 'የማስታወሻ ርዕስ',
+    tapToSet: 'ለማዘጋጀት ይንኩ',
+    reminderTitlePlaceholder: 'ለምሳሌ: ዕለታዊ ወጪዎን ያስገቡ',
   },
 
   om: {
@@ -441,6 +483,27 @@ const translations = {
     tabBudgets: 'Bajata',
     tabReports: 'Gabaasa',
     tabSettings: 'Qindaa\'ina',
+
+    // Gamification
+    level: 'Sadarkaa',
+    points: 'qbx',
+    achievements: 'Galma',
+    dayStreak: 'Itti fufiinsa Guyyaa',
+    badges: 'Badhaasa',
+    maxLevel: 'OL',
+    achievementUnlocked: 'Badhaasni Banameera!',
+
+    // Smart Notifications
+    newAlerts: 'Haaraa',
+    earlier: 'Duraan',
+    dailyTip: 'Gorsa Guyyaa',
+    newVersion: 'Gosa Haaraa',
+    reminder: 'Yaadachiisa',
+    expenseReminder: 'Yaadachiisa Baasii',
+    dailyReminder: 'Yaadachiisa Guyyaa',
+    reminderTitle: 'Mata Duree Yaadachiisaa',
+    tapToSet: 'Qindeessuuf tuqi',
+    reminderTitlePlaceholder: 'Fkn: Baasii guyyaa kee galchi',
   },
 };
 

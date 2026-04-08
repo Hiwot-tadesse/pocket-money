@@ -14,9 +14,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { budgetAPI } from '../../services/api';
 import { COLORS, SIZES, SHADOWS, CATEGORIES } from '../../constants/theme';
 import { useLanguage } from '../../context/LanguageContext';
+import { useGamification } from '../../context/GamificationContext';
+import { useSmartAlerts } from '../../context/SmartAlertsContext';
 
 const BudgetsScreen = ({ navigation }) => {
   const { t } = useLanguage();
+  const { onBudgetUnderControl } = useGamification();
+  const { checkBudgetAlerts } = useSmartAlerts();
   const [budgets, setBudgets] = useState([]);
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -27,6 +31,12 @@ const BudgetsScreen = ({ navigation }) => {
       const response = await budgetAPI.getAll({ active: 'true' });
       setBudgets(response.data);
       setSummary(response.summary);
+      // Check if all budgets are under control for gamification
+      if (response.data.length > 0 && response.data.every((b) => (b.percentageUsed || 0) < 100)) {
+        onBudgetUnderControl();
+      }
+      // Smart budget alerts
+      checkBudgetAlerts(response.data);
     } catch (error) {
       console.error('Fetch budgets error:', error.message);
     } finally {

@@ -3,14 +3,19 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, Alert, Te
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
+import { useSmartAlerts } from '../../context/SmartAlertsContext';
 import { COLORS, SIZES, SHADOWS } from '../../constants/theme';
 
 const SettingsScreen = () => {
   const { user, logout, updateUser } = useAuth();
   const { t } = useLanguage();
+  const { expenseReminder, setExpenseReminder } = useSmartAlerts();
   const [notifications, setNotifications] = useState(user?.notificationsEnabled ?? true);
   const [editingName, setEditingName] = useState(false);
   const [newName, setNewName] = useState(user?.username || '');
+  const [reminderEnabled, setReminderEnabled] = useState(expenseReminder.enabled);
+  const [reminderTitle, setReminderTitle] = useState(expenseReminder.title);
+  const [editingReminder, setEditingReminder] = useState(false);
 
   const handleToggleNotifications = async (value) => {
     setNotifications(value);
@@ -99,8 +104,67 @@ const SettingsScreen = () => {
             <Ionicons name="cash-outline" size={22} color={COLORS.primary} />
             <Text style={s.settingLabel}>{t('currency')}</Text>
           </View>
-          <Text style={s.settingValue}>{user?.currency || 'ETB'}</Text>
+          <Text style={s.settingValue}>ETB</Text>
         </View>
+      </View>
+
+      {/* Expense Reminder */}
+      <View style={[s.section, SHADOWS.small]}>
+        <Text style={s.sectionTitle}>{t('expenseReminder')}</Text>
+        <View style={s.settingRow}>
+          <View style={s.settingLeft}>
+            <Ionicons name="alarm-outline" size={22} color="#6366F1" />
+            <Text style={s.settingLabel}>{t('dailyReminder')}</Text>
+          </View>
+          <Switch
+            value={reminderEnabled}
+            onValueChange={(val) => {
+              setReminderEnabled(val);
+              setExpenseReminder(val, reminderTitle);
+            }}
+            trackColor={{ false: COLORS.border, true: '#C7D2FE' }}
+            thumbColor={reminderEnabled ? '#6366F1' : COLORS.textLight}
+          />
+        </View>
+        {reminderEnabled && (
+          <>
+            <View style={s.divider} />
+            <View style={s.settingRow}>
+              <View style={s.settingLeft}>
+                <Ionicons name="pencil-outline" size={22} color="#6366F1" />
+                <Text style={s.settingLabel}>{t('reminderTitle')}</Text>
+              </View>
+              {!editingReminder ? (
+                <TouchableOpacity onPress={() => setEditingReminder(true)} style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                  <Text style={s.settingValue} numberOfLines={1}>
+                    {reminderTitle || t('tapToSet')}
+                  </Text>
+                  <Ionicons name="pencil" size={12} color={COLORS.textLight} />
+                </TouchableOpacity>
+              ) : (
+                <View style={[s.editRow, { flex: 1, marginLeft: 8 }]}>
+                  <TextInput
+                    style={[s.editInput, { fontSize: SIZES.sm }]}
+                    value={reminderTitle}
+                    onChangeText={setReminderTitle}
+                    placeholder={t('reminderTitlePlaceholder')}
+                    placeholderTextColor={COLORS.textLight}
+                    autoFocus
+                  />
+                  <TouchableOpacity
+                    onPress={() => {
+                      setEditingReminder(false);
+                      setExpenseReminder(reminderEnabled, reminderTitle);
+                    }}
+                    style={[s.saveBtn, { backgroundColor: '#6366F1' }]}
+                  >
+                    <Ionicons name="checkmark" size={20} color={COLORS.white} />
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+          </>
+        )}
       </View>
 
       {/* About */}
@@ -111,7 +175,7 @@ const SettingsScreen = () => {
             <Ionicons name="information-circle-outline" size={22} color={COLORS.primary} />
             <Text style={s.settingLabel}>{t('version')}</Text>
           </View>
-          <Text style={s.settingValue}>1.0.0</Text>
+          <Text style={s.settingValue}>1.1.0</Text>
         </View>
       </View>
 
