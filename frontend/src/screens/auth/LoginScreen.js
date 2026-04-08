@@ -13,10 +13,12 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
 import { COLORS, SIZES } from '../../constants/theme';
 
 const LoginScreen = ({ navigation }) => {
   const { login, loginWithPin } = useAuth();
+  const { t } = useLanguage();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [pin, setPin] = useState('');
@@ -26,7 +28,7 @@ const LoginScreen = ({ navigation }) => {
 
   const handleLogin = async () => {
     if (!email.trim()) {
-      Alert.alert('Error', 'Please enter your email');
+      Alert.alert(t('error'), t('enterEmail'));
       return;
     }
 
@@ -34,21 +36,21 @@ const LoginScreen = ({ navigation }) => {
     try {
       if (usePinLogin) {
         if (!pin.trim() || pin.length !== 4) {
-          Alert.alert('Error', 'Please enter a valid 4-digit PIN');
+          Alert.alert(t('error'), t('enterValidPin'));
           setLoading(false);
           return;
         }
         await loginWithPin({ email: email.trim(), pin: pin.trim() });
       } else {
         if (!password.trim()) {
-          Alert.alert('Error', 'Please enter your password');
+          Alert.alert(t('error'), t('enterPassword'));
           setLoading(false);
           return;
         }
         await login({ email: email.trim(), password });
       }
     } catch (error) {
-      Alert.alert('Login Failed', error.message);
+      Alert.alert(t('loginFailed'), error.message);
     } finally {
       setLoading(false);
     }
@@ -64,18 +66,18 @@ const LoginScreen = ({ navigation }) => {
           <View style={styles.iconContainer}>
             <Ionicons name="wallet" size={48} color={COLORS.white} />
           </View>
-          <Text style={styles.title}>Pocket Money</Text>
-          <Text style={styles.subtitle}>Track your finances smartly</Text>
+          <Text style={styles.title}>{t('pocketMoney')}</Text>
+          <Text style={styles.subtitle}>{t('trackFinances')}</Text>
         </View>
 
         <View style={styles.form}>
-          <Text style={styles.formTitle}>Welcome Back</Text>
+          <Text style={styles.formTitle}>{t('welcomeBack')}</Text>
 
           <View style={styles.inputContainer}>
             <Ionicons name="mail-outline" size={20} color={COLORS.textLight} style={styles.inputIcon} />
             <TextInput
               style={styles.input}
-              placeholder="Email address"
+              placeholder={t('emailAddress')}
               placeholderTextColor={COLORS.placeholder}
               value={email}
               onChangeText={setEmail}
@@ -90,7 +92,7 @@ const LoginScreen = ({ navigation }) => {
               <Ionicons name="keypad-outline" size={20} color={COLORS.textLight} style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
-                placeholder="4-digit PIN"
+                placeholder={t('fourDigitPin')}
                 placeholderTextColor={COLORS.placeholder}
                 value={pin}
                 onChangeText={setPin}
@@ -104,7 +106,7 @@ const LoginScreen = ({ navigation }) => {
               <Ionicons name="lock-closed-outline" size={20} color={COLORS.textLight} style={styles.inputIcon} />
               <TextInput
                 style={[styles.input, { flex: 1 }]}
-                placeholder="Password"
+                placeholder={t('password')}
                 placeholderTextColor={COLORS.placeholder}
                 value={password}
                 onChangeText={setPassword}
@@ -122,7 +124,7 @@ const LoginScreen = ({ navigation }) => {
 
           <TouchableOpacity onPress={() => setUsePinLogin(!usePinLogin)}>
             <Text style={styles.switchText}>
-              {usePinLogin ? 'Use password instead' : 'Use PIN instead'}
+              {usePinLogin ? t('usePasswordInstead') : t('usePinInstead')}
             </Text>
           </TouchableOpacity>
 
@@ -130,14 +132,14 @@ const LoginScreen = ({ navigation }) => {
             {loading ? (
               <ActivityIndicator color={COLORS.white} />
             ) : (
-              <Text style={styles.loginButtonText}>Sign In</Text>
+              <Text style={styles.loginButtonText}>{t('signIn')}</Text>
             )}
           </TouchableOpacity>
 
           <View style={styles.registerRow}>
-            <Text style={styles.registerText}>Don't have an account? </Text>
+            <Text style={styles.registerText}>{t('dontHaveAccount')}</Text>
             <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-              <Text style={styles.registerLink}>Sign Up</Text>
+              <Text style={styles.registerLink}>{t('signUp')}</Text>
             </TouchableOpacity>
           </View>
         </View>

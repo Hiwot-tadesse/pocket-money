@@ -4,16 +4,18 @@ import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { reportAPI } from '../../services/api';
 import { COLORS, SIZES, SHADOWS, CATEGORIES } from '../../constants/theme';
+import { useLanguage } from '../../context/LanguageContext';
 
-const TABS = [
-  { label: 'Daily', value: 'daily' },
-  { label: 'Weekly', value: 'weekly' },
-  { label: 'Monthly', value: 'monthly' },
+const TAB_KEYS = [
+  { labelKey: 'daily', value: 'daily' },
+  { labelKey: 'weekly', value: 'weekly' },
+  { labelKey: 'monthly', value: 'monthly' },
 ];
 
-const fmt = (n) => `$${(n || 0).toFixed(2)}`;
+const fmt = (n) => `ETB ${(n || 0).toFixed(2)}`;
 
 const ReportsScreen = () => {
+  const { t } = useLanguage();
   const [tab, setTab] = useState('monthly');
   const [summary, setSummary] = useState(null);
   const [periodData, setPeriodData] = useState([]);
@@ -55,25 +57,25 @@ const ReportsScreen = () => {
       <RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); load(); }} colors={[COLORS.primary]} />
     }>
       <View style={s.header}>
-        <Text style={s.headerTitle}>Reports</Text>
+        <Text style={s.headerTitle}>{t('reports')}</Text>
       </View>
 
       {/* Summary */}
       <View style={s.sumRow}>
         <View style={[s.sumCard, SHADOWS.small]}>
           <Ionicons name="trending-up" size={22} color={COLORS.income} />
-          <Text style={s.sumLabel}>Income</Text>
+          <Text style={s.sumLabel}>{t('income')}</Text>
           <Text style={[s.sumVal, { color: COLORS.income }]}>{fmt(summary?.totalIncome)}</Text>
         </View>
         <View style={[s.sumCard, SHADOWS.small]}>
           <Ionicons name="trending-down" size={22} color={COLORS.expense} />
-          <Text style={s.sumLabel}>Expenses</Text>
+          <Text style={s.sumLabel}>{t('expenses')}</Text>
           <Text style={[s.sumVal, { color: COLORS.expense }]}>{fmt(summary?.totalExpense)}</Text>
         </View>
       </View>
 
       <View style={[s.balCard, SHADOWS.small]}>
-        <Text style={s.balLabel}>Net Balance</Text>
+        <Text style={s.balLabel}>{t('netBalance')}</Text>
         <Text style={[s.balVal, { color: (summary?.balance || 0) >= 0 ? COLORS.income : COLORS.expense }]}>
           {fmt(summary?.balance)}
         </Text>
@@ -81,18 +83,18 @@ const ReportsScreen = () => {
 
       {/* Period Tabs */}
       <View style={s.tabs}>
-        {TABS.map((t) => (
-          <TouchableOpacity key={t.value} style={[s.tab, tab === t.value && s.tabActive]}
-            onPress={() => { setTab(t.value); setLoading(true); }}>
-            <Text style={[s.tabText, tab === t.value && s.tabTextActive]}>{t.label}</Text>
+        {TAB_KEYS.map((item) => (
+          <TouchableOpacity key={item.value} style={[s.tab, tab === item.value && s.tabActive]}
+            onPress={() => { setTab(item.value); setLoading(true); }}>
+            <Text style={[s.tabText, tab === item.value && s.tabTextActive]}>{t(item.labelKey)}</Text>
           </TouchableOpacity>
         ))}
       </View>
 
       {/* Bar Chart */}
       <View style={[s.card, SHADOWS.small]}>
-        <Text style={s.cardTitle}>Income vs Expenses</Text>
-        {periodData.length === 0 ? <Text style={s.noData}>No data for this period</Text> : (
+        <Text style={s.cardTitle}>{t('incomeVsExpenses')}</Text>
+        {periodData.length === 0 ? <Text style={s.noData}>{t('noDataPeriod')}</Text> : (
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             <View style={s.barChart}>
               {periodData.slice(-10).map((item, i) => {
@@ -113,15 +115,15 @@ const ReportsScreen = () => {
           </ScrollView>
         )}
         <View style={s.legend}>
-          <View style={s.legendItem}><View style={[s.dot, { backgroundColor: COLORS.income }]} /><Text style={s.legendText}>Income</Text></View>
-          <View style={s.legendItem}><View style={[s.dot, { backgroundColor: COLORS.expense }]} /><Text style={s.legendText}>Expense</Text></View>
+          <View style={s.legendItem}><View style={[s.dot, { backgroundColor: COLORS.income }]} /><Text style={s.legendText}>{t('income')}</Text></View>
+          <View style={s.legendItem}><View style={[s.dot, { backgroundColor: COLORS.expense }]} /><Text style={s.legendText}>{t('expense')}</Text></View>
         </View>
       </View>
 
       {/* Category Breakdown */}
       <View style={[s.card, SHADOWS.small]}>
-        <Text style={s.cardTitle}>Spending by Category</Text>
-        {catData.length === 0 ? <Text style={s.noData}>No expense data yet</Text> : (
+        <Text style={s.cardTitle}>{t('spendingByCategory')}</Text>
+        {catData.length === 0 ? <Text style={s.noData}>{t('noExpenseData')}</Text> : (
           catData.map((c, i) => {
             const ci = CATEGORIES[c.category] || { icon: 'ellipse', color: COLORS.textLight };
             return (
@@ -139,7 +141,7 @@ const ReportsScreen = () => {
                   </View>
                   <View style={s.catMeta}>
                     <Text style={s.catPct}>{c.percentage}%</Text>
-                    <Text style={s.catCount}>{c.count} txns</Text>
+                    <Text style={s.catCount}>{c.count} {t('txns')}</Text>
                   </View>
                 </View>
               </View>
@@ -150,14 +152,14 @@ const ReportsScreen = () => {
 
       {/* Period Table */}
       <View style={[s.card, SHADOWS.small, { marginBottom: 30 }]}>
-        <Text style={s.cardTitle}>{tab.charAt(0).toUpperCase() + tab.slice(1)} Breakdown</Text>
-        {periodData.length === 0 ? <Text style={s.noData}>No data</Text> : (
+        <Text style={s.cardTitle}>{t(tab)} {t('breakdown')}</Text>
+        {periodData.length === 0 ? <Text style={s.noData}>{t('noData')}</Text> : (
           <>
             <View style={s.tblHeader}>
-              <Text style={[s.tblH, { flex: 1.5 }]}>Period</Text>
-              <Text style={[s.tblH, { flex: 1, textAlign: 'right' }]}>Income</Text>
-              <Text style={[s.tblH, { flex: 1, textAlign: 'right' }]}>Expense</Text>
-              <Text style={[s.tblH, { flex: 1, textAlign: 'right' }]}>Net</Text>
+              <Text style={[s.tblH, { flex: 1.5 }]}>{t('period')}</Text>
+              <Text style={[s.tblH, { flex: 1, textAlign: 'right' }]}>{t('income')}</Text>
+              <Text style={[s.tblH, { flex: 1, textAlign: 'right' }]}>{t('expense')}</Text>
+              <Text style={[s.tblH, { flex: 1, textAlign: 'right' }]}>{t('net')}</Text>
             </View>
             {periodData.slice(-10).reverse().map((item, i) => {
               const lbl = item.date || item.week || item.month || '';

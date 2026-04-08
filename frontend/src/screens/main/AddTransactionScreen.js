@@ -14,6 +14,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { transactionAPI } from '../../services/api';
 import { COLORS, SIZES, CATEGORIES } from '../../constants/theme';
+import { useLanguage } from '../../context/LanguageContext';
 
 const EXPENSE_CATEGORIES = [
   'Food & Drinks', 'Transport', 'Entertainment', 'Shopping',
@@ -27,6 +28,7 @@ const INCOME_CATEGORIES = [
 ];
 
 const AddTransactionScreen = ({ navigation, route }) => {
+  const { t } = useLanguage();
   const initialType = route.params?.type || 'expense';
   const [type, setType] = useState(initialType);
   const [amount, setAmount] = useState('');
@@ -39,11 +41,11 @@ const AddTransactionScreen = ({ navigation, route }) => {
 
   const handleSubmit = async () => {
     if (!amount || parseFloat(amount) <= 0) {
-      Alert.alert('Error', 'Please enter a valid amount');
+      Alert.alert(t('error'), t('enterValidAmount'));
       return;
     }
     if (!category) {
-      Alert.alert('Error', 'Please select a category');
+      Alert.alert(t('error'), t('selectCategory'));
       return;
     }
 
@@ -56,16 +58,16 @@ const AddTransactionScreen = ({ navigation, route }) => {
         description: description.trim(),
         tags: tags
           .split(',')
-          .map((t) => t.trim())
+          .map((tag) => tag.trim())
           .filter(Boolean),
       };
 
       await transactionAPI.create(data);
-      Alert.alert('Success', 'Transaction added successfully', [
-        { text: 'OK', onPress: () => navigation.goBack() },
+      Alert.alert(t('success'), t('transactionAdded'), [
+        { text: t('ok'), onPress: () => navigation.goBack() },
       ]);
     } catch (error) {
-      Alert.alert('Error', error.message);
+      Alert.alert(t('error'), error.message);
     } finally {
       setLoading(false);
     }
@@ -82,7 +84,7 @@ const AddTransactionScreen = ({ navigation, route }) => {
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
             <Ionicons name="arrow-back" size={24} color={COLORS.white} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Add Transaction</Text>
+          <Text style={styles.headerTitle}>{t('addTransaction')}</Text>
           <View style={{ width: 40 }} />
         </View>
 
@@ -93,20 +95,20 @@ const AddTransactionScreen = ({ navigation, route }) => {
             onPress={() => { setType('income'); setCategory(''); }}
           >
             <Ionicons name="trending-up" size={18} color={type === 'income' ? COLORS.white : COLORS.income} />
-            <Text style={[styles.typeText, type === 'income' && styles.typeTextActive]}>Income</Text>
+            <Text style={[styles.typeText, type === 'income' && styles.typeTextActive]}>{t('income')}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.typeBtn, type === 'expense' && styles.typeBtnActiveExpense]}
             onPress={() => { setType('expense'); setCategory(''); }}
           >
             <Ionicons name="trending-down" size={18} color={type === 'expense' ? COLORS.white : COLORS.expense} />
-            <Text style={[styles.typeText, type === 'expense' && styles.typeTextActive]}>Expense</Text>
+            <Text style={[styles.typeText, type === 'expense' && styles.typeTextActive]}>{t('expense')}</Text>
           </TouchableOpacity>
         </View>
 
         {/* Amount Input */}
         <View style={styles.amountContainer}>
-          <Text style={styles.currencySymbol}>$</Text>
+          <Text style={styles.currencySymbol}>ETB</Text>
           <TextInput
             style={styles.amountInput}
             placeholder="0.00"
@@ -119,12 +121,12 @@ const AddTransactionScreen = ({ navigation, route }) => {
 
         {/* Description */}
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Description</Text>
+          <Text style={styles.label}>{t('description')}</Text>
           <View style={styles.inputContainer}>
             <Ionicons name="create-outline" size={20} color={COLORS.textLight} style={styles.inputIcon} />
             <TextInput
               style={styles.input}
-              placeholder="What was this for?"
+              placeholder={t('whatWasThisFor')}
               placeholderTextColor={COLORS.placeholder}
               value={description}
               onChangeText={setDescription}
@@ -135,7 +137,7 @@ const AddTransactionScreen = ({ navigation, route }) => {
 
         {/* Category Selection */}
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Category</Text>
+          <Text style={styles.label}>{t('category')}</Text>
           <View style={styles.categoryGrid}>
             {categories.map((cat) => {
               const catInfo = CATEGORIES[cat] || { icon: 'ellipse', color: COLORS.textLight };
@@ -171,12 +173,12 @@ const AddTransactionScreen = ({ navigation, route }) => {
 
         {/* Tags */}
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Tags (comma separated)</Text>
+          <Text style={styles.label}>{t('tagsCommaSeparated')}</Text>
           <View style={styles.inputContainer}>
             <Ionicons name="pricetag-outline" size={20} color={COLORS.textLight} style={styles.inputIcon} />
             <TextInput
               style={styles.input}
-              placeholder="e.g. personal, weekend"
+              placeholder={t('tagsPlaceholder')}
               placeholderTextColor={COLORS.placeholder}
               value={tags}
               onChangeText={setTags}
@@ -199,7 +201,7 @@ const AddTransactionScreen = ({ navigation, route }) => {
             <>
               <Ionicons name="checkmark-circle" size={22} color={COLORS.white} />
               <Text style={styles.submitText}>
-                Add {type === 'income' ? 'Income' : 'Expense'}
+                {type === 'income' ? t('addIncome') : t('addExpense')}
               </Text>
             </>
           )}
@@ -279,7 +281,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: SIZES.margin,
   },
   currencySymbol: {
-    fontSize: 36,
+    fontSize: 24,
     fontWeight: 'bold',
     color: COLORS.text,
     marginRight: 4,

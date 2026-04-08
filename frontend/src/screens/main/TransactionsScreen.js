@@ -13,14 +13,16 @@ import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { transactionAPI } from '../../services/api';
 import { COLORS, SIZES, SHADOWS, CATEGORIES } from '../../constants/theme';
+import { useLanguage } from '../../context/LanguageContext';
 
-const FILTER_OPTIONS = [
-  { label: 'All', value: null },
-  { label: 'Income', value: 'income' },
-  { label: 'Expense', value: 'expense' },
+const FILTER_OPTIONS_KEYS = [
+  { labelKey: 'all', value: null },
+  { labelKey: 'income', value: 'income' },
+  { labelKey: 'expense', value: 'expense' },
 ];
 
 const TransactionsScreen = ({ navigation }) => {
+  const { t } = useLanguage();
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -71,24 +73,24 @@ const TransactionsScreen = ({ navigation }) => {
   };
 
   const handleDelete = (id) => {
-    Alert.alert('Delete Transaction', 'Are you sure you want to delete this transaction?', [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert(t('deleteTransaction'), t('deleteTransactionConfirm'), [
+      { text: t('cancel'), style: 'cancel' },
       {
-        text: 'Delete',
+        text: t('delete'),
         style: 'destructive',
         onPress: async () => {
           try {
             await transactionAPI.delete(id);
-            setTransactions((prev) => prev.filter((t) => t._id !== id));
+            setTransactions((prev) => prev.filter((tx) => tx._id !== id));
           } catch (error) {
-            Alert.alert('Error', error.message);
+            Alert.alert(t('error'), error.message);
           }
         },
       },
     ]);
   };
 
-  const formatCurrency = (amount) => `$${(amount || 0).toFixed(2)}`;
+  const formatCurrency = (amount) => `ETB ${(amount || 0).toFixed(2)}`;
 
   const formatDate = (dateStr) => {
     const date = new Date(dateStr);
@@ -113,7 +115,7 @@ const TransactionsScreen = ({ navigation }) => {
         <View style={styles.txInfo}>
           <Text style={styles.txCategory}>{item.category}</Text>
           <Text style={styles.txDescription} numberOfLines={1}>
-            {item.description || 'No description'}
+            {item.description || t('noDescription')}
           </Text>
           <Text style={styles.txDate}>{formatDate(item.date)}</Text>
         </View>
@@ -144,14 +146,14 @@ const TransactionsScreen = ({ navigation }) => {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Transactions</Text>
+        <Text style={styles.headerTitle}>{t('transactions')}</Text>
       </View>
 
       {/* Filter Tabs */}
       <View style={styles.filterRow}>
-        {FILTER_OPTIONS.map((option) => (
+        {FILTER_OPTIONS_KEYS.map((option) => (
           <TouchableOpacity
-            key={option.label}
+            key={option.labelKey}
             style={[
               styles.filterTab,
               activeFilter === option.value && styles.filterTabActive,
@@ -169,7 +171,7 @@ const TransactionsScreen = ({ navigation }) => {
                 activeFilter === option.value && styles.filterTextActive,
               ]}
             >
-              {option.label}
+              {t(option.labelKey)}
             </Text>
           </TouchableOpacity>
         ))}
@@ -194,7 +196,7 @@ const TransactionsScreen = ({ navigation }) => {
           ListEmptyComponent={
             <View style={styles.emptyState}>
               <Ionicons name="receipt-outline" size={48} color={COLORS.textLight} />
-              <Text style={styles.emptyText}>No transactions found</Text>
+              <Text style={styles.emptyText}>{t('noTransactionsFound')}</Text>
             </View>
           }
           ListFooterComponent={
@@ -208,7 +210,7 @@ const TransactionsScreen = ({ navigation }) => {
       {/* Floating hint */}
       <View style={styles.hintContainer}>
         <Ionicons name="information-circle-outline" size={14} color={COLORS.textLight} />
-        <Text style={styles.hintText}>Long press to delete a transaction</Text>
+        <Text style={styles.hintText}>{t('longPressDelete')}</Text>
       </View>
     </View>
   );

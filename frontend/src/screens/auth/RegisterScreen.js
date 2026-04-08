@@ -13,10 +13,12 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
 import { COLORS, SIZES } from '../../constants/theme';
 
 const RegisterScreen = ({ navigation }) => {
   const { register } = useAuth();
+  const { t } = useLanguage();
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -27,23 +29,23 @@ const RegisterScreen = ({ navigation }) => {
 
   const handleRegister = async () => {
     if (!username.trim() || !email.trim() || !password.trim()) {
-      Alert.alert('Error', 'Please fill in all required fields');
+      Alert.alert(t('error'), t('fillAllFields'));
       return;
     }
     if (username.trim().length < 3) {
-      Alert.alert('Error', 'Username must be at least 3 characters');
+      Alert.alert(t('error'), t('usernameMin'));
       return;
     }
     if (password.length < 6) {
-      Alert.alert('Error', 'Password must be at least 6 characters');
+      Alert.alert(t('error'), t('passwordMin6'));
       return;
     }
     if (password !== confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match');
+      Alert.alert(t('error'), t('passwordsNoMatch'));
       return;
     }
     if (pin && pin.length !== 4) {
-      Alert.alert('Error', 'PIN must be exactly 4 digits');
+      Alert.alert(t('error'), t('pinExact4'));
       return;
     }
 
@@ -57,7 +59,7 @@ const RegisterScreen = ({ navigation }) => {
       if (pin) data.pin = pin;
       await register(data);
     } catch (error) {
-      Alert.alert('Registration Failed', error.message);
+      Alert.alert(t('registrationFailed'), error.message);
     } finally {
       setLoading(false);
     }
@@ -73,8 +75,8 @@ const RegisterScreen = ({ navigation }) => {
           <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
             <Ionicons name="arrow-back" size={24} color={COLORS.white} />
           </TouchableOpacity>
-          <Text style={styles.title}>Create Account</Text>
-          <Text style={styles.subtitle}>Start tracking your pocket money</Text>
+          <Text style={styles.title}>{t('createAccount')}</Text>
+          <Text style={styles.subtitle}>{t('startTracking')}</Text>
         </View>
 
         <View style={styles.form}>
@@ -82,7 +84,7 @@ const RegisterScreen = ({ navigation }) => {
             <Ionicons name="person-outline" size={20} color={COLORS.textLight} style={styles.inputIcon} />
             <TextInput
               style={styles.input}
-              placeholder="Username"
+              placeholder={t('username')}
               placeholderTextColor={COLORS.placeholder}
               value={username}
               onChangeText={setUsername}
@@ -94,7 +96,7 @@ const RegisterScreen = ({ navigation }) => {
             <Ionicons name="mail-outline" size={20} color={COLORS.textLight} style={styles.inputIcon} />
             <TextInput
               style={styles.input}
-              placeholder="Email address"
+              placeholder={t('emailAddress')}
               placeholderTextColor={COLORS.placeholder}
               value={email}
               onChangeText={setEmail}
@@ -108,7 +110,7 @@ const RegisterScreen = ({ navigation }) => {
             <Ionicons name="lock-closed-outline" size={20} color={COLORS.textLight} style={styles.inputIcon} />
             <TextInput
               style={[styles.input, { flex: 1 }]}
-              placeholder="Password (min 6 characters)"
+              placeholder={t('passwordMin')}
               placeholderTextColor={COLORS.placeholder}
               value={password}
               onChangeText={setPassword}
@@ -127,7 +129,7 @@ const RegisterScreen = ({ navigation }) => {
             <Ionicons name="lock-closed-outline" size={20} color={COLORS.textLight} style={styles.inputIcon} />
             <TextInput
               style={styles.input}
-              placeholder="Confirm password"
+              placeholder={t('confirmPassword')}
               placeholderTextColor={COLORS.placeholder}
               value={confirmPassword}
               onChangeText={setConfirmPassword}
@@ -139,7 +141,7 @@ const RegisterScreen = ({ navigation }) => {
             <Ionicons name="keypad-outline" size={20} color={COLORS.textLight} style={styles.inputIcon} />
             <TextInput
               style={styles.input}
-              placeholder="4-digit PIN (optional)"
+              placeholder={t('pinOptional')}
               placeholderTextColor={COLORS.placeholder}
               value={pin}
               onChangeText={setPin}
@@ -153,14 +155,14 @@ const RegisterScreen = ({ navigation }) => {
             {loading ? (
               <ActivityIndicator color={COLORS.white} />
             ) : (
-              <Text style={styles.registerButtonText}>Create Account</Text>
+              <Text style={styles.registerButtonText}>{t('createAccount')}</Text>
             )}
           </TouchableOpacity>
 
           <View style={styles.loginRow}>
-            <Text style={styles.loginText}>Already have an account? </Text>
+            <Text style={styles.loginText}>{t('alreadyHaveAccount')}</Text>
             <TouchableOpacity onPress={() => navigation.goBack()}>
-              <Text style={styles.loginLink}>Sign In</Text>
+              <Text style={styles.loginLink}>{t('signIn')}</Text>
             </TouchableOpacity>
           </View>
         </View>

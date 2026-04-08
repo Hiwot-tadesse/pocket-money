@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, FlatList, TouchableOpacity, RefreshControl, Act
 import { Ionicons } from '@expo/vector-icons';
 import { alertAPI } from '../../services/api';
 import { COLORS, SIZES, SHADOWS } from '../../constants/theme';
+import { useLanguage } from '../../context/LanguageContext';
 
 const ALERT_ICONS = {
   budget_warning: { icon: 'warning', color: COLORS.warning },
@@ -13,6 +14,7 @@ const ALERT_ICONS = {
 };
 
 const AlertsScreen = ({ navigation }) => {
+  const { t } = useLanguage();
   const [alerts, setAlerts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -36,7 +38,7 @@ const AlertsScreen = ({ navigation }) => {
       await alertAPI.markAsRead(id);
       setAlerts((prev) => prev.map((a) => a._id === id ? { ...a, isRead: true } : a));
     } catch (e) {
-      Alert.alert('Error', e.message);
+      Alert.alert(t('error'), e.message);
     }
   };
 
@@ -45,20 +47,20 @@ const AlertsScreen = ({ navigation }) => {
       await alertAPI.markAllAsRead();
       setAlerts((prev) => prev.map((a) => ({ ...a, isRead: true })));
     } catch (e) {
-      Alert.alert('Error', e.message);
+      Alert.alert(t('error'), e.message);
     }
   };
 
   const handleDelete = (id) => {
-    Alert.alert('Delete Alert', 'Remove this alert?', [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert(t('deleteAlert'), t('removeAlert'), [
+      { text: t('cancel'), style: 'cancel' },
       {
-        text: 'Delete', style: 'destructive',
+        text: t('delete'), style: 'destructive',
         onPress: async () => {
           try {
             await alertAPI.delete(id);
             setAlerts((prev) => prev.filter((a) => a._id !== id));
-          } catch (e) { Alert.alert('Error', e.message); }
+          } catch (e) { Alert.alert(t('error'), e.message); }
         },
       },
     ]);
@@ -66,11 +68,11 @@ const AlertsScreen = ({ navigation }) => {
 
   const timeAgo = (dateStr) => {
     const mins = Math.floor((Date.now() - new Date(dateStr).getTime()) / 60000);
-    if (mins < 1) return 'Just now';
-    if (mins < 60) return `${mins}m ago`;
+    if (mins < 1) return t('justNow');
+    if (mins < 60) return `${mins}${t('mAgo')}`;
     const hrs = Math.floor(mins / 60);
-    if (hrs < 24) return `${hrs}h ago`;
-    return `${Math.floor(hrs / 24)}d ago`;
+    if (hrs < 24) return `${hrs}${t('hAgo')}`;
+    return `${Math.floor(hrs / 24)}${t('dAgo')}`;
   };
 
   const renderAlert = ({ item }) => {
@@ -103,9 +105,9 @@ const AlertsScreen = ({ navigation }) => {
         <TouchableOpacity onPress={() => navigation.goBack()} style={st.backBtn}>
           <Ionicons name="arrow-back" size={24} color={COLORS.white} />
         </TouchableOpacity>
-        <Text style={st.headerTitle}>Notifications</Text>
+        <Text style={st.headerTitle}>{t('notifications')}</Text>
         <TouchableOpacity onPress={handleMarkAllRead}>
-          <Text style={st.markAll}>Read All</Text>
+          <Text style={st.markAll}>{t('readAll')}</Text>
         </TouchableOpacity>
       </View>
 
@@ -121,7 +123,7 @@ const AlertsScreen = ({ navigation }) => {
           ListEmptyComponent={
             <View style={st.empty}>
               <Ionicons name="notifications-off-outline" size={48} color={COLORS.textLight} />
-              <Text style={st.emptyText}>No notifications</Text>
+              <Text style={st.emptyText}>{t('noNotifications')}</Text>
             </View>
           }
         />

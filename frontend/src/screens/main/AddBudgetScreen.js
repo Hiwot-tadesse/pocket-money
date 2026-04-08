@@ -14,6 +14,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { budgetAPI } from '../../services/api';
 import { COLORS, SIZES, CATEGORIES } from '../../constants/theme';
+import { useLanguage } from '../../context/LanguageContext';
 
 const BUDGET_CATEGORIES = [
   'Food & Drinks', 'Transport', 'Entertainment', 'Shopping',
@@ -21,13 +22,14 @@ const BUDGET_CATEGORIES = [
   'Savings', 'Other Expense',
 ];
 
-const PERIODS = [
-  { label: 'Daily', value: 'daily' },
-  { label: 'Weekly', value: 'weekly' },
-  { label: 'Monthly', value: 'monthly' },
+const PERIOD_KEYS = [
+  { labelKey: 'daily', value: 'daily' },
+  { labelKey: 'weekly', value: 'weekly' },
+  { labelKey: 'monthly', value: 'monthly' },
 ];
 
 const AddBudgetScreen = ({ navigation }) => {
+  const { t } = useLanguage();
   const [category, setCategory] = useState('');
   const [limit, setLimit] = useState('');
   const [period, setPeriod] = useState('monthly');
@@ -35,11 +37,11 @@ const AddBudgetScreen = ({ navigation }) => {
 
   const handleSubmit = async () => {
     if (!category) {
-      Alert.alert('Error', 'Please select a category');
+      Alert.alert(t('error'), t('selectCategory'));
       return;
     }
     if (!limit || parseFloat(limit) <= 0) {
-      Alert.alert('Error', 'Please enter a valid budget limit');
+      Alert.alert(t('error'), t('enterValidBudgetLimit'));
       return;
     }
 
@@ -50,11 +52,11 @@ const AddBudgetScreen = ({ navigation }) => {
         limit: parseFloat(limit),
         period,
       });
-      Alert.alert('Success', 'Budget created successfully', [
-        { text: 'OK', onPress: () => navigation.goBack() },
+      Alert.alert(t('success'), t('budgetCreated'), [
+        { text: t('ok'), onPress: () => navigation.goBack() },
       ]);
     } catch (error) {
-      Alert.alert('Error', error.message);
+      Alert.alert(t('error'), error.message);
     } finally {
       setLoading(false);
     }
@@ -71,15 +73,15 @@ const AddBudgetScreen = ({ navigation }) => {
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
             <Ionicons name="arrow-back" size={24} color={COLORS.white} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>New Budget</Text>
+          <Text style={styles.headerTitle}>{t('newBudget')}</Text>
           <View style={{ width: 40 }} />
         </View>
 
         {/* Budget Limit */}
         <View style={styles.amountContainer}>
-          <Text style={styles.amountLabel}>Set Budget Limit</Text>
+          <Text style={styles.amountLabel}>{t('setBudgetLimit')}</Text>
           <View style={styles.amountRow}>
-            <Text style={styles.currencySymbol}>$</Text>
+            <Text style={styles.currencySymbol}>ETB</Text>
             <TextInput
               style={styles.amountInput}
               placeholder="0.00"
@@ -93,16 +95,16 @@ const AddBudgetScreen = ({ navigation }) => {
 
         {/* Period Selection */}
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Budget Period</Text>
+          <Text style={styles.label}>{t('budgetPeriod')}</Text>
           <View style={styles.periodRow}>
-            {PERIODS.map((p) => (
+            {PERIOD_KEYS.map((p) => (
               <TouchableOpacity
                 key={p.value}
                 style={[styles.periodBtn, period === p.value && styles.periodBtnActive]}
                 onPress={() => setPeriod(p.value)}
               >
                 <Text style={[styles.periodText, period === p.value && styles.periodTextActive]}>
-                  {p.label}
+                  {t(p.labelKey)}
                 </Text>
               </TouchableOpacity>
             ))}
@@ -111,7 +113,7 @@ const AddBudgetScreen = ({ navigation }) => {
 
         {/* Category Selection */}
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Category</Text>
+          <Text style={styles.label}>{t('category')}</Text>
           <View style={styles.categoryGrid}>
             {BUDGET_CATEGORIES.map((cat) => {
               const catInfo = CATEGORIES[cat] || { icon: 'ellipse', color: COLORS.textLight };
@@ -149,7 +151,7 @@ const AddBudgetScreen = ({ navigation }) => {
           ) : (
             <>
               <Ionicons name="checkmark-circle" size={22} color={COLORS.white} />
-              <Text style={styles.submitText}>Create Budget</Text>
+              <Text style={styles.submitText}>{t('createBudget')}</Text>
             </>
           )}
         </TouchableOpacity>
@@ -202,7 +204,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   currencySymbol: {
-    fontSize: 36,
+    fontSize: 24,
     fontWeight: 'bold',
     color: COLORS.text,
     marginRight: 4,

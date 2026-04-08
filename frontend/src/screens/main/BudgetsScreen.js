@@ -13,8 +13,10 @@ import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { budgetAPI } from '../../services/api';
 import { COLORS, SIZES, SHADOWS, CATEGORIES } from '../../constants/theme';
+import { useLanguage } from '../../context/LanguageContext';
 
 const BudgetsScreen = ({ navigation }) => {
+  const { t } = useLanguage();
   const [budgets, setBudgets] = useState([]);
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -45,24 +47,24 @@ const BudgetsScreen = ({ navigation }) => {
   };
 
   const handleDelete = (id, category) => {
-    Alert.alert('Delete Budget', `Delete the budget for ${category}?`, [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert(t('deleteBudget'), `${t('deleteBudgetConfirm')} ${category}?`, [
+      { text: t('cancel'), style: 'cancel' },
       {
-        text: 'Delete',
+        text: t('delete'),
         style: 'destructive',
         onPress: async () => {
           try {
             await budgetAPI.delete(id);
             setBudgets((prev) => prev.filter((b) => b._id !== id));
           } catch (error) {
-            Alert.alert('Error', error.message);
+            Alert.alert(t('error'), error.message);
           }
         },
       },
     ]);
   };
 
-  const formatCurrency = (amount) => `$${(amount || 0).toFixed(2)}`;
+  const formatCurrency = (amount) => `ETB ${(amount || 0).toFixed(2)}`;
 
   const getProgressColor = (percentage) => {
     if (percentage >= 100) return COLORS.danger;
@@ -89,7 +91,7 @@ const BudgetsScreen = ({ navigation }) => {
             </View>
             <View>
               <Text style={styles.budgetCategory}>{item.category}</Text>
-              <Text style={styles.budgetPeriod}>{item.period} budget</Text>
+              <Text style={styles.budgetPeriod}>{item.period} {t('budget')}</Text>
             </View>
           </View>
           <View style={styles.budgetAmounts}>
@@ -106,9 +108,9 @@ const BudgetsScreen = ({ navigation }) => {
         </View>
 
         <View style={styles.budgetFooter}>
-          <Text style={[styles.percentText, { color: progressColor }]}>{percentage}% used</Text>
+          <Text style={[styles.percentText, { color: progressColor }]}>{percentage}% {t('used')}</Text>
           <Text style={styles.remainingText}>
-            {item.remaining > 0 ? `${formatCurrency(item.remaining)} left` : 'Over budget!'}
+            {item.remaining > 0 ? `${formatCurrency(item.remaining)} ${t('left')}` : t('overBudget')}
           </Text>
         </View>
       </TouchableOpacity>
@@ -119,7 +121,7 @@ const BudgetsScreen = ({ navigation }) => {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Budgets</Text>
+        <Text style={styles.headerTitle}>{t('budgets')}</Text>
         <TouchableOpacity
           style={styles.addBtn}
           onPress={() => navigation.navigate('AddBudget')}
@@ -133,19 +135,19 @@ const BudgetsScreen = ({ navigation }) => {
         <View style={[styles.summaryCard, SHADOWS.medium]}>
           <View style={styles.summaryRow}>
             <View style={styles.summaryItem}>
-              <Text style={styles.summaryLabel}>Total Budget</Text>
+              <Text style={styles.summaryLabel}>{t('totalBudget')}</Text>
               <Text style={styles.summaryValue}>{formatCurrency(summary.totalBudget)}</Text>
             </View>
             <View style={styles.summaryDivider} />
             <View style={styles.summaryItem}>
-              <Text style={styles.summaryLabel}>Total Spent</Text>
+              <Text style={styles.summaryLabel}>{t('totalSpent')}</Text>
               <Text style={[styles.summaryValue, { color: COLORS.expense }]}>
                 {formatCurrency(summary.totalSpent)}
               </Text>
             </View>
             <View style={styles.summaryDivider} />
             <View style={styles.summaryItem}>
-              <Text style={styles.summaryLabel}>Remaining</Text>
+              <Text style={styles.summaryLabel}>{t('remaining')}</Text>
               <Text style={[styles.summaryValue, { color: COLORS.income }]}>
                 {formatCurrency(summary.totalRemaining)}
               </Text>
@@ -171,8 +173,8 @@ const BudgetsScreen = ({ navigation }) => {
           ListEmptyComponent={
             <View style={styles.emptyState}>
               <Ionicons name="pie-chart-outline" size={48} color={COLORS.textLight} />
-              <Text style={styles.emptyText}>No budgets set</Text>
-              <Text style={styles.emptySubtext}>Tap + to create your first budget</Text>
+              <Text style={styles.emptyText}>{t('noBudgetsSet')}</Text>
+              <Text style={styles.emptySubtext}>{t('tapToCreateBudget')}</Text>
             </View>
           }
         />
@@ -180,7 +182,7 @@ const BudgetsScreen = ({ navigation }) => {
 
       <View style={styles.hintContainer}>
         <Ionicons name="information-circle-outline" size={14} color={COLORS.textLight} />
-        <Text style={styles.hintText}>Long press to delete a budget</Text>
+        <Text style={styles.hintText}>{t('longPressDeleteBudget')}</Text>
       </View>
     </View>
   );

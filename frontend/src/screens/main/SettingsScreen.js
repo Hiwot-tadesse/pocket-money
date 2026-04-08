@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, Alert, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
 import { COLORS, SIZES, SHADOWS } from '../../constants/theme';
 
 const SettingsScreen = () => {
   const { user, logout, updateUser } = useAuth();
+  const { t } = useLanguage();
   const [notifications, setNotifications] = useState(user?.notificationsEnabled ?? true);
   const [editingName, setEditingName] = useState(false);
   const [newName, setNewName] = useState(user?.username || '');
@@ -16,40 +18,40 @@ const SettingsScreen = () => {
       await updateUser({ notificationsEnabled: value });
     } catch (e) {
       setNotifications(!value);
-      Alert.alert('Error', e.message);
+      Alert.alert(t('error'), e.message);
     }
   };
 
   const handleUpdateName = async () => {
     if (!newName.trim() || newName.trim().length < 3) {
-      Alert.alert('Error', 'Username must be at least 3 characters');
+      Alert.alert(t('error'), t('usernameMin3'));
       return;
     }
     try {
       await updateUser({ username: newName.trim() });
       setEditingName(false);
-      Alert.alert('Success', 'Username updated');
+      Alert.alert(t('success'), t('usernameUpdated'));
     } catch (e) {
-      Alert.alert('Error', e.message);
+      Alert.alert(t('error'), e.message);
     }
   };
 
   const handleLogout = () => {
-    Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Sign Out', style: 'destructive', onPress: logout },
+    Alert.alert(t('signOut'), t('signOutConfirm'), [
+      { text: t('cancel'), style: 'cancel' },
+      { text: t('signOut'), style: 'destructive', onPress: logout },
     ]);
   };
 
   return (
     <ScrollView style={s.container}>
       <View style={s.header}>
-        <Text style={s.headerTitle}>Settings</Text>
+        <Text style={s.headerTitle}>{t('settings')}</Text>
       </View>
 
       {/* Profile Section */}
       <View style={[s.section, SHADOWS.small]}>
-        <Text style={s.sectionTitle}>Profile</Text>
+        <Text style={s.sectionTitle}>{t('profile')}</Text>
         <View style={s.profileRow}>
           <View style={s.avatar}>
             <Text style={s.avatarText}>{(user?.username || 'U')[0].toUpperCase()}</Text>
@@ -78,11 +80,11 @@ const SettingsScreen = () => {
 
       {/* Preferences */}
       <View style={[s.section, SHADOWS.small]}>
-        <Text style={s.sectionTitle}>Preferences</Text>
+        <Text style={s.sectionTitle}>{t('preferences')}</Text>
         <View style={s.settingRow}>
           <View style={s.settingLeft}>
             <Ionicons name="notifications-outline" size={22} color={COLORS.primary} />
-            <Text style={s.settingLabel}>Notifications</Text>
+            <Text style={s.settingLabel}>{t('notificationsSetting')}</Text>
           </View>
           <Switch
             value={notifications}
@@ -95,19 +97,19 @@ const SettingsScreen = () => {
         <View style={s.settingRow}>
           <View style={s.settingLeft}>
             <Ionicons name="cash-outline" size={22} color={COLORS.primary} />
-            <Text style={s.settingLabel}>Currency</Text>
+            <Text style={s.settingLabel}>{t('currency')}</Text>
           </View>
-          <Text style={s.settingValue}>{user?.currency || 'USD'}</Text>
+          <Text style={s.settingValue}>{user?.currency || 'ETB'}</Text>
         </View>
       </View>
 
       {/* About */}
       <View style={[s.section, SHADOWS.small]}>
-        <Text style={s.sectionTitle}>About</Text>
+        <Text style={s.sectionTitle}>{t('about')}</Text>
         <View style={s.settingRow}>
           <View style={s.settingLeft}>
             <Ionicons name="information-circle-outline" size={22} color={COLORS.primary} />
-            <Text style={s.settingLabel}>Version</Text>
+            <Text style={s.settingLabel}>{t('version')}</Text>
           </View>
           <Text style={s.settingValue}>1.0.0</Text>
         </View>
@@ -116,7 +118,7 @@ const SettingsScreen = () => {
       {/* Logout */}
       <TouchableOpacity style={s.logoutBtn} onPress={handleLogout}>
         <Ionicons name="log-out-outline" size={22} color={COLORS.danger} />
-        <Text style={s.logoutText}>Sign Out</Text>
+        <Text style={s.logoutText}>{t('signOut')}</Text>
       </TouchableOpacity>
 
       <View style={{ height: 40 }} />

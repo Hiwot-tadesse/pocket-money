@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { COLORS } from '../constants/theme';
 
 // Auth screens
@@ -42,55 +43,58 @@ const BudgetStackNavigator = () => {
   );
 };
 
-const MainTabs = () => (
-  <Tab.Navigator
-    screenOptions={({ route }) => ({
-      headerShown: false,
-      tabBarIcon: ({ focused, color, size }) => {
-        let iconName;
-        switch (route.name) {
-          case 'Dashboard':
-            iconName = focused ? 'home' : 'home-outline';
-            break;
-          case 'Transactions':
-            iconName = focused ? 'list' : 'list-outline';
-            break;
-          case 'Budgets':
-            iconName = focused ? 'pie-chart' : 'pie-chart-outline';
-            break;
-          case 'Reports':
-            iconName = focused ? 'bar-chart' : 'bar-chart-outline';
-            break;
-          case 'Settings':
-            iconName = focused ? 'settings' : 'settings-outline';
-            break;
-          default:
-            iconName = 'ellipse';
-        }
-        return <Ionicons name={iconName} size={size} color={color} />;
-      },
-      tabBarActiveTintColor: COLORS.primary,
-      tabBarInactiveTintColor: COLORS.textLight,
-      tabBarStyle: {
-        backgroundColor: COLORS.white,
-        borderTopColor: COLORS.border,
-        paddingBottom: 5,
-        paddingTop: 5,
-        height: 60,
-      },
-      tabBarLabelStyle: {
-        fontSize: 11,
-        fontWeight: '600',
-      },
-    })}
-  >
-    <Tab.Screen name="Dashboard" component={HomeStackNavigator} />
-    <Tab.Screen name="Transactions" component={TransactionsScreen} />
-    <Tab.Screen name="Budgets" component={BudgetStackNavigator} />
-    <Tab.Screen name="Reports" component={ReportsScreen} />
-    <Tab.Screen name="Settings" component={SettingsScreen} />
-  </Tab.Navigator>
-);
+const MainTabs = () => {
+  const { t } = useLanguage();
+  return (
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        headerShown: false,
+        tabBarIcon: ({ focused, color, size }) => {
+          let iconName;
+          switch (route.name) {
+            case 'Dashboard':
+              iconName = focused ? 'home' : 'home-outline';
+              break;
+            case 'Transactions':
+              iconName = focused ? 'list' : 'list-outline';
+              break;
+            case 'Budgets':
+              iconName = focused ? 'pie-chart' : 'pie-chart-outline';
+              break;
+            case 'Reports':
+              iconName = focused ? 'bar-chart' : 'bar-chart-outline';
+              break;
+            case 'Settings':
+              iconName = focused ? 'settings' : 'settings-outline';
+              break;
+            default:
+              iconName = 'ellipse';
+          }
+          return <Ionicons name={iconName} size={size} color={color} />;
+        },
+        tabBarActiveTintColor: COLORS.primary,
+        tabBarInactiveTintColor: COLORS.textLight,
+        tabBarStyle: {
+          backgroundColor: COLORS.white,
+          borderTopColor: COLORS.border,
+          paddingBottom: 5,
+          paddingTop: 5,
+          height: 60,
+        },
+        tabBarLabelStyle: {
+          fontSize: 11,
+          fontWeight: '600',
+        },
+      })}
+    >
+      <Tab.Screen name="Dashboard" component={HomeStackNavigator} options={{ tabBarLabel: t('tabDashboard') }} />
+      <Tab.Screen name="Transactions" component={TransactionsScreen} options={{ tabBarLabel: t('tabTransactions') }} />
+      <Tab.Screen name="Budgets" component={BudgetStackNavigator} options={{ tabBarLabel: t('tabBudgets') }} />
+      <Tab.Screen name="Reports" component={ReportsScreen} options={{ tabBarLabel: t('tabReports') }} />
+      <Tab.Screen name="Settings" component={SettingsScreen} options={{ tabBarLabel: t('tabSettings') }} />
+    </Tab.Navigator>
+  );
+};
 
 const AuthStack = () => (
   <Stack.Navigator screenOptions={{ headerShown: false }}>
