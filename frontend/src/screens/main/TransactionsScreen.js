@@ -109,7 +109,7 @@ const TransactionsScreen = ({ navigation }) => {
         onLongPress={() => handleDelete(item._id)}
         activeOpacity={0.7}
       >
-        <View style={[styles.txIcon, { backgroundColor: catInfo.color + '20' }]}>
+        <View style={[styles.txIcon, { backgroundColor: catInfo.color + '15' }]}>
           <Ionicons name={catInfo.icon} size={22} color={catInfo.color} />
         </View>
         <View style={styles.txInfo}>
@@ -123,7 +123,7 @@ const TransactionsScreen = ({ navigation }) => {
           <Text
             style={[
               styles.txAmount,
-              { color: item.type === 'income' ? COLORS.income : COLORS.expense },
+              { color: item.type === 'income' ? COLORS.income : COLORS.text },
             ]}
           >
             {item.type === 'income' ? '+' : '-'}{formatCurrency(item.amount)}
@@ -131,8 +131,8 @@ const TransactionsScreen = ({ navigation }) => {
           {item.tags && item.tags.length > 0 && (
             <View style={styles.tagRow}>
               {item.tags.slice(0, 2).map((tag, i) => (
-                <View key={i} style={styles.tag}>
-                  <Text style={styles.tagText}>{tag}</Text>
+                <View key={i} style={[styles.tag, { backgroundColor: item.type === 'income' ? COLORS.income + '10' : COLORS.expense + '10' }]}>
+                  <Text style={[styles.tagText, { color: item.type === 'income' ? COLORS.income : COLORS.expense }]}>{tag}</Text>
                 </View>
               ))}
             </View>
@@ -150,31 +150,33 @@ const TransactionsScreen = ({ navigation }) => {
       </View>
 
       {/* Filter Tabs */}
-      <View style={styles.filterRow}>
-        {FILTER_OPTIONS_KEYS.map((option) => (
-          <TouchableOpacity
-            key={option.labelKey}
-            style={[
-              styles.filterTab,
-              activeFilter === option.value && styles.filterTabActive,
-            ]}
-            onPress={() => {
-              setActiveFilter(option.value);
-              setPage(1);
-              setLoading(true);
-              fetchTransactions(1, option.value);
-            }}
-          >
-            <Text
+      <View style={styles.filterContainer}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterRow}>
+          {FILTER_OPTIONS_KEYS.map((option) => (
+            <TouchableOpacity
+              key={option.labelKey}
               style={[
-                styles.filterText,
-                activeFilter === option.value && styles.filterTextActive,
+                styles.filterTab,
+                activeFilter === option.value && styles.filterTabActive,
               ]}
+              onPress={() => {
+                setActiveFilter(option.value);
+                setPage(1);
+                setLoading(true);
+                fetchTransactions(1, option.value);
+              }}
             >
-              {t(option.labelKey)}
-            </Text>
-          </TouchableOpacity>
-        ))}
+              <Text
+                style={[
+                  styles.filterText,
+                  activeFilter === option.value && styles.filterTextActive,
+                ]}
+              >
+                {t(option.labelKey)}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
       </View>
 
       {/* Transactions List */}
@@ -195,7 +197,9 @@ const TransactionsScreen = ({ navigation }) => {
           onEndReachedThreshold={0.5}
           ListEmptyComponent={
             <View style={styles.emptyState}>
-              <Ionicons name="receipt-outline" size={48} color={COLORS.textLight} />
+              <View style={styles.emptyIconBg}>
+                <Ionicons name="receipt-outline" size={48} color={COLORS.primaryLight} />
+              </View>
               <Text style={styles.emptyText}>{t('noTransactionsFound')}</Text>
             </View>
           }
@@ -224,39 +228,47 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: COLORS.primary,
     paddingTop: 56,
-    paddingBottom: 16,
+    paddingBottom: 24,
     paddingHorizontal: SIZES.paddingLg,
+    borderBottomLeftRadius: 32,
+    borderBottomRightRadius: 32,
+    ...SHADOWS.large,
+    zIndex: 10,
   },
   headerTitle: {
-    fontSize: SIZES.xxl,
-    fontWeight: 'bold',
+    fontSize: 28,
+    fontWeight: '800',
     color: COLORS.white,
+    letterSpacing: -0.5,
+  },
+  filterContainer: {
+    marginTop: -20,
+    marginBottom: 8,
+    zIndex: 11,
   },
   filterRow: {
-    flexDirection: 'row',
     paddingHorizontal: SIZES.margin,
     paddingVertical: 12,
     gap: 8,
   },
   filterTab: {
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    borderRadius: 20,
+    paddingHorizontal: 24,
+    paddingVertical: 10,
+    borderRadius: 24,
     backgroundColor: COLORS.white,
-    borderWidth: 1,
-    borderColor: COLORS.border,
+    ...SHADOWS.small,
   },
   filterTabActive: {
     backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary,
   },
   filterText: {
     fontSize: SIZES.md,
     color: COLORS.textSecondary,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   filterTextActive: {
     color: COLORS.white,
+    fontWeight: '700',
   },
   loadingContainer: {
     flex: 1,
@@ -266,83 +278,95 @@ const styles = StyleSheet.create({
   listContent: {
     paddingHorizontal: SIZES.margin,
     paddingBottom: 40,
+    paddingTop: 8,
   },
   transactionCard: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: COLORS.white,
     borderRadius: SIZES.borderRadius,
-    padding: 14,
-    marginBottom: 8,
+    padding: 16,
+    marginBottom: 12,
   },
   txIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
   },
   txInfo: {
     flex: 1,
-    marginLeft: 12,
+    marginLeft: 16,
   },
   txCategory: {
-    fontSize: SIZES.md,
-    fontWeight: '600',
+    fontSize: SIZES.base,
+    fontWeight: '700',
     color: COLORS.text,
   },
   txDescription: {
     fontSize: SIZES.sm,
     color: COLORS.textSecondary,
-    marginTop: 2,
+    marginTop: 4,
   },
   txDate: {
-    fontSize: SIZES.xs,
+    fontSize: 11,
     color: COLORS.textLight,
-    marginTop: 2,
+    marginTop: 6,
+    fontWeight: '500',
   },
   txRight: {
     alignItems: 'flex-end',
   },
   txAmount: {
     fontSize: SIZES.base,
-    fontWeight: 'bold',
+    fontWeight: '800',
   },
   tagRow: {
     flexDirection: 'row',
-    marginTop: 4,
-    gap: 4,
+    marginTop: 8,
+    gap: 6,
   },
   tag: {
-    backgroundColor: COLORS.background,
-    borderRadius: 6,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
   },
   tagText: {
-    fontSize: 9,
-    color: COLORS.textSecondary,
+    fontSize: 10,
+    fontWeight: '600',
   },
   emptyState: {
     alignItems: 'center',
     paddingVertical: 60,
   },
+  emptyIconBg: {
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    backgroundColor: COLORS.white,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+    ...SHADOWS.small,
+  },
   emptyText: {
     fontSize: SIZES.base,
+    fontWeight: '700',
     color: COLORS.textSecondary,
-    marginTop: 12,
   },
   hintContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 8,
-    gap: 4,
+    paddingVertical: 12,
+    gap: 6,
     backgroundColor: COLORS.background,
   },
   hintText: {
     fontSize: SIZES.xs,
     color: COLORS.textLight,
+    fontWeight: '500',
   },
 });
 

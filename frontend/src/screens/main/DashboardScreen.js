@@ -126,132 +126,153 @@ const DashboardScreen = ({ navigation }) => {
         </TouchableOpacity>
       </Modal>
 
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={{ flex: 1 }}>
-          <Text style={styles.greeting}>{t('hello')}, {user?.username || 'User'}!</Text>
-          <Text style={styles.headerSubtext}>{t('financialOverview')}</Text>
+      {/* Header and Balance Section */}
+      <View style={styles.headerContainer}>
+        <View style={styles.headerTop}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.greeting}>{t('hello')}, {user?.username || 'User'}!</Text>
+            <Text style={styles.headerSubtext}>{t('financialOverview')}</Text>
+          </View>
+          <View style={styles.headerActions}>
+            <TouchableOpacity style={styles.langButton} onPress={() => setLangModalVisible(true)}>
+              <Ionicons name="language" size={16} color={COLORS.white} />
+              <Text style={styles.langButtonText}>{LANGUAGES.find(l => l.code === language)?.flag}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.alertButton} onPress={() => navigation.navigate('Alerts')}>
+              <Ionicons name="notifications-outline" size={22} color={COLORS.white} />
+              {(unreadAlerts + smartUnread) > 0 && (
+                <View style={styles.alertBadge}>
+                  <Text style={styles.alertBadgeText}>{unreadAlerts + smartUnread}</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          </View>
         </View>
-        <TouchableOpacity style={styles.langButton} onPress={() => setLangModalVisible(true)}>
-          <Ionicons name="language" size={18} color={COLORS.white} />
-          <Text style={styles.langButtonText}>{LANGUAGES.find(l => l.code === language)?.flag}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.alertButton} onPress={() => navigation.navigate('Alerts')}>
-          <Ionicons name="notifications-outline" size={24} color={COLORS.white} />
-          {(unreadAlerts + smartUnread) > 0 && (
-            <View style={styles.alertBadge}>
-              <Text style={styles.alertBadgeText}>{unreadAlerts + smartUnread}</Text>
+
+        {/* Balance Area */}
+        <View style={styles.balanceArea}>
+          <Text style={styles.balanceLabel}>{t('currentBalance')}</Text>
+          <Text style={styles.balanceAmount}>{formatCurrency(summary?.balance)}</Text>
+          
+          <View style={styles.balanceRow}>
+            <View style={styles.balanceStat}>
+              <View style={styles.statLabelRow}>
+                <Ionicons name="arrow-down-circle" size={16} color="#34D399" />
+                <Text style={styles.statLabel}>{t('income')}</Text>
+              </View>
+              <Text style={styles.statValue}>{formatCurrency(summary?.totalIncome)}</Text>
             </View>
-          )}
-        </TouchableOpacity>
-      </View>
-
-      {/* Gamification Banner */}
-      <GamificationBanner />
-
-      {/* Balance Card */}
-      <View style={styles.balanceCard}>
-        <Text style={styles.balanceLabel}>{t('currentBalance')}</Text>
-        <Text style={styles.balanceAmount}>{formatCurrency(summary?.balance)}</Text>
-        <View style={styles.balanceRow}>
-          <View style={styles.balanceStat}>
-            <View style={[styles.statDot, { backgroundColor: COLORS.income }]} />
-            <Text style={styles.statLabel}>{t('income')}</Text>
-            <Text style={styles.statValue}>{formatCurrency(summary?.totalIncome)}</Text>
-          </View>
-          <View style={styles.balanceDivider} />
-          <View style={styles.balanceStat}>
-            <View style={[styles.statDot, { backgroundColor: COLORS.expense }]} />
-            <Text style={styles.statLabel}>{t('expenses')}</Text>
-            <Text style={styles.statValue}>{formatCurrency(summary?.totalExpense)}</Text>
+            <View style={styles.balanceDivider} />
+            <View style={styles.balanceStat}>
+              <View style={styles.statLabelRow}>
+                <Ionicons name="arrow-up-circle" size={16} color="#F87171" />
+                <Text style={styles.statLabel}>{t('expenses')}</Text>
+              </View>
+              <Text style={styles.statValue}>{formatCurrency(summary?.totalExpense)}</Text>
+            </View>
           </View>
         </View>
       </View>
 
-      {/* Quick Actions */}
-      <View style={styles.quickActions}>
-        <TouchableOpacity
-          style={[styles.actionButton, { backgroundColor: COLORS.income }]}
-          onPress={() => navigation.navigate('AddTransaction', { type: 'income' })}
-        >
-          <Ionicons name="add-circle" size={24} color={COLORS.white} />
-          <Text style={styles.actionText}>{t('addIncome')}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.actionButton, { backgroundColor: COLORS.expense }]}
-          onPress={() => navigation.navigate('AddTransaction', { type: 'expense' })}
-        >
-          <Ionicons name="remove-circle" size={24} color={COLORS.white} />
-          <Text style={styles.actionText}>{t('addExpense')}</Text>
-        </TouchableOpacity>
-      </View>
+      <View style={styles.mainContent}>
+        {/* Gamification Banner */}
+        <View style={styles.bannerWrapper}>
+          <GamificationBanner />
+        </View>
 
-      {/* Stats Row */}
-      <View style={styles.statsRow}>
-        <View style={[styles.statCard, SHADOWS.small]}>
-          <Ionicons name="receipt-outline" size={24} color={COLORS.primary} />
-          <Text style={styles.statCardValue}>{summary?.transactionCount || 0}</Text>
-          <Text style={styles.statCardLabel}>{t('transactions')}</Text>
-        </View>
-        <View style={[styles.statCard, SHADOWS.small]}>
-          <Ionicons name="trending-up" size={24} color={COLORS.income} />
-          <Text style={styles.statCardValue}>{formatCurrency(summary?.avgIncome)}</Text>
-          <Text style={styles.statCardLabel}>{t('avgIncome')}</Text>
-        </View>
-        <View style={[styles.statCard, SHADOWS.small]}>
-          <Ionicons name="trending-down" size={24} color={COLORS.expense} />
-          <Text style={styles.statCardValue}>{formatCurrency(summary?.avgExpense)}</Text>
-          <Text style={styles.statCardLabel}>{t('avgExpense')}</Text>
-        </View>
-      </View>
-
-      {/* Recent Transactions */}
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>{t('recentTransactions')}</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Transactions')}>
-            <Text style={styles.seeAllText}>{t('seeAll')}</Text>
+        {/* Quick Actions */}
+        <View style={styles.quickActions}>
+          <TouchableOpacity
+            style={[styles.actionButton, { backgroundColor: COLORS.income }, SHADOWS.medium]}
+            onPress={() => navigation.navigate('AddTransaction', { type: 'income' })}
+          >
+            <Ionicons name="add-circle" size={22} color={COLORS.white} />
+            <Text style={styles.actionText}>{t('addIncome')}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.actionButton, { backgroundColor: COLORS.expense }, SHADOWS.medium]}
+            onPress={() => navigation.navigate('AddTransaction', { type: 'expense' })}
+          >
+            <Ionicons name="remove-circle" size={22} color={COLORS.white} />
+            <Text style={styles.actionText}>{t('addExpense')}</Text>
           </TouchableOpacity>
         </View>
 
-        {recentTransactions.length === 0 ? (
-          <View style={styles.emptyState}>
-            <Ionicons name="wallet-outline" size={48} color={COLORS.textLight} />
-            <Text style={styles.emptyText}>{t('noTransactionsYet')}</Text>
-            <Text style={styles.emptySubtext}>{t('startTrackingPocket')}</Text>
+        {/* Stats Row */}
+        <View style={styles.statsRow}>
+          <View style={[styles.statCard, SHADOWS.small]}>
+            <View style={[styles.statIconWrapper, { backgroundColor: COLORS.primary + '15' }]}>
+              <Ionicons name="receipt-outline" size={20} color={COLORS.primary} />
+            </View>
+            <Text style={styles.statCardValue}>{summary?.transactionCount || 0}</Text>
+            <Text style={styles.statCardLabel}>{t('transactions')}</Text>
           </View>
-        ) : (
-          recentTransactions.map((tx) => {
-            const catInfo = CATEGORIES[tx.category] || { icon: 'ellipse', color: COLORS.textLight };
-            return (
-              <View key={tx._id} style={[styles.transactionItem, SHADOWS.small]}>
-                <View style={[styles.txIcon, { backgroundColor: catInfo.color + '20' }]}>
-                  <Ionicons name={catInfo.icon} size={20} color={catInfo.color} />
-                </View>
-                <View style={styles.txInfo}>
-                  <Text style={styles.txCategory}>{tx.category}</Text>
-                  <Text style={styles.txDescription} numberOfLines={1}>
-                    {tx.description || t('noDescription')}
-                  </Text>
-                </View>
-                <View style={styles.txRight}>
-                  <Text
-                    style={[
-                      styles.txAmount,
-                      { color: tx.type === 'income' ? COLORS.income : COLORS.expense },
-                    ]}
-                  >
-                    {tx.type === 'income' ? '+' : '-'}{formatCurrency(tx.amount)}
-                  </Text>
-                  <Text style={styles.txDate}>{formatDate(tx.date)}</Text>
-                </View>
-              </View>
-            );
-          })
-        )}
-      </View>
+          <View style={[styles.statCard, SHADOWS.small]}>
+            <View style={[styles.statIconWrapper, { backgroundColor: COLORS.income + '15' }]}>
+              <Ionicons name="trending-up" size={20} color={COLORS.income} />
+            </View>
+            <Text style={styles.statCardValue}>{formatCurrency(summary?.avgIncome)}</Text>
+            <Text style={styles.statCardLabel}>{t('avgIncome')}</Text>
+          </View>
+          <View style={[styles.statCard, SHADOWS.small]}>
+            <View style={[styles.statIconWrapper, { backgroundColor: COLORS.expense + '15' }]}>
+              <Ionicons name="trending-down" size={20} color={COLORS.expense} />
+            </View>
+            <Text style={styles.statCardValue}>{formatCurrency(summary?.avgExpense)}</Text>
+            <Text style={styles.statCardLabel}>{t('avgExpense')}</Text>
+          </View>
+        </View>
 
-      <View style={{ height: 24 }} />
+        {/* Recent Transactions */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>{t('recentTransactions')}</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('Transactions')}>
+              <Text style={styles.seeAllText}>{t('seeAll')}</Text>
+            </TouchableOpacity>
+          </View>
+
+          {recentTransactions.length === 0 ? (
+            <View style={styles.emptyState}>
+              <View style={styles.emptyIconBg}>
+                <Ionicons name="wallet-outline" size={40} color={COLORS.primaryLight} />
+              </View>
+              <Text style={styles.emptyText}>{t('noTransactionsYet')}</Text>
+              <Text style={styles.emptySubtext}>{t('startTrackingPocket')}</Text>
+            </View>
+          ) : (
+            recentTransactions.map((tx) => {
+              const catInfo = CATEGORIES[tx.category] || { icon: 'ellipse', color: COLORS.textLight };
+              return (
+                <View key={tx._id} style={[styles.transactionItem, SHADOWS.small]}>
+                  <View style={[styles.txIcon, { backgroundColor: catInfo.color + '15' }]}>
+                    <Ionicons name={catInfo.icon} size={20} color={catInfo.color} />
+                  </View>
+                  <View style={styles.txInfo}>
+                    <Text style={styles.txCategory}>{tx.category}</Text>
+                    <Text style={styles.txDescription} numberOfLines={1}>
+                      {tx.description || t('noDescription')}
+                    </Text>
+                  </View>
+                  <View style={styles.txRight}>
+                    <Text
+                      style={[
+                        styles.txAmount,
+                        { color: tx.type === 'income' ? COLORS.income : COLORS.text },
+                      ]}
+                    >
+                      {tx.type === 'income' ? '+' : '-'}{formatCurrency(tx.amount)}
+                    </Text>
+                    <Text style={styles.txDate}>{formatDate(tx.date)}</Text>
+                  </View>
+                </View>
+              );
+            })
+          )}
+        </View>
+
+        <View style={{ height: 40 }} />
+      </View>
     </ScrollView>
   );
 };
@@ -267,34 +288,45 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: COLORS.background,
   },
-  header: {
+  headerContainer: {
+    backgroundColor: COLORS.primary,
+    borderBottomLeftRadius: 32,
+    borderBottomRightRadius: 32,
+    paddingTop: 56,
+    paddingBottom: 32,
+    paddingHorizontal: SIZES.paddingLg,
+    ...SHADOWS.large,
+  },
+  headerTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: COLORS.primary,
-    paddingTop: 56,
-    paddingBottom: 20,
-    paddingHorizontal: SIZES.paddingLg,
+    marginBottom: 24,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   greeting: {
-    fontSize: SIZES.xxl,
-    fontWeight: 'bold',
+    fontSize: 26,
+    fontWeight: '800',
     color: COLORS.white,
   },
   headerSubtext: {
-    fontSize: SIZES.md,
-    color: 'rgba(255,255,255,0.7)',
-    marginTop: 2,
+    fontSize: SIZES.sm,
+    color: 'rgba(255,255,255,0.8)',
+    marginTop: 4,
+    fontWeight: '500',
   },
   langButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    borderRadius: 16,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    marginRight: 10,
-    gap: 4,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginRight: 12,
+    gap: 6,
   },
   langButtonText: {
     color: COLORS.white,
@@ -303,16 +335,17 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: COLORS.overlay,
     justifyContent: 'center',
     alignItems: 'center',
   },
   langModal: {
     backgroundColor: COLORS.white,
     borderRadius: SIZES.borderRadiusLg,
-    padding: 20,
-    width: '80%',
-    maxWidth: 320,
+    padding: 24,
+    width: '85%',
+    maxWidth: 340,
+    ...SHADOWS.large,
   },
   langModalTitle: {
     fontSize: SIZES.lg,
@@ -327,29 +360,28 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 16,
     borderRadius: SIZES.borderRadius,
-    marginBottom: 6,
+    marginBottom: 8,
     gap: 12,
+    backgroundColor: COLORS.background,
   },
   langOptionActive: {
     backgroundColor: COLORS.primary + '10',
+    borderColor: COLORS.primary + '30',
+    borderWidth: 1,
   },
   langFlag: {
     fontSize: SIZES.base,
-    fontWeight: 'bold',
-    color: COLORS.textSecondary,
     width: 30,
     textAlign: 'center',
-  },
-  langFlagActive: {
-    color: COLORS.primary,
   },
   langLabel: {
     flex: 1,
     fontSize: SIZES.base,
     color: COLORS.text,
+    fontWeight: '500',
   },
   langLabelActive: {
-    fontWeight: '600',
+    fontWeight: '700',
     color: COLORS.primary,
   },
   alertButton: {
@@ -357,197 +389,231 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: 'rgba(255,255,255,0.15)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   alertBadge: {
     position: 'absolute',
-    top: 0,
-    right: 0,
+    top: -2,
+    right: -2,
     width: 18,
     height: 18,
     borderRadius: 9,
     backgroundColor: COLORS.danger,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: COLORS.primary,
   },
   alertBadgeText: {
     color: COLORS.white,
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: 'bold',
   },
-  balanceCard: {
-    backgroundColor: COLORS.primaryDark,
-    marginHorizontal: SIZES.margin,
-    marginTop: -1,
-    borderRadius: SIZES.borderRadiusLg,
-    padding: SIZES.paddingLg,
+  balanceArea: {
     alignItems: 'center',
-    ...SHADOWS.medium,
+    marginTop: 8,
   },
   balanceLabel: {
-    color: 'rgba(255,255,255,0.7)',
-    fontSize: SIZES.md,
-    marginBottom: 4,
+    color: 'rgba(255,255,255,0.8)',
+    fontSize: SIZES.sm,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    fontWeight: '600',
+    marginBottom: 8,
   },
   balanceAmount: {
     color: COLORS.white,
-    fontSize: 36,
-    fontWeight: 'bold',
-    marginBottom: 16,
+    fontSize: 42,
+    fontWeight: '800',
+    marginBottom: 24,
+    letterSpacing: -1,
   },
   balanceRow: {
     flexDirection: 'row',
     width: '100%',
-    justifyContent: 'space-around',
+    justifyContent: 'space-between',
     alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.15)',
+    borderRadius: SIZES.borderRadiusLg,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
   },
   balanceStat: {
+    flex: 1,
     alignItems: 'center',
   },
-  statDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginBottom: 4,
+  statLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 6,
   },
   statLabel: {
-    color: 'rgba(255,255,255,0.6)',
-    fontSize: SIZES.xs,
-    marginBottom: 2,
+    color: 'rgba(255,255,255,0.9)',
+    fontSize: SIZES.sm,
+    fontWeight: '500',
   },
   statValue: {
     color: COLORS.white,
     fontSize: SIZES.lg,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   balanceDivider: {
     width: 1,
-    height: 40,
+    height: 30,
     backgroundColor: 'rgba(255,255,255,0.2)',
+    marginHorizontal: 12,
+  },
+  mainContent: {
+    flex: 1,
+    marginTop: -20,
+  },
+  bannerWrapper: {
+    marginHorizontal: SIZES.margin,
   },
   quickActions: {
     flexDirection: 'row',
     paddingHorizontal: SIZES.margin,
-    marginTop: 16,
-    gap: 12,
+    marginTop: 20,
+    gap: 16,
   },
   actionButton: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 14,
-    borderRadius: SIZES.borderRadius,
+    paddingVertical: 16,
+    borderRadius: SIZES.borderRadiusLg,
     gap: 8,
   },
   actionText: {
     color: COLORS.white,
-    fontSize: SIZES.md,
-    fontWeight: '600',
+    fontSize: SIZES.base,
+    fontWeight: '700',
   },
   statsRow: {
     flexDirection: 'row',
     paddingHorizontal: SIZES.margin,
-    marginTop: 16,
-    gap: 10,
+    marginTop: 20,
+    gap: 12,
   },
   statCard: {
     flex: 1,
     backgroundColor: COLORS.white,
     borderRadius: SIZES.borderRadius,
-    padding: 12,
+    padding: 16,
     alignItems: 'center',
   },
+  statIconWrapper: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+  },
   statCardValue: {
-    fontSize: SIZES.md,
-    fontWeight: 'bold',
+    fontSize: SIZES.base,
+    fontWeight: '800',
     color: COLORS.text,
-    marginTop: 6,
   },
   statCardLabel: {
     fontSize: SIZES.xs,
-    color: COLORS.textSecondary,
-    marginTop: 2,
+    color: COLORS.textLight,
+    marginTop: 4,
+    fontWeight: '500',
   },
   section: {
-    marginTop: 20,
+    marginTop: 24,
     paddingHorizontal: SIZES.margin,
   },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 16,
   },
   sectionTitle: {
     fontSize: SIZES.lg,
-    fontWeight: 'bold',
+    fontWeight: '800',
     color: COLORS.text,
   },
   seeAllText: {
     color: COLORS.primary,
-    fontSize: SIZES.md,
-    fontWeight: '500',
+    fontSize: SIZES.sm,
+    fontWeight: '700',
   },
   emptyState: {
     alignItems: 'center',
-    paddingVertical: 32,
+    paddingVertical: 40,
     backgroundColor: COLORS.white,
-    borderRadius: SIZES.borderRadius,
+    borderRadius: SIZES.borderRadiusLg,
+    ...SHADOWS.small,
+  },
+  emptyIconBg: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: COLORS.background,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
   },
   emptyText: {
     fontSize: SIZES.base,
-    fontWeight: '600',
+    fontWeight: '700',
     color: COLORS.text,
-    marginTop: 12,
   },
   emptySubtext: {
     fontSize: SIZES.sm,
     color: COLORS.textSecondary,
-    marginTop: 4,
+    marginTop: 6,
+    textAlign: 'center',
+    paddingHorizontal: 32,
   },
   transactionItem: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: COLORS.white,
     borderRadius: SIZES.borderRadius,
-    padding: 14,
-    marginBottom: 8,
+    padding: 16,
+    marginBottom: 12,
   },
   txIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
   },
   txInfo: {
     flex: 1,
-    marginLeft: 12,
+    marginLeft: 16,
   },
   txCategory: {
-    fontSize: SIZES.md,
-    fontWeight: '600',
+    fontSize: SIZES.base,
+    fontWeight: '700',
     color: COLORS.text,
   },
   txDescription: {
     fontSize: SIZES.sm,
     color: COLORS.textSecondary,
-    marginTop: 2,
+    marginTop: 4,
   },
   txRight: {
     alignItems: 'flex-end',
   },
   txAmount: {
-    fontSize: SIZES.md,
-    fontWeight: 'bold',
+    fontSize: SIZES.base,
+    fontWeight: '800',
   },
   txDate: {
-    fontSize: SIZES.xs,
+    fontSize: 11,
     color: COLORS.textLight,
-    marginTop: 2,
+    marginTop: 6,
+    fontWeight: '500',
   },
 });
 

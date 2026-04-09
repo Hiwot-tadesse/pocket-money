@@ -141,30 +141,32 @@ const BudgetsScreen = ({ navigation }) => {
       </View>
 
       {/* Summary Card */}
-      {summary && (
-        <View style={[styles.summaryCard, SHADOWS.medium]}>
-          <View style={styles.summaryRow}>
-            <View style={styles.summaryItem}>
-              <Text style={styles.summaryLabel}>{t('totalBudget')}</Text>
-              <Text style={styles.summaryValue}>{formatCurrency(summary.totalBudget)}</Text>
-            </View>
-            <View style={styles.summaryDivider} />
-            <View style={styles.summaryItem}>
-              <Text style={styles.summaryLabel}>{t('totalSpent')}</Text>
-              <Text style={[styles.summaryValue, { color: COLORS.expense }]}>
-                {formatCurrency(summary.totalSpent)}
-              </Text>
-            </View>
-            <View style={styles.summaryDivider} />
-            <View style={styles.summaryItem}>
-              <Text style={styles.summaryLabel}>{t('remaining')}</Text>
-              <Text style={[styles.summaryValue, { color: COLORS.income }]}>
-                {formatCurrency(summary.totalRemaining)}
-              </Text>
+      <View style={styles.summaryWrapper}>
+        {summary && (
+          <View style={[styles.summaryCard, SHADOWS.medium]}>
+            <View style={styles.summaryRow}>
+              <View style={styles.summaryItem}>
+                <Text style={styles.summaryLabel}>{t('totalBudget')}</Text>
+                <Text style={styles.summaryValue}>{formatCurrency(summary.totalBudget)}</Text>
+              </View>
+              <View style={styles.summaryDivider} />
+              <View style={styles.summaryItem}>
+                <Text style={styles.summaryLabel}>{t('totalSpent')}</Text>
+                <Text style={[styles.summaryValue, { color: COLORS.expense }]}>
+                  {formatCurrency(summary.totalSpent)}
+                </Text>
+              </View>
+              <View style={styles.summaryDivider} />
+              <View style={styles.summaryItem}>
+                <Text style={styles.summaryLabel}>{t('remaining')}</Text>
+                <Text style={[styles.summaryValue, { color: COLORS.income }]}>
+                  {formatCurrency(summary.totalRemaining)}
+                </Text>
+              </View>
             </View>
           </View>
-        </View>
-      )}
+        )}
+      </View>
 
       {/* Budgets List */}
       {loading ? (
@@ -182,7 +184,9 @@ const BudgetsScreen = ({ navigation }) => {
           }
           ListEmptyComponent={
             <View style={styles.emptyState}>
-              <Ionicons name="pie-chart-outline" size={48} color={COLORS.textLight} />
+              <View style={styles.emptyIconBg}>
+                <Ionicons name="pie-chart-outline" size={48} color={COLORS.primaryLight} />
+              </View>
               <Text style={styles.emptyText}>{t('noBudgetsSet')}</Text>
               <Text style={styles.emptySubtext}>{t('tapToCreateBudget')}</Text>
             </View>
@@ -209,27 +213,35 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     backgroundColor: COLORS.primary,
     paddingTop: 56,
-    paddingBottom: 16,
+    paddingBottom: 40,
     paddingHorizontal: SIZES.paddingLg,
+    borderBottomLeftRadius: 32,
+    borderBottomRightRadius: 32,
+    ...SHADOWS.large,
+    zIndex: 10,
   },
   headerTitle: {
-    fontSize: SIZES.xxl,
-    fontWeight: 'bold',
+    fontSize: 28,
+    fontWeight: '800',
     color: COLORS.white,
+    letterSpacing: -0.5,
   },
   addBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255,255,255,0.15)',
     alignItems: 'center',
     justifyContent: 'center',
   },
+  summaryWrapper: {
+    marginTop: -28,
+    marginHorizontal: SIZES.margin,
+    zIndex: 11,
+  },
   summaryCard: {
     backgroundColor: COLORS.white,
-    marginHorizontal: SIZES.margin,
-    marginTop: 16,
-    borderRadius: SIZES.borderRadius,
+    borderRadius: SIZES.borderRadiusLg,
     padding: SIZES.padding,
   },
   summaryRow: {
@@ -243,17 +255,19 @@ const styles = StyleSheet.create({
   summaryLabel: {
     fontSize: SIZES.xs,
     color: COLORS.textSecondary,
-    marginBottom: 4,
+    marginBottom: 6,
+    fontWeight: '500',
+    textTransform: 'uppercase',
   },
   summaryValue: {
     fontSize: SIZES.base,
-    fontWeight: 'bold',
+    fontWeight: '800',
     color: COLORS.text,
   },
   summaryDivider: {
     width: 1,
-    height: 32,
-    backgroundColor: COLORS.border,
+    height: 36,
+    backgroundColor: COLORS.divider,
   },
   loadingContainer: {
     flex: 1,
@@ -262,54 +276,58 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingHorizontal: SIZES.margin,
-    paddingTop: 12,
+    paddingTop: 16,
     paddingBottom: 24,
   },
   budgetCard: {
     backgroundColor: COLORS.white,
     borderRadius: SIZES.borderRadius,
     padding: SIZES.padding,
-    marginBottom: 10,
+    marginBottom: 16,
   },
   budgetHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 16,
   },
   budgetCatRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 12,
   },
   catIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
   },
   budgetCategory: {
     fontSize: SIZES.md,
-    fontWeight: '600',
+    fontWeight: '700',
     color: COLORS.text,
   },
   budgetPeriod: {
     fontSize: SIZES.xs,
     color: COLORS.textSecondary,
     textTransform: 'capitalize',
+    marginTop: 2,
+    fontWeight: '500',
   },
   budgetAmounts: {
     alignItems: 'flex-end',
   },
   budgetSpent: {
-    fontSize: SIZES.base,
-    fontWeight: 'bold',
+    fontSize: SIZES.lg,
+    fontWeight: '800',
     color: COLORS.text,
   },
   budgetLimit: {
     fontSize: SIZES.xs,
     color: COLORS.textSecondary,
+    fontWeight: '500',
+    marginTop: 2,
   },
   progressBarBg: {
     height: 8,
@@ -324,42 +342,53 @@ const styles = StyleSheet.create({
   budgetFooter: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 8,
+    marginTop: 10,
   },
   percentText: {
     fontSize: SIZES.xs,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   remainingText: {
     fontSize: SIZES.xs,
     color: COLORS.textSecondary,
+    fontWeight: '500',
   },
   emptyState: {
     alignItems: 'center',
     paddingVertical: 60,
   },
+  emptyIconBg: {
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    backgroundColor: COLORS.white,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+    ...SHADOWS.small,
+  },
   emptyText: {
     fontSize: SIZES.base,
-    fontWeight: '600',
+    fontWeight: '700',
     color: COLORS.text,
-    marginTop: 12,
   },
   emptySubtext: {
     fontSize: SIZES.sm,
     color: COLORS.textSecondary,
-    marginTop: 4,
+    marginTop: 6,
   },
   hintContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 8,
-    gap: 4,
+    paddingVertical: 12,
+    gap: 6,
     backgroundColor: COLORS.background,
   },
   hintText: {
     fontSize: SIZES.xs,
     color: COLORS.textLight,
+    fontWeight: '500',
   },
 });
 

@@ -316,148 +316,175 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
-    gap: 10,
-  },
-  levelBadge: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: COLORS.primary,
-    alignItems: 'center',
     justifyContent: 'center',
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: COLORS.primary + '15',
   },
-  bannerInfo: {
+  middleSection: {
     flex: 1,
   },
-  levelRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
   levelText: {
-    fontSize: SIZES.sm,
-    fontWeight: 'bold',
-    color: COLORS.primary,
+    fontSize: SIZES.md,
+    fontWeight: '800',
+    color: COLORS.text,
   },
-  levelTitle: {
-    fontSize: SIZES.sm,
-    color: COLORS.textSecondary,
-    fontWeight: '500',
-  },
-  xpBarBg: {
+  progressContainer: {
     height: 6,
-    backgroundColor: '#E2E8F0',
+    backgroundColor: COLORS.divider,
     borderRadius: 3,
-    marginTop: 6,
+    marginVertical: 6,
     overflow: 'hidden',
   },
-  xpBarFill: {
+  progressBar: {
     height: '100%',
     backgroundColor: COLORS.primary,
     borderRadius: 3,
   },
-  xpText: {
-    fontSize: 10,
-    color: COLORS.textLight,
-    marginTop: 3,
+  pointsText: {
+    fontSize: 11,
+    color: COLORS.textSecondary,
+    fontWeight: '600',
   },
-  bannerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginLeft: 8,
+  rightSection: {
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+    gap: 6,
   },
   streakBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFF7ED',
-    borderRadius: 12,
+    backgroundColor: '#FFFBEB',
     paddingHorizontal: 8,
     paddingVertical: 4,
-    gap: 3,
+    borderRadius: 12,
+    gap: 4,
   },
   streakText: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    color: '#F97316',
-  },
-  badgeCount: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFFBEB',
-    borderRadius: 12,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    gap: 3,
-  },
-  badgeCountText: {
-    fontSize: 12,
-    fontWeight: 'bold',
+    fontSize: 11,
+    fontWeight: '700',
     color: '#D97706',
   },
-
-  // Modal
+  achievementsBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.income + '15',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    gap: 4,
+  },
+  achievementsText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: COLORS.income,
+  },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'flex-end',
+    backgroundColor: COLORS.overlay,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   modalContent: {
     backgroundColor: COLORS.white,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    maxHeight: '85%',
-    paddingTop: 20,
+    width: '90%',
+    maxHeight: '80%',
+    borderRadius: SIZES.borderRadiusLg,
+    padding: SIZES.paddingLg,
+    ...SHADOWS.large,
   },
   modalHeader: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    marginBottom: 16,
+    alignItems: 'center',
+    marginBottom: 20,
   },
   modalTitle: {
-    fontSize: SIZES.xl,
-    fontWeight: 'bold',
+    fontSize: SIZES.lg,
+    fontWeight: '800',
     color: COLORS.text,
   },
-  levelCard: {
-    backgroundColor: '#F8FAFC',
-    marginHorizontal: 16,
-    borderRadius: SIZES.borderRadius,
-    padding: 16,
-    marginBottom: 16,
+  closeButton: {
+    padding: 4,
+    backgroundColor: COLORS.divider,
+    borderRadius: 16,
   },
-  levelCardRow: {
+  achievementsList: {
+    paddingBottom: 20,
+  },
+  // Achievement list
+  achievementList: {
+    paddingHorizontal: 16,
+  },
+  achievementItem: {
     flexDirection: 'row',
     alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    borderRadius: 16,
+    marginBottom: 6,
     gap: 12,
-    marginBottom: 14,
+    backgroundColor: COLORS.white,
   },
-  levelBadgeLg: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: COLORS.primary,
+  achievementLocked: {
+    opacity: 0.6,
+  },
+  achIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  levelCardTitle: {
-    fontSize: SIZES.base,
-    fontWeight: 'bold',
+  achTitle: {
+    fontSize: SIZES.md,
+    fontWeight: '600',
     color: COLORS.text,
-    marginBottom: 8,
   },
-  xpBarBgLg: {
-    height: 8,
-    backgroundColor: '#E2E8F0',
-    borderRadius: 4,
-    overflow: 'hidden',
+  achTitleLocked: {
+    color: COLORS.textSecondary,
   },
-  xpBarFillLg: {
-    height: '100%',
-    backgroundColor: COLORS.primary,
-    borderRadius: 4,
+  achDesc: {
+    fontSize: SIZES.xs,
+    color: COLORS.textSecondary,
+    marginTop: 2,
+  },
+  achievementCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    backgroundColor: COLORS.background,
+    borderRadius: SIZES.borderRadius,
+    marginBottom: 12,
+  },
+  achievementCardUnlocked: {
+    backgroundColor: COLORS.income + '10',
+    borderColor: COLORS.income + '30',
+    borderWidth: 1,
+  },
+  achievementIconWrapper: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: COLORS.white,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...SHADOWS.small,
+  },
+  achievementInfo: {
+    flex: 1,
+    marginLeft: 16,
+  },
+  achievementTitle: {
+    fontSize: SIZES.base,
+    fontWeight: '700',
+    color: COLORS.text,
+  },
+  achievementDesc: {
+    fontSize: SIZES.sm,
+    color: COLORS.textSecondary,
+    marginTop: 4,
   },
   xpTextLg: {
     fontSize: SIZES.xs,
@@ -488,44 +515,6 @@ const styles = StyleSheet.create({
     width: 1,
     height: 32,
     backgroundColor: '#E2E8F0',
-  },
-
-  // Achievement list
-  achievementList: {
-    paddingHorizontal: 16,
-  },
-  achievementItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 12,
-    borderRadius: SIZES.borderRadius,
-    marginBottom: 6,
-    gap: 12,
-    backgroundColor: COLORS.white,
-  },
-  achievementLocked: {
-    opacity: 0.6,
-  },
-  achIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  achTitle: {
-    fontSize: SIZES.md,
-    fontWeight: '600',
-    color: COLORS.text,
-  },
-  achTitleLocked: {
-    color: COLORS.textLight,
-  },
-  achDesc: {
-    fontSize: SIZES.xs,
-    color: COLORS.textSecondary,
-    marginTop: 2,
   },
 });
 

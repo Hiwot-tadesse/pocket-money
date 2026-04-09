@@ -1,26 +1,30 @@
 export const COLORS = {
-  primary: '#4F46E5',
+  primary: '#4338CA', // Deeper indigo
   primaryLight: '#818CF8',
-  primaryDark: '#3730A3',
-  secondary: '#06B6D4',
+  primaryDark: '#312E81',
+  secondary: '#38BDF8', // Cyan
   success: '#10B981',
   warning: '#F59E0B',
   danger: '#EF4444',
-  income: '#10B981',
-  expense: '#EF4444',
+  income: '#10B981', // Emerald
+  expense: '#EF4444', // Red
 
   white: '#FFFFFF',
   black: '#000000',
-  background: '#F8FAFC',
+  background: '#F3F4F6', // Slightly darker soft gray for contrast
   surface: '#FFFFFF',
   card: '#FFFFFF',
-  border: '#E2E8F0',
-  divider: '#F1F5F9',
+  border: '#E5E7EB',
+  divider: '#F3F4F6',
 
-  text: '#1E293B',
-  textSecondary: '#64748B',
-  textLight: '#94A3B8',
-  placeholder: '#CBD5E1',
+  text: '#111827', // Darker text
+  textSecondary: '#4B5563',
+  textLight: '#9CA3AF',
+  placeholder: '#9CA3AF',
+  
+  // Custom glass/overlay
+  overlay: 'rgba(0,0,0,0.4)',
+  glass: 'rgba(255,255,255,0.9)',
 };
 
 export const SIZES = {
@@ -34,30 +38,37 @@ export const SIZES = {
   xxxl: 32,
   title: 28,
 
-  borderRadius: 12,
-  borderRadiusSm: 8,
-  borderRadiusLg: 16,
+  borderRadius: 16,
+  borderRadiusSm: 12,
+  borderRadiusLg: 24,
 
   padding: 16,
   paddingSm: 12,
-  paddingLg: 20,
+  paddingLg: 24,
   margin: 16,
 };
 
 export const SHADOWS = {
   small: {
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
-    shadowRadius: 2,
+    shadowRadius: 4,
     elevation: 2,
   },
   medium: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowColor: '#111827',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
     elevation: 4,
+  },
+  large: {
+    shadowColor: '#111827',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    elevation: 8,
   },
 };
 
