@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { transactionAPI } from '../../services/api';
-import { COLORS, SIZES, CATEGORIES } from '../../constants/theme';
+import { COLORS, SIZES, CATEGORIES, SHADOWS } from '../../constants/theme';
 import { useLanguage } from '../../context/LanguageContext';
 import { useGamification } from '../../context/GamificationContext';
 import { useCustomCategories } from '../../context/CustomCategoriesContext';

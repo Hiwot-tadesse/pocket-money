@@ -14,7 +14,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
-import { COLORS, SIZES } from '../../constants/theme';
+import { COLORS, SIZES, SHADOWS } from '../../constants/theme';
 
 const RegisterScreen = ({ navigation }) => {
   const { register } = useAuth();
