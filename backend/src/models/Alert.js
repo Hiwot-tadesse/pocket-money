@@ -10,7 +10,7 @@ const alertSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ['budget_warning', 'budget_exceeded', 'inactivity', 'milestone', 'general'],
+      enum: ['budget_warning', 'budget_exceeded', 'inactivity', 'milestone', 'general', 'savings_warning', 'savings_critical'],
       required: true,
     },
     title: {

@@ -2,7 +2,7 @@ const { validationResult } = require('express-validator');
 const Transaction = require('../models/Transaction');
 const Budget = require('../models/Budget');
 const { autoCategorize, getSuggestions } = require('../utils/categorizer');
-const { checkBudgetThresholds } = require('../utils/alertEngine');
+const { checkBudgetThresholds, checkSavingsAlert } = require('../utils/alertEngine');
 
 // @desc    Create a new transaction
 // @route   POST /api/transactions
@@ -13,7 +13,7 @@ const createTransaction = async (req, res, next) => {
       return res.status(400).json({ success: false, errors: errors.array() });
     }
 
-    let { type, amount, category, description, date, tags, isRecurring, recurringInterval } = req.body;
+    let { type, amount, category, description, date, tags, isRecurring, recurringInterval, recurringCustomLabel } = req.body;
 
     // Auto-categorize if no category provided
     if (!category && description) {
@@ -30,6 +30,7 @@ const createTransaction = async (req, res, next) => {
       tags: tags || [],
       isRecurring: isRecurring || false,
       recurringInterval: recurringInterval || null,
+      recurringCustomLabel: recurringCustomLabel || null,
     });
 
     // Update budget spent amount if it's an expense
@@ -38,9 +39,10 @@ const createTransaction = async (req, res, next) => {
         { user: req.user._id, category, isActive: true },
         { $inc: { spent: amount } }
       );
-      // Check budget thresholds and trigger alerts
       await checkBudgetThresholds(req.user._id, transaction);
     }
+    // Check savings ratio after every transaction
+    await checkSavingsAlert(req.user._id);
 
     res.status(201).json({
       success: true,

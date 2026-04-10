@@ -130,9 +130,73 @@ const getStartOfPeriod = (period) => {
   }
 };
 
+/**
+ * Check income vs expense ratio and alert when spending is too high.
+ * @param {ObjectId} userId
+ */
+const checkSavingsAlert = async (userId) => {
+  try {
+    const Transaction = require('../models/Transaction');
+    const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+
+    const [incomeResult, expenseResult] = await Promise.all([
+      Transaction.aggregate([
+        { $match: { user: userId, type: 'income', date: { $gte: startOfMonth } } },
+        { $group: { _id: null, total: { $sum: '$amount' } } },
+      ]),
+      Transaction.aggregate([
+        { $match: { user: userId, type: 'expense', date: { $gte: startOfMonth } } },
+        { $group: { _id: null, total: { $sum: '$amount' } } },
+      ]),
+    ]);
+
+    const totalIncome = incomeResult[0]?.total || 0;
+    const totalExpenses = expenseResult[0]?.total || 0;
+
+    if (totalIncome === 0) return;
+
+    const ratio = (totalExpenses / totalIncome) * 100;
+
+    if (ratio >= 90) {
+      const existing = await Alert.findOne({
+        user: userId,
+        type: 'savings_critical',
+        createdAt: { $gte: startOfMonth },
+      });
+      if (!existing) {
+        await Alert.create({
+          user: userId,
+          type: 'savings_critical',
+          title: 'Almost Out of Money!',
+          message: `You have spent ${ratio.toFixed(0)}% of this month's income (ETB ${totalExpenses.toFixed(2)} of ETB ${totalIncome.toFixed(2)}). Reduce spending and try to save more.`,
+          threshold: 90,
+        });
+      }
+    } else if (ratio >= 70) {
+      const existing = await Alert.findOne({
+        user: userId,
+        type: 'savings_warning',
+        createdAt: { $gte: startOfMonth },
+      });
+      if (!existing) {
+        await Alert.create({
+          user: userId,
+          type: 'savings_warning',
+          title: 'Save More This Month',
+          message: `You have spent ${ratio.toFixed(0)}% of this month's income (ETB ${totalExpenses.toFixed(2)} of ETB ${totalIncome.toFixed(2)}). Aim to save at least 30% each month.`,
+          threshold: 70,
+        });
+      }
+    }
+  } catch (error) {
+    console.error('Error checking savings alert:', error.message);
+  }
+};
+
 module.exports = {
   checkBudgetThresholds,
   checkInactivity,
+  checkSavingsAlert,
   BUDGET_WARNING_THRESHOLD,
   INACTIVITY_DAYS,
 };

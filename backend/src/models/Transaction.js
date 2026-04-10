@@ -10,7 +10,12 @@ const CATEGORIES = [
   'Bills & Utilities',
   'Gifts',
   'Savings',
+  // Income sources
+  'Salary',
   'Allowance',
+  'Family Support',
+  'NGO/Grant',
+  'Bank Loan',
   'Part-time Job',
   'Freelance',
   'Other Income',
@@ -63,7 +68,12 @@ const transactionSchema = new mongoose.Schema(
     },
     recurringInterval: {
       type: String,
-      enum: ['daily', 'weekly', 'monthly', null],
+      enum: ['daily', 'weekly', 'monthly', 'yearly', 'one-time', 'custom', null],
+      default: null,
+    },
+    recurringCustomLabel: {
+      type: String,
+      trim: true,
       default: null,
     },
   },

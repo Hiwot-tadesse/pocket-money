@@ -24,9 +24,18 @@ const EXPENSE_CATEGORIES = [
   'Savings', 'Other Expense',
 ];
 
-const INCOME_CATEGORIES = [
-  'Allowance', 'Part-time Job', 'Freelance', 'Gifts',
-  'Savings', 'Other Income',
+const INCOME_SOURCES = [
+  'Salary', 'Allowance', 'Family Support', 'NGO/Grant',
+  'Bank Loan', 'Part-time Job', 'Freelance', 'Other Income',
+];
+
+const FREQUENCY_OPTIONS = [
+  { label: 'Monthly', value: 'monthly', icon: 'calendar' },
+  { label: 'Weekly', value: 'weekly', icon: 'calendar-outline' },
+  { label: 'Daily', value: 'daily', icon: 'sunny-outline' },
+  { label: 'Yearly', value: 'yearly', icon: 'globe-outline' },
+  { label: 'One-time', value: 'one-time', icon: 'radio-button-on' },
+  { label: 'Custom', value: 'custom', icon: 'create-outline' },
 ];
 
 const AddTransactionScreen = ({ navigation, route }) => {
@@ -40,16 +49,19 @@ const AddTransactionScreen = ({ navigation, route }) => {
   const [category, setCategory] = useState('');
   const [customCategoryName, setCustomCategoryName] = useState('');
   const [tags, setTags] = useState('');
+  const [frequency, setFrequency] = useState('monthly');
+  const [customFrequency, setCustomFrequency] = useState('');
   const [loading, setLoading] = useState(false);
 
   const isOtherSelected = category === 'Other Expense' || category === 'Other Income';
 
   const categories = useMemo(() => {
-    const base = type === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
-    const custom = getCategories(type);
-    const otherKey = type === 'income' ? 'Other Income' : 'Other Expense';
-    const withoutOther = base.filter((c) => c !== otherKey);
-    return [...withoutOther, ...custom, otherKey];
+    if (type === 'income') {
+      const custom = getCategories('income');
+      return [...INCOME_SOURCES.filter(c => c !== 'Other Income'), ...custom, 'Other Income'];
+    }
+    const custom = getCategories('expense');
+    return [...EXPENSE_CATEGORIES.filter(c => c !== 'Other Expense'), ...custom, 'Other Expense'];
   }, [type, getCategories]);
 
   const handleSubmit = async () => {
@@ -79,11 +91,18 @@ const AddTransactionScreen = ({ navigation, route }) => {
         amount: parseFloat(amount),
         category: finalCategory,
         description: description.trim(),
-        tags: tags
-          .split(',')
-          .map((tag) => tag.trim())
-          .filter(Boolean),
+        tags: type === 'expense'
+          ? tags.split(',').map((t) => t.trim()).filter(Boolean)
+          : [],
       };
+
+      if (type === 'income') {
+        data.isRecurring = frequency !== 'one-time';
+        data.recurringInterval = frequency;
+        if (frequency === 'custom') {
+          data.recurringCustomLabel = customFrequency.trim();
+        }
+      }
 
       await transactionAPI.create(data);
       onTransactionAdded(type, parseFloat(amount));
@@ -150,14 +169,17 @@ const AddTransactionScreen = ({ navigation, route }) => {
 
         {/* Details Card */}
         <View style={styles.formCard}>
-          <Text style={styles.formCardTitle}>{t('details')}</Text>
+          <Text style={styles.formCardTitle}>{type === 'income' ? 'Income Details' : t('details')}</Text>
 
-          <Text style={styles.fieldLabel}>{t('description')}</Text>
+          <Text style={styles.fieldLabel}>
+            {type === 'income' ? 'Where did you get this money?' : t('description')}
+            {type === 'income' && <Text style={styles.optionalTag}> (Optional)</Text>}
+          </Text>
           <View style={styles.inputContainer}>
             <Ionicons name="create-outline" size={20} color={COLORS.primary} style={styles.inputIcon} />
             <TextInput
               style={styles.input}
-              placeholder={t('whatWasThisFor')}
+              placeholder={type === 'income' ? 'e.g. Monthly salary from ABC Company' : t('whatWasThisFor')}
               placeholderTextColor={COLORS.placeholder}
               value={description}
               onChangeText={setDescription}
@@ -165,22 +187,65 @@ const AddTransactionScreen = ({ navigation, route }) => {
             />
           </View>
 
-          <Text style={[styles.fieldLabel, { marginTop: 16 }]}>{t('tagsCommaSeparated')}</Text>
-          <View style={styles.inputContainer}>
-            <Ionicons name="pricetag-outline" size={20} color={COLORS.primary} style={styles.inputIcon} />
-            <TextInput
-              style={styles.input}
-              placeholder={t('tagsPlaceholder')}
-              placeholderTextColor={COLORS.placeholder}
-              value={tags}
-              onChangeText={setTags}
-            />
-          </View>
+          {type === 'expense' && (
+            <>
+              <Text style={[styles.fieldLabel, { marginTop: 16 }]}>{t('tagsCommaSeparated')}</Text>
+              <View style={styles.inputContainer}>
+                <Ionicons name="pricetag-outline" size={20} color={COLORS.primary} style={styles.inputIcon} />
+                <TextInput
+                  style={styles.input}
+                  placeholder={t('tagsPlaceholder')}
+                  placeholderTextColor={COLORS.placeholder}
+                  value={tags}
+                  onChangeText={setTags}
+                />
+              </View>
+            </>
+          )}
         </View>
 
-        {/* Category Selection */}
+        {/* Frequency Picker — income only */}
+        {type === 'income' && (
+          <View style={styles.formCard}>
+            <Text style={styles.formCardTitle}>How Often Do You Get This?</Text>
+            <View style={styles.frequencyGrid}>
+              {FREQUENCY_OPTIONS.map((f) => (
+                <TouchableOpacity
+                  key={f.value}
+                  style={[styles.freqChip, frequency === f.value && styles.freqChipActive]}
+                  onPress={() => setFrequency(f.value)}
+                >
+                  <Ionicons
+                    name={f.icon}
+                    size={16}
+                    color={frequency === f.value ? COLORS.white : COLORS.income}
+                  />
+                  <Text style={[styles.freqChipText, frequency === f.value && styles.freqChipTextActive]}>
+                    {f.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            {frequency === 'custom' && (
+              <View style={[styles.inputContainer, { marginTop: 14, borderWidth: 1.5, borderColor: COLORS.income, borderStyle: 'dashed' }]}>
+                <Ionicons name="create-outline" size={20} color={COLORS.income} style={styles.inputIcon} />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Describe your schedule (e.g. Every 2 weeks)"
+                  placeholderTextColor={COLORS.placeholder}
+                  value={customFrequency}
+                  onChangeText={setCustomFrequency}
+                  autoFocus
+                  maxLength={60}
+                />
+              </View>
+            )}
+          </View>
+        )}
+
+        {/* Category / Source Selection */}
         <View style={styles.formCard}>
-          <Text style={styles.formCardTitle}>{t('category')}</Text>
+          <Text style={styles.formCardTitle}>{type === 'income' ? 'Income Source' : t('category')}</Text>
           {category !== '' && (
             <View style={[styles.selectedBadge, { backgroundColor: (CATEGORIES[category]?.color || COLORS.primary) + '15' }]}>
               <Ionicons name={CATEGORIES[category]?.icon || 'ellipse'} size={14} color={CATEGORIES[category]?.color || COLORS.primary} />
@@ -445,6 +510,39 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 10,
+  },
+  frequencyGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  freqChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 24,
+    backgroundColor: COLORS.white,
+    borderWidth: 1.5,
+    borderColor: COLORS.income + '60',
+    gap: 6,
+  },
+  freqChipActive: {
+    backgroundColor: COLORS.income,
+    borderColor: COLORS.income,
+  },
+  freqChipText: {
+    fontSize: SIZES.sm,
+    color: COLORS.income,
+    fontWeight: '700',
+  },
+  freqChipTextActive: {
+    color: COLORS.white,
+  },
+  optionalTag: {
+    fontWeight: '400',
+    color: COLORS.textLight,
+    fontStyle: 'italic',
   },
   categoryChip: {
     flexDirection: 'row',
