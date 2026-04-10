@@ -135,7 +135,7 @@ const DashboardScreen = ({ navigation }) => {
           </View>
           <View style={styles.headerActions}>
             <TouchableOpacity style={styles.langButton} onPress={() => setLangModalVisible(true)}>
-              <Ionicons name="language" size={16} color={COLORS.white} />
+              <Ionicons name="globe-outline" size={16} color={COLORS.white} />
               <Text style={styles.langButtonText}>{LANGUAGES.find(l => l.code === language)?.flag}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.alertButton} onPress={() => navigation.navigate('Alerts')}>
