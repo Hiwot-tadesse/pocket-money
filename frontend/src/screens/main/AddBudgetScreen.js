@@ -101,8 +101,8 @@ const AddBudgetScreen = ({ navigation }) => {
         </View>
 
         {/* Budget Limit */}
-        <View style={styles.amountContainer}>
-          <Text style={styles.amountLabel}>{t('setBudgetLimit')}</Text>
+        <View style={styles.amountCard}>
+          <Text style={styles.amountCardLabel}>{t('setBudgetLimit')}</Text>
           <View style={styles.amountRow}>
             <Text style={styles.currencySymbol}>ETB</Text>
             <TextInput
@@ -112,13 +112,16 @@ const AddBudgetScreen = ({ navigation }) => {
               value={limit}
               onChangeText={setLimit}
               keyboardType="decimal-pad"
+              autoFocus
             />
           </View>
+          <View style={styles.amountUnderline} />
+          <Text style={styles.amountHint}>{t('budgetPeriod')}: <Text style={{ fontWeight: '700', color: COLORS.primary }}>{t(period)}</Text></Text>
         </View>
 
         {/* Period Selection */}
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>{t('budgetPeriod')}</Text>
+        <View style={styles.formCard}>
+          <Text style={styles.formCardTitle}>{t('budgetPeriod')}</Text>
           <View style={styles.periodRow}>
             {PERIOD_KEYS.map((p) => (
               <TouchableOpacity
@@ -126,6 +129,7 @@ const AddBudgetScreen = ({ navigation }) => {
                 style={[styles.periodBtn, period === p.value && styles.periodBtnActive]}
                 onPress={() => setPeriod(p.value)}
               >
+                {period === p.value && <Ionicons name="checkmark-circle" size={16} color={COLORS.white} style={{ marginBottom: 4 }} />}
                 <Text style={[styles.periodText, period === p.value && styles.periodTextActive]}>
                   {t(p.labelKey)}
                 </Text>
@@ -135,8 +139,14 @@ const AddBudgetScreen = ({ navigation }) => {
         </View>
 
         {/* Category Selection */}
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>{t('category')}</Text>
+        <View style={styles.formCard}>
+          <Text style={styles.formCardTitle}>{t('category')}</Text>
+          {category !== '' && (
+            <View style={[styles.selectedBadge, { backgroundColor: (CATEGORIES[category]?.color || COLORS.primary) + '15' }]}>
+              <Ionicons name={CATEGORIES[category]?.icon || 'ellipse'} size={14} color={CATEGORIES[category]?.color || COLORS.primary} />
+              <Text style={[styles.selectedBadgeText, { color: CATEGORIES[category]?.color || COLORS.primary }]}>{category}</Text>
+            </View>
+          )}
           <View style={styles.categoryGrid}>
             {allBudgetCategories.map((cat) => {
               const catInfo = CATEGORIES[cat] || { icon: 'ellipse', color: COLORS.textLight };
@@ -239,32 +249,82 @@ const styles = StyleSheet.create({
     color: COLORS.white,
     letterSpacing: -0.5,
   },
-  amountContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginVertical: 32,
-    paddingHorizontal: SIZES.margin,
-  },
-  amountLabel: {
-    fontSize: SIZES.md,
-    color: COLORS.textSecondary,
+  amountCard: {
+    backgroundColor: COLORS.white,
+    marginHorizontal: SIZES.margin,
+    marginTop: 20,
     marginBottom: 8,
+    borderRadius: SIZES.borderRadiusLg,
+    padding: 24,
+    alignItems: 'center',
+    ...SHADOWS.medium,
+  },
+  amountCardLabel: {
+    fontSize: SIZES.sm,
+    fontWeight: '700',
+    color: COLORS.textSecondary,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: 12,
   },
   amountRow: {
     flexDirection: 'row',
     alignItems: 'center',
   },
+  amountUnderline: {
+    width: '60%',
+    height: 3,
+    borderRadius: 2,
+    marginTop: 12,
+    backgroundColor: COLORS.primary,
+    opacity: 0.5,
+  },
+  amountHint: {
+    fontSize: SIZES.xs,
+    color: COLORS.textSecondary,
+    marginTop: 10,
+    fontWeight: '500',
+  },
+  formCard: {
+    backgroundColor: COLORS.white,
+    marginHorizontal: SIZES.margin,
+    marginTop: 16,
+    borderRadius: SIZES.borderRadiusLg,
+    padding: 20,
+    ...SHADOWS.small,
+  },
+  formCardTitle: {
+    fontSize: SIZES.sm,
+    fontWeight: '800',
+    color: COLORS.primary,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: 16,
+  },
+  selectedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    marginBottom: 12,
+    gap: 6,
+  },
+  selectedBadgeText: {
+    fontSize: SIZES.sm,
+    fontWeight: '700',
+  },
   currencySymbol: {
     fontSize: 28,
     fontWeight: '800',
-    color: COLORS.text,
+    color: COLORS.textSecondary,
     marginRight: 8,
   },
   amountInput: {
     fontSize: 56,
     fontWeight: '800',
-    color: COLORS.text,
+    color: COLORS.primary,
     minWidth: 140,
     textAlign: 'center',
     letterSpacing: -1,
@@ -294,6 +354,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 14,
     borderRadius: 20,
+    gap: 2,
   },
   periodBtnActive: {
     backgroundColor: COLORS.primary,

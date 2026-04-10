@@ -131,23 +131,30 @@ const AddTransactionScreen = ({ navigation, route }) => {
         </View>
 
         {/* Amount Input */}
-        <View style={styles.amountContainer}>
-          <Text style={styles.currencySymbol}>ETB</Text>
-          <TextInput
-            style={styles.amountInput}
-            placeholder="0.00"
-            placeholderTextColor={COLORS.placeholder}
-            value={amount}
-            onChangeText={setAmount}
-            keyboardType="decimal-pad"
-          />
+        <View style={styles.amountCard}>
+          <Text style={styles.amountCardLabel}>{t('amount')}</Text>
+          <View style={styles.amountRow}>
+            <Text style={styles.currencySymbol}>ETB</Text>
+            <TextInput
+              style={[styles.amountInput, { color: type === 'income' ? COLORS.income : COLORS.expense }]}
+              placeholder="0.00"
+              placeholderTextColor={COLORS.placeholder}
+              value={amount}
+              onChangeText={setAmount}
+              keyboardType="decimal-pad"
+              autoFocus
+            />
+          </View>
+          <View style={[styles.amountUnderline, { backgroundColor: type === 'income' ? COLORS.income : COLORS.expense }]} />
         </View>
 
-        {/* Description */}
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>{t('description')}</Text>
+        {/* Details Card */}
+        <View style={styles.formCard}>
+          <Text style={styles.formCardTitle}>{t('details')}</Text>
+
+          <Text style={styles.fieldLabel}>{t('description')}</Text>
           <View style={styles.inputContainer}>
-            <Ionicons name="create-outline" size={20} color={COLORS.textLight} style={styles.inputIcon} />
+            <Ionicons name="create-outline" size={20} color={COLORS.primary} style={styles.inputIcon} />
             <TextInput
               style={styles.input}
               placeholder={t('whatWasThisFor')}
@@ -157,12 +164,30 @@ const AddTransactionScreen = ({ navigation, route }) => {
               maxLength={200}
             />
           </View>
+
+          <Text style={[styles.fieldLabel, { marginTop: 16 }]}>{t('tagsCommaSeparated')}</Text>
+          <View style={styles.inputContainer}>
+            <Ionicons name="pricetag-outline" size={20} color={COLORS.primary} style={styles.inputIcon} />
+            <TextInput
+              style={styles.input}
+              placeholder={t('tagsPlaceholder')}
+              placeholderTextColor={COLORS.placeholder}
+              value={tags}
+              onChangeText={setTags}
+            />
+          </View>
         </View>
 
         {/* Category Selection */}
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>{t('category')}</Text>
-          <View style={styles.categoryGrid}>
+        <View style={styles.formCard}>
+          <Text style={styles.formCardTitle}>{t('category')}</Text>
+          {category !== '' && (
+            <View style={[styles.selectedBadge, { backgroundColor: (CATEGORIES[category]?.color || COLORS.primary) + '15' }]}>
+              <Ionicons name={CATEGORIES[category]?.icon || 'ellipse'} size={14} color={CATEGORIES[category]?.color || COLORS.primary} />
+              <Text style={[styles.selectedBadgeText, { color: CATEGORIES[category]?.color || COLORS.primary }]}>{category}</Text>
+            </View>
+          )}
+          <View style={[styles.categoryGrid, { marginTop: 12 }]}>
             {categories.map((cat) => {
               const catInfo = CATEGORIES[cat] || { icon: 'ellipse', color: COLORS.textLight };
               const isSelected = category === cat;
@@ -212,21 +237,7 @@ const AddTransactionScreen = ({ navigation, route }) => {
               <Text style={styles.customCatHint}>{t('customCategoryHint')}</Text>
             </View>
           )}
-        </View>
 
-        {/* Tags */}
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>{t('tagsCommaSeparated')}</Text>
-          <View style={styles.inputContainer}>
-            <Ionicons name="pricetag-outline" size={20} color={COLORS.textLight} style={styles.inputIcon} />
-            <TextInput
-              style={styles.input}
-              placeholder={t('tagsPlaceholder')}
-              placeholderTextColor={COLORS.placeholder}
-              value={tags}
-              onChangeText={setTags}
-            />
-          </View>
         </View>
 
         {/* Submit Button */}
@@ -322,23 +333,80 @@ const styles = StyleSheet.create({
   typeTextActive: {
     color: COLORS.white,
   },
-  amountContainer: {
+  amountCard: {
+    backgroundColor: COLORS.white,
+    marginHorizontal: SIZES.margin,
+    marginTop: 20,
+    marginBottom: 8,
+    borderRadius: SIZES.borderRadiusLg,
+    padding: 24,
+    alignItems: 'center',
+    ...SHADOWS.medium,
+  },
+  amountCardLabel: {
+    fontSize: SIZES.sm,
+    fontWeight: '700',
+    color: COLORS.textSecondary,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: 12,
+  },
+  amountRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    marginVertical: 32,
-    paddingHorizontal: SIZES.margin,
+  },
+  amountUnderline: {
+    width: '60%',
+    height: 3,
+    borderRadius: 2,
+    marginTop: 12,
+    opacity: 0.6,
+  },
+  formCard: {
+    backgroundColor: COLORS.white,
+    marginHorizontal: SIZES.margin,
+    marginTop: 16,
+    borderRadius: SIZES.borderRadiusLg,
+    padding: 20,
+    ...SHADOWS.small,
+  },
+  formCardTitle: {
+    fontSize: SIZES.sm,
+    fontWeight: '800',
+    color: COLORS.primary,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: 16,
+  },
+  fieldLabel: {
+    fontSize: SIZES.sm,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+    marginBottom: 8,
+  },
+  selectedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    marginBottom: 12,
+    gap: 6,
+  },
+  selectedBadgeText: {
+    fontSize: SIZES.sm,
+    fontWeight: '700',
   },
   currencySymbol: {
     fontSize: 28,
     fontWeight: '800',
-    color: COLORS.text,
+    color: COLORS.textSecondary,
     marginRight: 8,
   },
   amountInput: {
     fontSize: 56,
     fontWeight: '800',
-    color: COLORS.text,
     minWidth: 140,
     textAlign: 'center',
     letterSpacing: -1,
