@@ -42,15 +42,17 @@ const AddTransactionScreen = ({ navigation, route }) => {
   const { t } = useLanguage();
   const { onTransactionAdded } = useGamification();
   const { getCategories, addCustomCategory } = useCustomCategories();
-  const initialType = route.params?.type || 'expense';
+  const existing = route.params?.transaction;
+  const isEdit = !!existing;
+  const initialType = existing?.type || route.params?.type || 'expense';
   const [type, setType] = useState(initialType);
-  const [amount, setAmount] = useState('');
-  const [description, setDescription] = useState('');
-  const [category, setCategory] = useState('');
+  const [amount, setAmount] = useState(existing?.amount?.toString() || '');
+  const [description, setDescription] = useState(existing?.description || '');
+  const [category, setCategory] = useState(existing?.category || '');
   const [customCategoryName, setCustomCategoryName] = useState('');
-  const [tags, setTags] = useState('');
-  const [frequency, setFrequency] = useState('monthly');
-  const [customFrequency, setCustomFrequency] = useState('');
+  const [tags, setTags] = useState(existing?.tags?.join(', ') || '');
+  const [frequency, setFrequency] = useState(existing?.recurringInterval || 'monthly');
+  const [customFrequency, setCustomFrequency] = useState(existing?.recurringCustomLabel || '');
   const [loading, setLoading] = useState(false);
 
   const isOtherSelected = category === 'Other Expense' || category === 'Other Income';
@@ -104,9 +106,13 @@ const AddTransactionScreen = ({ navigation, route }) => {
         }
       }
 
-      await transactionAPI.create(data);
-      onTransactionAdded(type, parseFloat(amount));
-      Alert.alert(t('success'), t('transactionAdded'), [
+      if (isEdit) {
+        await transactionAPI.update(existing._id, data);
+      } else {
+        await transactionAPI.create(data);
+        onTransactionAdded(type, parseFloat(amount));
+      }
+      Alert.alert(t('success'), isEdit ? 'Transaction updated!' : t('transactionAdded'), [
         { text: t('ok'), onPress: () => navigation.goBack() },
       ]);
     } catch (error) {
@@ -127,7 +133,7 @@ const AddTransactionScreen = ({ navigation, route }) => {
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
             <Ionicons name="arrow-back" size={24} color={COLORS.white} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>{t('addTransaction')}</Text>
+          <Text style={styles.headerTitle}>{isEdit ? 'Edit Transaction' : t('addTransaction')}</Text>
           <View style={{ width: 40 }} />
         </View>
 
@@ -320,7 +326,7 @@ const AddTransactionScreen = ({ navigation, route }) => {
             <>
               <Ionicons name="checkmark-circle" size={22} color={COLORS.white} />
               <Text style={styles.submitText}>
-                {type === 'income' ? t('addIncome') : t('addExpense')}
+                {isEdit ? 'Update Transaction' : (type === 'income' ? t('addIncome') : t('addExpense'))}
               </Text>
             </>
           )}

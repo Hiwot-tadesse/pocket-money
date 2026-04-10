@@ -22,7 +22,7 @@ const FILTER_OPTIONS_KEYS = [
   { labelKey: 'expense', value: 'expense' },
 ];
 
-const TransactionsScreen = ({ navigation }) => {
+const TransactionsScreen = ({ navigation, route }) => {
   const { t } = useLanguage();
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -104,12 +104,9 @@ const TransactionsScreen = ({ navigation }) => {
 
   const renderTransaction = ({ item }) => {
     const catInfo = CATEGORIES[item.category] || { icon: 'ellipse', color: COLORS.textLight };
+    const isIncome = item.type === 'income';
     return (
-      <TouchableOpacity
-        style={[styles.transactionCard, SHADOWS.small]}
-        onLongPress={() => handleDelete(item._id)}
-        activeOpacity={0.7}
-      >
+      <View style={[styles.transactionCard, SHADOWS.small]}>
         <View style={[styles.txIcon, { backgroundColor: catInfo.color + '15' }]}>
           <Ionicons name={catInfo.icon} size={22} color={catInfo.color} />
         </View>
@@ -118,28 +115,36 @@ const TransactionsScreen = ({ navigation }) => {
           <Text style={styles.txDescription} numberOfLines={1}>
             {item.description || t('noDescription')}
           </Text>
-          <Text style={styles.txDate}>{formatDate(item.date)}</Text>
+          <View style={styles.txMeta}>
+            <Text style={styles.txDate}>{formatDate(item.date)}</Text>
+            {item.recurringInterval && (
+              <View style={styles.recurringBadge}>
+                <Ionicons name="repeat" size={10} color={COLORS.primary} />
+                <Text style={styles.recurringText}>{item.recurringInterval}</Text>
+              </View>
+            )}
+          </View>
         </View>
         <View style={styles.txRight}>
-          <Text
-            style={[
-              styles.txAmount,
-              { color: item.type === 'income' ? COLORS.income : COLORS.text },
-            ]}
-          >
-            {item.type === 'income' ? '+' : '-'}{formatCurrency(item.amount)}
+          <Text style={[styles.txAmount, { color: isIncome ? COLORS.income : COLORS.expense }]}>
+            {isIncome ? '+' : '-'}{formatCurrency(item.amount)}
           </Text>
-          {item.tags && item.tags.length > 0 && (
-            <View style={styles.tagRow}>
-              {item.tags.slice(0, 2).map((tag, i) => (
-                <View key={i} style={[styles.tag, { backgroundColor: item.type === 'income' ? COLORS.income + '10' : COLORS.expense + '10' }]}>
-                  <Text style={[styles.tagText, { color: item.type === 'income' ? COLORS.income : COLORS.expense }]}>{tag}</Text>
-                </View>
-              ))}
-            </View>
-          )}
+          <View style={styles.txActionRow}>
+            <TouchableOpacity
+              style={styles.txActionBtn}
+              onPress={() => navigation.navigate('AddTransaction', { transaction: item })}
+            >
+              <Ionicons name="pencil-outline" size={14} color={COLORS.primary} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.txActionBtn, styles.txDeleteBtn]}
+              onPress={() => handleDelete(item._id)}
+            >
+              <Ionicons name="trash-outline" size={14} color={COLORS.expense} />
+            </TouchableOpacity>
+          </View>
         </View>
-      </TouchableOpacity>
+      </View>
     );
   };
 
@@ -212,11 +217,6 @@ const TransactionsScreen = ({ navigation }) => {
         />
       )}
 
-      {/* Floating hint */}
-      <View style={styles.hintContainer}>
-        <Ionicons name="information-circle-outline" size={14} color={COLORS.textLight} />
-        <Text style={styles.hintText}>{t('longPressDelete')}</Text>
-      </View>
     </View>
   );
 };
@@ -310,33 +310,23 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     marginTop: 4,
   },
-  txDate: {
-    fontSize: 11,
-    color: COLORS.textLight,
-    marginTop: 6,
-    fontWeight: '500',
+  txMeta: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 6 },
+  txDate: { fontSize: 11, color: COLORS.textLight, fontWeight: '500' },
+  recurringBadge: {
+    flexDirection: 'row', alignItems: 'center', gap: 3,
+    backgroundColor: COLORS.primary + '12', borderRadius: 8,
+    paddingHorizontal: 6, paddingVertical: 2,
   },
-  txRight: {
-    alignItems: 'flex-end',
+  recurringText: { fontSize: 9, fontWeight: '700', color: COLORS.primary },
+  txRight: { alignItems: 'flex-end', gap: 6 },
+  txAmount: { fontSize: SIZES.base, fontWeight: '800' },
+  txActionRow: { flexDirection: 'row', gap: 6 },
+  txActionBtn: {
+    width: 28, height: 28, borderRadius: 14,
+    backgroundColor: COLORS.primary + '12',
+    alignItems: 'center', justifyContent: 'center',
   },
-  txAmount: {
-    fontSize: SIZES.base,
-    fontWeight: '800',
-  },
-  tagRow: {
-    flexDirection: 'row',
-    marginTop: 8,
-    gap: 6,
-  },
-  tag: {
-    borderRadius: 8,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-  },
-  tagText: {
-    fontSize: 10,
-    fontWeight: '600',
-  },
+  txDeleteBtn: { backgroundColor: COLORS.expense + '12' },
   emptyState: {
     alignItems: 'center',
     paddingVertical: 60,

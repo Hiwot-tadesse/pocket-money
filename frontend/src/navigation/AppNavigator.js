@@ -20,6 +20,8 @@ import ReportsScreen from '../screens/main/ReportsScreen';
 import SettingsScreen from '../screens/main/SettingsScreen';
 import AlertsScreen from '../screens/main/AlertsScreen';
 import AddBudgetScreen from '../screens/main/AddBudgetScreen';
+import GoalsScreen from '../screens/main/GoalsScreen';
+import AddGoalScreen from '../screens/main/AddGoalScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -43,6 +45,26 @@ const BudgetStackNavigator = () => {
   );
 };
 
+const TransactionStackNavigator = () => {
+  const TxStack = createNativeStackNavigator();
+  return (
+    <TxStack.Navigator screenOptions={{ headerShown: false }}>
+      <TxStack.Screen name="TransactionsList" component={TransactionsScreen} />
+      <TxStack.Screen name="AddTransaction" component={AddTransactionScreen} />
+    </TxStack.Navigator>
+  );
+};
+
+const GoalStackNavigator = () => {
+  const GoalStack = createNativeStackNavigator();
+  return (
+    <GoalStack.Navigator screenOptions={{ headerShown: false }}>
+      <GoalStack.Screen name="GoalsList" component={GoalsScreen} />
+      <GoalStack.Screen name="AddGoal" component={AddGoalScreen} />
+    </GoalStack.Navigator>
+  );
+};
+
 const MainTabs = () => {
   const { t } = useLanguage();
   return (
@@ -61,8 +83,8 @@ const MainTabs = () => {
             case 'Budgets':
               iconName = focused ? 'pie-chart' : 'pie-chart-outline';
               break;
-            case 'Reports':
-              iconName = focused ? 'bar-chart' : 'bar-chart-outline';
+            case 'Goals':
+              iconName = focused ? 'flag' : 'flag-outline';
               break;
             case 'Settings':
               iconName = focused ? 'settings' : 'settings-outline';
@@ -88,9 +110,9 @@ const MainTabs = () => {
       })}
     >
       <Tab.Screen name="Dashboard" component={HomeStackNavigator} options={{ tabBarLabel: t('tabDashboard') }} />
-      <Tab.Screen name="Transactions" component={TransactionsScreen} options={{ tabBarLabel: t('tabTransactions') }} />
+      <Tab.Screen name="Transactions" component={TransactionStackNavigator} options={{ tabBarLabel: t('tabTransactions') }} />
       <Tab.Screen name="Budgets" component={BudgetStackNavigator} options={{ tabBarLabel: t('tabBudgets') }} />
-      <Tab.Screen name="Reports" component={ReportsScreen} options={{ tabBarLabel: t('tabReports') }} />
+      <Tab.Screen name="Goals" component={GoalStackNavigator} options={{ tabBarLabel: 'Goals' }} />
       <Tab.Screen name="Settings" component={SettingsScreen} options={{ tabBarLabel: t('tabSettings') }} />
     </Tab.Navigator>
   );

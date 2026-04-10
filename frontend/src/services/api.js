@@ -84,4 +84,13 @@ export const alertAPI = {
   delete: (id) => api.delete(`/alerts/${id}`),
 };
 
+// ============ GOALS ============
+export const goalAPI = {
+  getAll: () => api.get('/goals'),
+  create: (data) => api.post('/goals', data),
+  update: (id, data) => api.put(`/goals/${id}`, data),
+  delete: (id) => api.delete(`/goals/${id}`),
+  contribute: (id, amount) => api.post(`/goals/${id}/contribute`, { amount }),
+};
+
 export default api;
