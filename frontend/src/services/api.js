@@ -45,6 +45,8 @@ export const authAPI = {
   loginWithPin: (data) => api.post('/auth/login-pin', data),
   getProfile: () => api.get('/auth/me'),
   updateProfile: (data) => api.put('/auth/me', data),
+  forgotPassword: (email) => api.post('/auth/forgot-password', { email }),
+  resetPassword: (data) => api.post('/auth/reset-password', data),
 };
 
 // ============ TRANSACTIONS ============
