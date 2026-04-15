@@ -136,6 +136,13 @@ const LoginScreen = ({ navigation }) => {
             )}
           </TouchableOpacity>
 
+          <TouchableOpacity
+            onPress={() => navigation.navigate('ForgotPassword')}
+            style={styles.forgotRow}
+          >
+            <Text style={styles.forgotText}>Forgot your password?</Text>
+          </TouchableOpacity>
+
           <View style={styles.registerRow}>
             <Text style={styles.registerText}>{t('dontHaveAccount')}</Text>
             <TouchableOpacity onPress={() => navigation.navigate('Register')}>
@@ -235,6 +242,15 @@ const styles = StyleSheet.create({
     color: COLORS.white,
     fontSize: SIZES.lg,
     fontWeight: '800',
+  },
+  forgotRow: {
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  forgotText: {
+    color: COLORS.primary,
+    fontSize: SIZES.md,
+    fontWeight: '700',
   },
   registerRow: {
     flexDirection: 'row',
