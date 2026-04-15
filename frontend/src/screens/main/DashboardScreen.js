@@ -233,6 +233,24 @@ const DashboardScreen = ({ navigation }) => {
           </View>
         </View>
 
+        {/* Reports Shortcut */}
+        <TouchableOpacity
+          style={[styles.reportsCard, SHADOWS.medium]}
+          onPress={() => navigation.navigate('Reports')}
+          activeOpacity={0.85}
+        >
+          <View style={styles.reportsCardLeft}>
+            <View style={styles.reportsIconBg}>
+              <Ionicons name="bar-chart" size={24} color={COLORS.primary} />
+            </View>
+            <View>
+              <Text style={styles.reportsCardTitle}>Reports & Charts</Text>
+              <Text style={styles.reportsCardSub}>View spending breakdown</Text>
+            </View>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color={COLORS.primary} />
+        </TouchableOpacity>
+
         {/* Recent Transactions */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
@@ -323,6 +341,26 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: COLORS.background,
   },
+  reportsCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: COLORS.white,
+    marginHorizontal: 16,
+    marginBottom: 16,
+    borderRadius: 16,
+    padding: 16,
+    borderLeftWidth: 4,
+    borderLeftColor: COLORS.primary,
+  },
+  reportsCardLeft: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+  reportsIconBg: {
+    width: 48, height: 48, borderRadius: 24,
+    backgroundColor: COLORS.primary + '15',
+    alignItems: 'center', justifyContent: 'center',
+  },
+  reportsCardTitle: { fontSize: 15, fontWeight: '800', color: COLORS.text },
+  reportsCardSub: { fontSize: 12, color: COLORS.textSecondary, marginTop: 2 },
   chatButton: {
     width: 36,
     height: 36,

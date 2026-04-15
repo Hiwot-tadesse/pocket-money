@@ -34,6 +34,7 @@ const HomeStackNavigator = () => (
     <HomeStack.Screen name="AddTransaction" component={AddTransactionScreen} />
     <HomeStack.Screen name="Alerts" component={AlertsScreen} />
     <HomeStack.Screen name="Chat" component={ChatScreen} />
+    <HomeStack.Screen name="Reports" component={ReportsScreen} />
   </HomeStack.Navigator>
 );
 
