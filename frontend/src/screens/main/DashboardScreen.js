@@ -97,8 +97,9 @@ const DashboardScreen = ({ navigation }) => {
   }
 
   return (
+    <View style={styles.container}>
     <ScrollView
-      style={styles.container}
+      style={styles.scrollView}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[COLORS.primary]} />}
     >
       {/* Language Selector Modal */}
@@ -271,9 +272,19 @@ const DashboardScreen = ({ navigation }) => {
           )}
         </View>
 
-        <View style={{ height: 40 }} />
+        <View style={{ height: 100 }} />
       </View>
     </ScrollView>
+
+    {/* AI Chat FAB */}
+    <TouchableOpacity
+      style={styles.chatFab}
+      onPress={() => navigation.navigate('Chat')}
+      activeOpacity={0.85}
+    >
+      <Ionicons name="sparkles" size={24} color={COLORS.white} />
+    </TouchableOpacity>
+    </View>
   );
 };
 
@@ -281,6 +292,21 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  chatFab: {
+    position: 'absolute',
+    bottom: 28,
+    right: 24,
+    width: 58,
+    height: 58,
+    borderRadius: 29,
+    backgroundColor: COLORS.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...SHADOWS.large,
   },
   loadingContainer: {
     flex: 1,

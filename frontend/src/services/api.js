@@ -84,6 +84,11 @@ export const alertAPI = {
   delete: (id) => api.delete(`/alerts/${id}`),
 };
 
+// ============ CHAT / AI ============
+export const chatAPI = {
+  send: (message, history = []) => api.post('/chat', { message, history }),
+};
+
 // ============ GOALS ============
 export const goalAPI = {
   getAll: () => api.get('/goals'),
