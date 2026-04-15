@@ -183,4 +183,69 @@ const updateProfile = async (req, res, next) => {
   }
 };
 
-module.exports = { register, login, loginWithPin, getProfile, updateProfile };
+// @desc    Forgot password - generate OTP
+// @route   POST /api/auth/forgot-password
+const forgotPassword = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'Email is required' });
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase().trim() });
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'No account found with that email' });
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    user.resetPasswordOTP = otp;
+    user.resetPasswordExpires = new Date(Date.now() + 15 * 60 * 1000);
+    await user.save({ validateBeforeSave: false });
+
+    res.json({
+      success: true,
+      message: 'Reset code generated',
+      data: { otp, expiresIn: '15 minutes' },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Reset password with OTP
+// @route   POST /api/auth/reset-password
+const resetPassword = async (req, res, next) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+    if (!email || !otp || !newPassword) {
+      return res.status(400).json({ success: false, message: 'Email, OTP, and new password are required' });
+    }
+    if (newPassword.length < 6) {
+      return res.status(400).json({ success: false, message: 'Password must be at least 6 characters' });
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase().trim() })
+      .select('+resetPasswordOTP +resetPasswordExpires');
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'No account found with that email' });
+    }
+    if (!user.resetPasswordOTP || user.resetPasswordOTP !== otp) {
+      return res.status(400).json({ success: false, message: 'Invalid reset code' });
+    }
+    if (!user.resetPasswordExpires || user.resetPasswordExpires < Date.now()) {
+      return res.status(400).json({ success: false, message: 'Reset code has expired. Please request a new one' });
+    }
+
+    user.password = newPassword;
+    user.resetPasswordOTP = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    res.json({ success: true, message: 'Password reset successfully. You can now log in.' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = { register, login, loginWithPin, getProfile, updateProfile, forgotPassword, resetPassword };

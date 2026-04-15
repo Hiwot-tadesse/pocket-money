@@ -6,6 +6,8 @@ const {
   loginWithPin,
   getProfile,
   updateProfile,
+  forgotPassword,
+  resetPassword,
 } = require('../controllers/auth.controller');
 const { protect } = require('../middleware/auth.middleware');
 
@@ -35,5 +37,8 @@ router.post('/login-pin', loginWithPin);
 
 router.get('/me', protect, getProfile);
 router.put('/me', protect, updateProfile);
+
+router.post('/forgot-password', forgotPassword);
+router.post('/reset-password', resetPassword);
 
 module.exports = router;
