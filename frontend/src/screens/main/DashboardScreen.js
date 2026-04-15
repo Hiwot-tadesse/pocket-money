@@ -92,6 +92,12 @@ const DashboardScreen = ({ navigation }) => {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={COLORS.primary} />
+        <TouchableOpacity
+          style={[styles.chatFab, { bottom: 28 }]}
+          onPress={() => navigation.navigate('Chat')}
+        >
+          <Ionicons name="sparkles" size={24} color={COLORS.white} />
+        </TouchableOpacity>
       </View>
     );
   }
@@ -138,6 +144,9 @@ const DashboardScreen = ({ navigation }) => {
             <TouchableOpacity style={styles.langButton} onPress={() => setLangModalVisible(true)}>
               <Ionicons name="globe-outline" size={16} color={COLORS.white} />
               <Text style={styles.langButtonText}>{LANGUAGES.find(l => l.code === language)?.flag}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.chatButton} onPress={() => navigation.navigate('Chat')}>
+              <Ionicons name="sparkles" size={20} color={COLORS.white} />
             </TouchableOpacity>
             <TouchableOpacity style={styles.alertButton} onPress={() => navigation.navigate('Alerts')}>
               <Ionicons name="notifications-outline" size={22} color={COLORS.white} />
@@ -313,6 +322,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: COLORS.background,
+  },
+  chatButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
   },
   headerContainer: {
     backgroundColor: COLORS.primary,
