@@ -13,8 +13,9 @@ import {
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { transactionAPI } from '../../services/api';
-import { COLORS, SIZES, SHADOWS, CATEGORIES } from '../../constants/theme';
+import { SIZES, SHADOWS, CATEGORIES } from '../../constants/theme';
 import { useLanguage } from '../../context/LanguageContext';
+import { useTheme } from '../../context/ThemeContext';
 
 const FILTER_OPTIONS_KEYS = [
   { labelKey: 'all', value: null },
@@ -24,6 +25,7 @@ const FILTER_OPTIONS_KEYS = [
 
 const TransactionsScreen = ({ navigation, route }) => {
   const { t } = useLanguage();
+  const { theme } = useTheme();
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -103,7 +105,7 @@ const TransactionsScreen = ({ navigation, route }) => {
   };
 
   const renderTransaction = ({ item }) => {
-    const catInfo = CATEGORIES[item.category] || { icon: 'ellipse', color: COLORS.textLight };
+    const catInfo = CATEGORIES[item.category] || { icon: 'ellipse', color: theme.textLight };
     const isIncome = item.type === 'income';
     return (
       <View style={[styles.transactionCard, SHADOWS.small]}>
@@ -119,14 +121,14 @@ const TransactionsScreen = ({ navigation, route }) => {
             <Text style={styles.txDate}>{formatDate(item.date)}</Text>
             {item.recurringInterval && (
               <View style={styles.recurringBadge}>
-                <Ionicons name="repeat" size={10} color={COLORS.primary} />
+                <Ionicons name="repeat" size={10} color={theme.primary} />
                 <Text style={styles.recurringText}>{item.recurringInterval}</Text>
               </View>
             )}
           </View>
         </View>
         <View style={styles.txRight}>
-          <Text style={[styles.txAmount, { color: isIncome ? COLORS.income : COLORS.expense }]}>
+          <Text style={[styles.txAmount, { color: isIncome ? theme.income : theme.expense }]}>
             {isIncome ? '+' : '-'}{formatCurrency(item.amount)}
           </Text>
           <View style={styles.txActionRow}>
@@ -134,13 +136,13 @@ const TransactionsScreen = ({ navigation, route }) => {
               style={styles.txActionBtn}
               onPress={() => navigation.navigate('AddTransaction', { transaction: item })}
             >
-              <Ionicons name="pencil-outline" size={14} color={COLORS.primary} />
+              <Ionicons name="pencil-outline" size={14} color={theme.primary} />
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.txActionBtn, styles.txDeleteBtn]}
               onPress={() => handleDelete(item._id)}
             >
-              <Ionicons name="trash-outline" size={14} color={COLORS.expense} />
+              <Ionicons name="trash-outline" size={14} color={theme.expense} />
             </TouchableOpacity>
           </View>
         </View>
@@ -188,7 +190,7 @@ const TransactionsScreen = ({ navigation, route }) => {
       {/* Transactions List */}
       {loading && !refreshing ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={COLORS.primary} />
+          <ActivityIndicator size="large" color={theme.primary} />
         </View>
       ) : (
         <FlatList
@@ -197,21 +199,21 @@ const TransactionsScreen = ({ navigation, route }) => {
           keyExtractor={(item) => item._id}
           contentContainerStyle={styles.listContent}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[COLORS.primary]} />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[theme.primary]} />
           }
           onEndReached={loadMore}
           onEndReachedThreshold={0.5}
           ListEmptyComponent={
             <View style={styles.emptyState}>
               <View style={styles.emptyIconBg}>
-                <Ionicons name="receipt-outline" size={48} color={COLORS.primaryLight} />
+                <Ionicons name="receipt-outline" size={48} color={theme.primaryLight} />
               </View>
               <Text style={styles.emptyText}>{t('noTransactionsFound')}</Text>
             </View>
           }
           ListFooterComponent={
             hasMore && transactions.length > 0 ? (
-              <ActivityIndicator style={{ padding: 16 }} color={COLORS.primary} />
+              <ActivityIndicator style={{ padding: 16 }} color={theme.primary} />
             ) : null
           }
         />
