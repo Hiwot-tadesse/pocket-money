@@ -131,7 +131,7 @@ const SettingsScreen = () => {
         <Text style={s.sectionTitle}>{t('expenseReminder')}</Text>
         <View style={s.settingRow}>
           <View style={s.settingLeft}>
-            <Ionicons name="alarm-outline" size={22} color="#6366F1" />
+            <Ionicons name="alarm-outline" size={22} color={theme.warning} />
             <Text style={s.settingLabel}>{t('dailyReminder')}</Text>
           </View>
           <Switch
@@ -149,7 +149,7 @@ const SettingsScreen = () => {
             <View style={s.divider} />
             <View style={s.settingRow}>
               <View style={s.settingLeft}>
-                <Ionicons name="pencil-outline" size={22} color="#6366F1" />
+                <Ionicons name="pencil-outline" size={22} color={theme.warning} />
                 <Text style={s.settingLabel}>{t('reminderTitle')}</Text>
               </View>
               {!editingReminder ? (
