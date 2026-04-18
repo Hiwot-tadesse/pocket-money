@@ -71,13 +71,13 @@ const SettingsScreen = () => {
                   <Ionicons name="checkmark" size={20} color={COLORS.white} />
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => { setEditingName(false); setNewName(user?.username || ''); }}>
-                  <Ionicons name="close" size={20} color={COLORS.textLight} />
+                  <Ionicons name="close" size={20} color={theme.textLight} />
                 </TouchableOpacity>
               </View>
             ) : (
               <TouchableOpacity onPress={() => setEditingName(true)} style={s.nameRow}>
                 <Text style={s.userName}>{user?.username}</Text>
-                <Ionicons name="pencil" size={14} color={COLORS.textLight} />
+                <Ionicons name="pencil" size={14} color={theme.textLight} />
               </TouchableOpacity>
             )}
             <Text style={s.userEmail}>{user?.email}</Text>
@@ -140,8 +140,8 @@ const SettingsScreen = () => {
               setReminderEnabled(val);
               setExpenseReminder(val, reminderTitle);
             }}
-            trackColor={{ false: COLORS.border, true: '#C7D2FE' }}
-            thumbColor={reminderEnabled ? '#6366F1' : COLORS.textLight}
+            trackColor={{ false: theme.border, true: '#C7D2FE' }}
+            thumbColor={reminderEnabled ? '#6366F1' : theme.textLight}
           />
         </View>
         {reminderEnabled && (
@@ -157,7 +157,7 @@ const SettingsScreen = () => {
                   <Text style={s.settingValue} numberOfLines={1}>
                     {reminderTitle || t('tapToSet')}
                   </Text>
-                  <Ionicons name="pencil" size={12} color={COLORS.textLight} />
+                  <Ionicons name="pencil" size={12} color={theme.textLight} />
                 </TouchableOpacity>
               ) : (
                 <View style={[s.editRow, { flex: 1, marginLeft: 8 }]}>
@@ -166,7 +166,7 @@ const SettingsScreen = () => {
                     value={reminderTitle}
                     onChangeText={setReminderTitle}
                     placeholder={t('reminderTitlePlaceholder')}
-                    placeholderTextColor={COLORS.textLight}
+                    placeholderTextColor={theme.textLight}
                     autoFocus
                   />
                   <TouchableOpacity
@@ -176,7 +176,7 @@ const SettingsScreen = () => {
                     }}
                     style={[s.saveBtn, { backgroundColor: '#6366F1' }]}
                   >
-                    <Ionicons name="checkmark" size={20} color={COLORS.white} />
+                    <Ionicons name="checkmark" size={20} color={theme.white} />
                   </TouchableOpacity>
                 </View>
               )}
@@ -190,7 +190,7 @@ const SettingsScreen = () => {
         <Text style={s.sectionTitle}>{t('about')}</Text>
         <View style={s.settingRow}>
           <View style={s.settingLeft}>
-            <Ionicons name="information-circle-outline" size={22} color={COLORS.primary} />
+            <Ionicons name="information-circle-outline" size={22} color={theme.primary} />
             <Text style={s.settingLabel}>{t('version')}</Text>
           </View>
           <Text style={s.settingValue}>1.1.0</Text>
@@ -199,7 +199,7 @@ const SettingsScreen = () => {
 
       {/* Logout */}
       <TouchableOpacity style={s.logoutBtn} onPress={handleLogout}>
-        <Ionicons name="log-out-outline" size={22} color={COLORS.danger} />
+        <Ionicons name="log-out-outline" size={22} color={theme.danger} />
         <Text style={s.logoutText}>{t('signOut')}</Text>
       </TouchableOpacity>
 
@@ -238,7 +238,7 @@ const s = StyleSheet.create({
   userEmail: { fontSize: SIZES.sm, color: theme.textSecondary, marginTop: 4, fontWeight: '500' },
   editRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   editInput: { flex: 1, fontSize: SIZES.base, color: theme.text, borderBottomWidth: 2, borderColor: theme.primary, paddingVertical: 4, fontWeight: '600' },
-  saveBtn: { width: 32, height: 32, borderRadius: 16, backgroundColor: COLORS.income, alignItems: 'center', justifyContent: 'center', ...SHADOWS.small },
+  saveBtn: { width: 32, height: 32, borderRadius: 16, backgroundColor: theme.income, alignItems: 'center', justifyContent: 'center', ...SHADOWS.small },
   settingRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 12 },
   settingLeft: { flexDirection: 'row', alignItems: 'center', gap: 14 },
   settingLabel: { fontSize: SIZES.base, color: theme.text, fontWeight: '600' },
