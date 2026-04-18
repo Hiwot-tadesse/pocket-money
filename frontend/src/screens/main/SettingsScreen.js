@@ -5,7 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { useSmartAlerts } from '../../context/SmartAlertsContext';
 import { useTheme } from '../../context/ThemeContext';
-import { COLORS, SIZES, SHADOWS } from '../../constants/theme';
+import { SIZES, SHADOWS } from '../../constants/theme';
 
 const SettingsScreen = () => {
   const { user, logout, updateUser } = useAuth();
@@ -209,9 +209,9 @@ const SettingsScreen = () => {
 };
 
 const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
+  container: { flex: 1, backgroundColor: theme.background },
   header: { 
-    backgroundColor: COLORS.primary, 
+    backgroundColor: theme.primary, 
     paddingTop: 56, 
     paddingBottom: 24, 
     paddingHorizontal: SIZES.paddingLg,
@@ -220,30 +220,30 @@ const s = StyleSheet.create({
     ...SHADOWS.large,
     zIndex: 10,
   },
-  headerTitle: { fontSize: 28, fontWeight: '800', color: COLORS.white, letterSpacing: -0.5 },
+  headerTitle: { fontSize: 28, fontWeight: '800', color: theme.white, letterSpacing: -0.5 },
   section: { 
-    backgroundColor: COLORS.white, 
+    backgroundColor: theme.surface, 
     marginHorizontal: SIZES.margin, 
     marginTop: 20, 
     borderRadius: SIZES.borderRadiusLg, 
     padding: SIZES.paddingLg,
     ...SHADOWS.small,
   },
-  sectionTitle: { fontSize: SIZES.xs, fontWeight: '700', color: COLORS.primary, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 16 },
+  sectionTitle: { fontSize: SIZES.xs, fontWeight: '700', color: theme.primary, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 16 },
   profileRow: { flexDirection: 'row', alignItems: 'center', gap: 16 },
-  avatar: { width: 60, height: 60, borderRadius: 30, backgroundColor: COLORS.primaryLight + '30', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: COLORS.primary + '20' },
-  avatarText: { color: COLORS.primary, fontSize: SIZES.xxl, fontWeight: '800' },
+  avatar: { width: 60, height: 60, borderRadius: 30, backgroundColor: theme.primaryLight + '30', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: theme.primary + '20' },
+  avatarText: { color: theme.primary, fontSize: SIZES.xxl, fontWeight: '800' },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  userName: { fontSize: SIZES.lg, fontWeight: '700', color: COLORS.text },
-  userEmail: { fontSize: SIZES.sm, color: COLORS.textSecondary, marginTop: 4, fontWeight: '500' },
+  userName: { fontSize: SIZES.lg, fontWeight: '700', color: theme.text },
+  userEmail: { fontSize: SIZES.sm, color: theme.textSecondary, marginTop: 4, fontWeight: '500' },
   editRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  editInput: { flex: 1, fontSize: SIZES.base, color: COLORS.text, borderBottomWidth: 2, borderColor: COLORS.primary, paddingVertical: 4, fontWeight: '600' },
+  editInput: { flex: 1, fontSize: SIZES.base, color: theme.text, borderBottomWidth: 2, borderColor: theme.primary, paddingVertical: 4, fontWeight: '600' },
   saveBtn: { width: 32, height: 32, borderRadius: 16, backgroundColor: COLORS.income, alignItems: 'center', justifyContent: 'center', ...SHADOWS.small },
   settingRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 12 },
   settingLeft: { flexDirection: 'row', alignItems: 'center', gap: 14 },
-  settingLabel: { fontSize: SIZES.base, color: COLORS.text, fontWeight: '600' },
-  settingValue: { fontSize: SIZES.md, color: COLORS.textSecondary, fontWeight: '600' },
-  divider: { height: 1, backgroundColor: COLORS.divider, marginVertical: 4, marginLeft: 36 },
+  settingLabel: { fontSize: SIZES.base, color: theme.text, fontWeight: '600' },
+  settingValue: { fontSize: SIZES.md, color: theme.textSecondary, fontWeight: '600' },
+  divider: { height: 1, backgroundColor: theme.divider, marginVertical: 4, marginLeft: 36 },
   logoutBtn: { 
     flexDirection: 'row', 
     alignItems: 'center', 
@@ -257,7 +257,7 @@ const s = StyleSheet.create({
     borderColor: '#FECACA', 
     gap: 8 
   },
-  logoutText: { fontSize: SIZES.base, fontWeight: '700', color: COLORS.danger },
+  logoutText: { fontSize: SIZES.base, fontWeight: '700', color: theme.danger },
 });
 
 export default SettingsScreen;
