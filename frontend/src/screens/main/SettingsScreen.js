@@ -4,12 +4,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { useSmartAlerts } from '../../context/SmartAlertsContext';
+import { useTheme } from '../../context/ThemeContext';
 import { COLORS, SIZES, SHADOWS } from '../../constants/theme';
 
 const SettingsScreen = () => {
   const { user, logout, updateUser } = useAuth();
   const { t } = useLanguage();
   const { expenseReminder, setExpenseReminder } = useSmartAlerts();
+  const { isDark, theme, toggleTheme } = useTheme();
   const [notifications, setNotifications] = useState(user?.notificationsEnabled ?? true);
   const [editingName, setEditingName] = useState(false);
   const [newName, setNewName] = useState(user?.username || '');
@@ -86,6 +88,22 @@ const SettingsScreen = () => {
       {/* Preferences */}
       <View style={[s.section, SHADOWS.small]}>
         <Text style={s.sectionTitle}>{t('preferences')}</Text>
+        
+        {/* Theme Toggle */}
+        <View style={s.settingRow}>
+          <View style={s.settingLeft}>
+            <Ionicons name={isDark ? 'moon' : 'sunny'} size={22} color={COLORS.primary} />
+            <Text style={s.settingLabel}>Dark Mode</Text>
+          </View>
+          <Switch
+            value={isDark}
+            onValueChange={toggleTheme}
+            trackColor={{ false: theme.border, true: theme.primaryLight }}
+            thumbColor={isDark ? theme.primary : theme.textLight}
+          />
+        </View>
+
+        {/* Notifications */}
         <View style={s.settingRow}>
           <View style={s.settingLeft}>
             <Ionicons name="notifications-outline" size={22} color={COLORS.primary} />
@@ -94,8 +112,8 @@ const SettingsScreen = () => {
           <Switch
             value={notifications}
             onValueChange={handleToggleNotifications}
-            trackColor={{ false: COLORS.border, true: COLORS.primaryLight }}
-            thumbColor={notifications ? COLORS.primary : COLORS.textLight}
+            trackColor={{ false: theme.border, true: theme.primaryLight }}
+            thumbColor={notifications ? theme.primary : theme.textLight}
           />
         </View>
         <View style={s.divider} />

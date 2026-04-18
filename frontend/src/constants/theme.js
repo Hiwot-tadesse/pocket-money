@@ -1,31 +1,56 @@
-export const COLORS = {
-  primary: '#4338CA', // Deeper indigo
+// Light theme
+export const LIGHT_THEME = {
+  primary: '#4338CA',
   primaryLight: '#818CF8',
   primaryDark: '#312E81',
-  secondary: '#38BDF8', // Cyan
+  secondary: '#38BDF8',
   success: '#10B981',
   warning: '#F59E0B',
   danger: '#EF4444',
-  income: '#10B981', // Emerald
-  expense: '#EF4444', // Red
-
+  income: '#10B981',
+  expense: '#EF4444',
   white: '#FFFFFF',
   black: '#000000',
-  background: '#F3F4F6', // Slightly darker soft gray for contrast
+  background: '#F3F4F6',
   surface: '#FFFFFF',
   card: '#FFFFFF',
   border: '#E5E7EB',
   divider: '#F3F4F6',
-
-  text: '#111827', // Darker text
+  text: '#111827',
   textSecondary: '#4B5563',
   textLight: '#9CA3AF',
   placeholder: '#9CA3AF',
-  
-  // Custom glass/overlay
   overlay: 'rgba(0,0,0,0.4)',
   glass: 'rgba(255,255,255,0.9)',
 };
+
+// Dark theme
+export const DARK_THEME = {
+  primary: '#4338CA',
+  primaryLight: '#818CF8',
+  primaryDark: '#312E81',
+  secondary: '#38BDF8',
+  success: '#10B981',
+  warning: '#F59E0B',
+  danger: '#EF4444',
+  income: '#10B981',
+  expense: '#EF4444',
+  white: '#FFFFFF',
+  black: '#000000',
+  background: '#0F172A',
+  surface: '#1E293B',
+  card: '#1E293B',
+  border: '#334155',
+  divider: '#334155',
+  text: '#F1F5F9',
+  textSecondary: '#94A3B8',
+  textLight: '#CBD5E1',
+  placeholder: '#475569',
+  overlay: 'rgba(0,0,0,0.6)',
+  glass: 'rgba(30,41,59,0.9)',
+};
+
+export const COLORS = LIGHT_THEME;
 
 export const SIZES = {
   xs: 10,
