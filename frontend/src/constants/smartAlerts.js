@@ -50,11 +50,7 @@ export const FINANCIAL_TIPS = [
     am: 'ከመግዛትዎ በፊት ዋጋዎችን ያወዳድሩ። ጥቂት ደቂቃዎች ምርምር ገንዘብ ሊያስቀርልዎ ይችላል።',
     om: 'Osoo hin bittin gatii wal bira qabi. Daqiiqaa muraasa qorachuun maallaqa si qusachiisa.',
   },
-  {
-    en: 'Unsubscribe from shopping emails and apps to reduce temptation.',
-    am: 'ፈተናን ለመቀነስ ከግብይት ኢሜይሎች እና አፕሊኬሽኖች ይውጡ።',
-    om: 'Hawwii bittaa hir\'isuuf imeelii fi appiiwwan bittaa irraa of baasi.',
-  },
+ 
   {
     en: 'Track your daily expenses. Awareness is the first step to better money management.',
     am: 'ዕለታዊ ወጪዎን ይከታተሉ። ግንዛቤ ለተሻለ ገንዘብ አያያዝ የመጀመሪያ እርምጃ ነው።',
