@@ -292,7 +292,7 @@ const styles = StyleSheet.create({
   achievementToastLabel: {
     fontSize: 10,
     fontWeight: '600',
-    color: '#F59E0B',
+    color: '#ee9a08',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
