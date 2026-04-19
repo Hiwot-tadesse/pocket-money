@@ -12,6 +12,7 @@ const SettingsScreen = () => {
   const { t } = useLanguage();
   const { expenseReminder, setExpenseReminder } = useSmartAlerts();
   const { isDark, theme, toggleTheme } = useTheme();
+  const s = getStyles(theme);
   const [notifications, setNotifications] = useState(user?.notificationsEnabled ?? true);
   const [editingName, setEditingName] = useState(false);
   const [newName, setNewName] = useState(user?.username || '');
@@ -68,7 +69,7 @@ const SettingsScreen = () => {
               <View style={s.editRow}>
                 <TextInput style={s.editInput} value={newName} onChangeText={setNewName} autoFocus />
                 <TouchableOpacity onPress={handleUpdateName} style={s.saveBtn}>
-                  <Ionicons name="checkmark" size={20} color={COLORS.white} />
+                  <Ionicons name="checkmark" size={20} color={theme.white} />
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => { setEditingName(false); setNewName(user?.username || ''); }}>
                   <Ionicons name="close" size={20} color={theme.textLight} />
@@ -92,8 +93,8 @@ const SettingsScreen = () => {
         {/* Theme Toggle */}
         <View style={s.settingRow}>
           <View style={s.settingLeft}>
-            <Ionicons name={isDark ? 'moon' : 'sunny'} size={22} color={COLORS.primary} />
-            <Text style={s.settingLabel}>Dark Mode</Text>
+            <Ionicons name={isDark ? 'moon' : 'sunny'} size={22} color={theme.primary} />
+            <Text style={s.settingLabel}>{t('darkMode')}</Text>
           </View>
           <Switch
             value={isDark}
@@ -106,7 +107,7 @@ const SettingsScreen = () => {
         {/* Notifications */}
         <View style={s.settingRow}>
           <View style={s.settingLeft}>
-            <Ionicons name="notifications-outline" size={22} color={COLORS.primary} />
+            <Ionicons name="notifications-outline" size={22} color={theme.primary} />
             <Text style={s.settingLabel}>{t('notificationsSetting')}</Text>
           </View>
           <Switch
@@ -119,10 +120,10 @@ const SettingsScreen = () => {
         <View style={s.divider} />
         <View style={s.settingRow}>
           <View style={s.settingLeft}>
-            <Ionicons name="cash-outline" size={22} color={COLORS.primary} />
+            <Ionicons name="cash-outline" size={22} color={theme.primary} />
             <Text style={s.settingLabel}>{t('currency')}</Text>
           </View>
-          <Text style={s.settingValue}>ETB</Text>
+          <Text style={s.settingValue}>{t('currencyCode')}</Text>
         </View>
       </View>
 
@@ -208,12 +209,12 @@ const SettingsScreen = () => {
   );
 };
 
-const s = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
   container: { flex: 1, backgroundColor: theme.background },
-  header: { 
-    backgroundColor: theme.primary, 
-    paddingTop: 56, 
-    paddingBottom: 24, 
+  header: {
+    backgroundColor: theme.primary,
+    paddingTop: 56,
+    paddingBottom: 24,
     paddingHorizontal: SIZES.paddingLg,
     borderBottomLeftRadius: 32,
     borderBottomRightRadius: 32,
@@ -221,11 +222,11 @@ const s = StyleSheet.create({
     zIndex: 10,
   },
   headerTitle: { fontSize: 28, fontWeight: '800', color: theme.white, letterSpacing: -0.5 },
-  section: { 
-    backgroundColor: theme.surface, 
-    marginHorizontal: SIZES.margin, 
-    marginTop: 20, 
-    borderRadius: SIZES.borderRadiusLg, 
+  section: {
+    backgroundColor: theme.surface,
+    marginHorizontal: SIZES.margin,
+    marginTop: 20,
+    borderRadius: SIZES.borderRadiusLg,
     padding: SIZES.paddingLg,
     ...SHADOWS.small,
   },
@@ -244,18 +245,18 @@ const s = StyleSheet.create({
   settingLabel: { fontSize: SIZES.base, color: theme.text, fontWeight: '600' },
   settingValue: { fontSize: SIZES.md, color: theme.textSecondary, fontWeight: '600' },
   divider: { height: 1, backgroundColor: theme.divider, marginVertical: 4, marginLeft: 36 },
-  logoutBtn: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    justifyContent: 'center', 
-    marginHorizontal: SIZES.margin, 
-    marginTop: 32, 
-    paddingVertical: 16, 
-    borderRadius: SIZES.borderRadiusLg, 
-    backgroundColor: '#FEF2F2', 
-    borderWidth: 1.5, 
-    borderColor: '#FECACA', 
-    gap: 8 
+  logoutBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: SIZES.margin,
+    marginTop: 32,
+    paddingVertical: 16,
+    borderRadius: SIZES.borderRadiusLg,
+    backgroundColor: theme.danger + '10',
+    borderWidth: 1.5,
+    borderColor: theme.danger + '30',
+    gap: 8,
   },
   logoutText: { fontSize: SIZES.base, fontWeight: '700', color: theme.danger },
 });
