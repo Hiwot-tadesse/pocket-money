@@ -31,8 +31,8 @@ export const FINANCIAL_TIPS = [
     om: 'Baasii kee torbaniin gamaaggami. Kun bajata kee waliin akka deemtu si gargaara.',
   },
   {
-    en: 'Use cash instead of cards when possible. It makes spending feel more real.',
-    am: 'ከተቻለ ከካርድ ይልቅ ጥሬ ገንዘብ ይጠቀሙ። ወጪው ይበልጥ እውነተኛ ሆኖ ይሰማዎታል።',
+    en: ' It makes spending feel more real.',
+    am: ' ወጪው ይበልጥ እውነተኛ ሆኖ ይሰማዎታል።',
     om: 'Yoo danda\'ame kaardii caalaa qarshii qabatamaa fayyadami. Baasiin dhugaa ta\'ee sitti dhaga\'ama.',
   },
   {
