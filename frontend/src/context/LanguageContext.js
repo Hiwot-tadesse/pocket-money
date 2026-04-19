@@ -36,8 +36,12 @@ export const LanguageProvider = ({ children }) => {
   }, []);
 
   const t = useCallback(
-    (key) => {
-      return translations[language]?.[key] || translations.en?.[key] || key;
+    (key, params = {}) => {
+      const template = translations[language]?.[key] || translations.en?.[key] || key;
+      return Object.entries(params).reduce(
+        (result, [paramKey, value]) => result.replace(new RegExp(`\\{${paramKey}\\}`, 'g'), String(value)),
+        template
+      );
     },
     [language]
   );

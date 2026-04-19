@@ -140,7 +140,7 @@ const LoginScreen = ({ navigation }) => {
             onPress={() => navigation.navigate('ForgotPassword')}
             style={styles.forgotRow}
           >
-            <Text style={styles.forgotText}>Forgot your password?</Text>
+            <Text style={styles.forgotText}>{t('forgotPasswordLink')}</Text>
           </TouchableOpacity>
 
           <View style={styles.registerRow}>

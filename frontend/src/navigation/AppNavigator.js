@@ -117,7 +117,7 @@ const MainTabs = () => {
       <Tab.Screen name="Dashboard" component={HomeStackNavigator} options={{ tabBarLabel: t('tabDashboard') }} />
       <Tab.Screen name="Transactions" component={TransactionStackNavigator} options={{ tabBarLabel: t('tabTransactions') }} />
       <Tab.Screen name="Budgets" component={BudgetStackNavigator} options={{ tabBarLabel: t('tabBudgets') }} />
-      <Tab.Screen name="Goals" component={GoalStackNavigator} options={{ tabBarLabel: 'Goals' }} />
+      <Tab.Screen name="Goals" component={GoalStackNavigator} options={{ tabBarLabel: t('goals') }} />
       <Tab.Screen name="Settings" component={SettingsScreen} options={{ tabBarLabel: t('tabSettings') }} />
     </Tab.Navigator>
   );
