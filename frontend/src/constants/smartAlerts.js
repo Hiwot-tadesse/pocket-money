@@ -2,7 +2,7 @@
 export const FINANCIAL_TIPS = [
   {
     en: 'Track every expense, no matter how small. Small purchases add up quickly!',
-    am: 'ምንም ያህል ትንሽ ቢሆን ሁሉንም ወጪ ይከታተሉ። ትናንሽ ግዢዎች በፍጥነት ይጨምራሉ!',
+    am: 'ምንም ያህል ትንሽ ቢሆን ሁሉንም ወጪ ይመዝግቡ። ትናንሽ ግዢዎች በፍጥነት ይጨምራሉ!',
     om: 'Baasii hunda hordofi, hammam xiqqaa haa ta\'u. Bittaaleen xixiqqaan dafanii walitti ida\'u!',
   },
   {
