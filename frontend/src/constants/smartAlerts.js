@@ -17,7 +17,7 @@ export const FINANCIAL_TIPS = [
   },
   {
     en: 'Avoid impulse buying. Wait 24 hours before making non-essential purchases.',
-    am: 'በስሜት መግዛትን ያስወግዱ። አስፈላጊ ያልሆኑ ግዢዎችን ከመግዛትዎ በፊት 24 ሰዓት ይጠብቁ።',
+    am: ' አስፈላጊ ያልሆኑ ግዢዎችን ከመግዛትዎ በፊት 24 ሰዓት ይጠብቁ።',
     om: 'Bittaa tasumaa irraa of eegi. Bittaa barbaachisaa hin taane dura sa\'aatii 24 eegi.',
   },
   {
