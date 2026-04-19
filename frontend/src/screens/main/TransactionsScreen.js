@@ -23,15 +23,6 @@ const FILTER_OPTIONS_KEYS = [
   { labelKey: 'expense', value: 'expense' },
 ];
 
-const TransactionsScreen = ({ navigation, route }) => {
-  const { t } = useLanguage();
-  const { theme } = useTheme();
-  const [transactions, setTransactions] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [activeFilter, setActiveFilter] = useState(null);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
 
   const fetchTransactions = async (pageNum = 1, filter = activeFilter, append = false) => {
     try {
@@ -223,56 +214,66 @@ const TransactionsScreen = ({ navigation, route }) => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  header: {
-    backgroundColor: COLORS.primary,
-    paddingTop: 56,
-    paddingBottom: 24,
-    paddingHorizontal: SIZES.paddingLg,
-    borderBottomLeftRadius: 32,
-    borderBottomRightRadius: 32,
-    ...SHADOWS.large,
-    zIndex: 10,
-  },
-  headerTitle: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: COLORS.white,
-    letterSpacing: -0.5,
-  },
-  filterContainer: {
-    marginTop: -20,
-    marginBottom: 8,
-    zIndex: 11,
-  },
-  filterRow: {
-    paddingHorizontal: SIZES.margin,
-    paddingVertical: 12,
-    gap: 8,
-  },
-  filterTab: {
-    paddingHorizontal: 24,
-    paddingVertical: 10,
-    borderRadius: 24,
-    backgroundColor: COLORS.white,
-    ...SHADOWS.small,
-  },
-  filterTabActive: {
-    backgroundColor: COLORS.primary,
-  },
-  filterText: {
-    fontSize: SIZES.md,
-    color: COLORS.textSecondary,
-    fontWeight: '600',
-  },
-  filterTextActive: {
-    color: COLORS.white,
-    fontWeight: '700',
-  },
+const TransactionsScreen = ({ navigation, route }) => {
+  const { t } = useLanguage();
+  const { theme } = useTheme();
+  const [transactions, setTransactions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [activeFilter, setActiveFilter] = useState(null);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+
+  const styles = {
+    container: {
+      flex: 1,
+      backgroundColor: theme.background,
+    },
+    header: {
+      backgroundColor: theme.primary,
+      paddingTop: 56,
+      paddingBottom: 24,
+      paddingHorizontal: SIZES.paddingLg,
+      borderBottomLeftRadius: 32,
+      borderBottomRightRadius: 32,
+      ...SHADOWS.large,
+      zIndex: 10,
+    },
+    headerTitle: {
+      fontSize: 28,
+      fontWeight: '800',
+      color: theme.white,
+      letterSpacing: -0.5,
+    },
+    filterContainer: {
+      marginTop: -20,
+      marginBottom: 8,
+      zIndex: 11,
+    },
+    filterRow: {
+      paddingHorizontal: SIZES.margin,
+      paddingVertical: 12,
+      gap: 8,
+    },
+    filterTab: {
+      paddingHorizontal: 24,
+      paddingVertical: 10,
+      borderRadius: 24,
+      backgroundColor: theme.surface,
+      ...SHADOWS.small,
+    },
+    filterTabActive: {
+      backgroundColor: theme.primary,
+    },
+    filterText: {
+      fontSize: SIZES.md,
+      color: theme.textSecondary,
+      fontWeight: '600',
+    },
+    filterTextActive: {
+      color: theme.white,
+      fontWeight: '700',
+    },
   loadingContainer: {
     flex: 1,
     alignItems: 'center',
