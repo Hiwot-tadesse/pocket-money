@@ -37,7 +37,7 @@ export const FINANCIAL_TIPS = [
   },
   {
     en: 'Cook at home more often. Eating out is one of the biggest budget drains.',
-    am: 'ብዙ ጊዜ ቤት ውስጥ ያብስሉ። ውጭ መብላት ከትልቅ የበጀት ባክኝዎች አንዱ ነው።',
+    am: 'ብዙ ጊዜ ቤት ውስጥ ያብስሉ/ይመገቡ። ውጭ መብላት ከትልቅ የበጀት ባክኝዎች አንዱ ነው።',
     om: 'Yeroo baay\'ee mana keessatti nyaata bilcheessi. Alatti nyaachuun bajata baay\'ee miidha.',
   },
   {
