@@ -22,7 +22,6 @@ const FILTER_OPTIONS_KEYS = [
   { labelKey: 'expense', value: 'expense' },
 ];
 
-
 const TransactionsScreen = ({ navigation }) => {
   const { t } = useLanguage();
   const { theme } = useTheme();
