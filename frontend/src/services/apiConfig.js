@@ -1,37 +1,22 @@
 import { Platform } from 'react-native';
+import Constants from 'expo-constants';
 
 const API_PORT = 5000;
-const LAN_IP = '10.49.83.82';
-
-export const API_MODES = {
-  phone: `http://${LAN_IP}:${API_PORT}/api`,
-  androidEmulator: `http://10.0.2.2:${API_PORT}/api`,
-  iosSimulator: `http://localhost:${API_PORT}/api`,
-  web: `http://localhost:${API_PORT}/api`,
-};
-
-export const DEFAULT_API_MODE = 'phone';
 
 export const resolveConfiguredApiBaseUrl = () => {
-  if (DEFAULT_API_MODE === 'phone') {
-    return API_MODES.phone;
+  // Expo dev server host (e.g. "192.168.1.5:8081") — same machine runs the backend
+  const hostUri = Constants.expoConfig?.hostUri || Constants.manifest?.debuggerHost || Constants.manifest2?.extra?.expoGo?.debuggerHost;
+  if (hostUri) {
+    const host = hostUri.split(':')[0];
+    if (host && host !== 'localhost') {
+      return `http://${host}:${API_PORT}/api`;
+    }
   }
 
-  if (DEFAULT_API_MODE === 'androidEmulator') {
-    return API_MODES.androidEmulator;
-  }
-
-  if (DEFAULT_API_MODE === 'iosSimulator') {
-    return API_MODES.iosSimulator;
-  }
-
-  if (DEFAULT_API_MODE === 'web') {
-    return API_MODES.web;
-  }
-
+  // Android emulator: 10.0.2.2 maps to host machine localhost
   if (Platform.OS === 'android') {
-    return API_MODES.androidEmulator;
+    return `http://10.0.2.2:${API_PORT}/api`;
   }
 
-  return API_MODES.iosSimulator;
+  return `http://localhost:${API_PORT}/api`;
 };
