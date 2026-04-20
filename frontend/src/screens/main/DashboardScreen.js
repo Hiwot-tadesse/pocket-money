@@ -18,6 +18,7 @@ import { useSmartAlerts } from '../../context/SmartAlertsContext';
 import { reportAPI, transactionAPI, alertAPI } from '../../services/api';
 import { COLORS, SIZES, SHADOWS, CATEGORIES } from '../../constants/theme';
 import GamificationBanner from '../../components/GamificationBanner';
+import PredictionCard from '../../components/PredictionCard';
 
 const LANGUAGES = [
   { code: 'en', label: 'English', flag: 'EN' },
@@ -232,6 +233,9 @@ const DashboardScreen = ({ navigation }) => {
             <Text style={styles.statCardLabel}>{t('avgExpense')}</Text>
           </View>
         </View>
+
+        {/* AI Prediction Card */}
+        <PredictionCard />
 
         {/* Reports Shortcut */}
         <TouchableOpacity
