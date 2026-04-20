@@ -1,9 +1,8 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { resolveConfiguredApiBaseUrl } from './apiConfig';
 
-const API_BASE_URL = 'http://localhost:5000/api'; // Use tunnel mode: npx expo start --tunnel
-// For physical device: 'http://YOUR_IP:5000/api'
-// For Android emulator: 'http://10.0.2.2:5000/api'
+const API_BASE_URL = resolveConfiguredApiBaseUrl();
 
 const api = axios.create({
   baseURL: API_BASE_URL,

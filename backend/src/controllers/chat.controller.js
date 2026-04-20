@@ -48,18 +48,24 @@ const callGemini = async (systemPrompt, history, userMessage) => {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error('GEMINI_API_KEY is not set on the server');
 
+  // Embed system prompt as first turn so it works with all model versions
+  const systemTurn = [
+    { role: 'user', parts: [{ text: `[SYSTEM CONTEXT - follow these instructions for all replies]\n${systemPrompt}` }] },
+    { role: 'model', parts: [{ text: 'Understood. I will follow these instructions.' }] },
+  ];
+
   const contents = [
+    ...systemTurn,
     ...history,
     { role: 'user', parts: [{ text: userMessage }] },
   ];
 
   const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+    `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        system_instruction: { parts: [{ text: systemPrompt }] },
         contents,
         generationConfig: { maxOutputTokens: 512, temperature: 0.75 },
       }),
