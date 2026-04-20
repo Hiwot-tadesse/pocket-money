@@ -99,4 +99,9 @@ export const goalAPI = {
   contribute: (id, amount) => api.post(`/goals/${id}/contribute`, { amount }),
 };
 
+// ============ PREDICTIONS ============
+export const predictionAPI = {
+  get: () => api.get('/predictions'),
+};
+
 export default api;

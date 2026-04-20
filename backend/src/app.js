@@ -10,6 +10,7 @@ const reportRoutes = require('./routes/report.routes');
 const alertRoutes = require('./routes/alert.routes');
 const goalRoutes = require('./routes/goal.routes');
 const chatRoutes = require('./routes/chat.routes');
+const predictionRoutes = require('./routes/prediction.routes');
 const { errorHandler, notFound } = require('./middleware/error.middleware');
 
 const app = express();
@@ -36,6 +37,7 @@ app.use('/api/reports', reportRoutes);
 app.use('/api/alerts', alertRoutes);
 app.use('/api/goals', goalRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/predictions', predictionRoutes);
 
 // Error handling
 app.use(notFound);
