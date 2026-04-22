@@ -7,8 +7,10 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { authAPI } from '../../services/api';
 import { COLORS, SIZES, SHADOWS } from '../../constants/theme';
+import { useLanguage } from '../../context/LanguageContext';
 
 const ResetPasswordScreen = ({ navigation, route }) => {
+  const { t } = useLanguage();
   const [otp, setOtp] = useState(route.params?.otp || '');
   const [email] = useState(route.params?.email || '');
   const [newPassword, setNewPassword] = useState('');
@@ -21,10 +23,10 @@ const ResetPasswordScreen = ({ navigation, route }) => {
 
   const handleReset = async () => {
     setError('');
-    if (!otp.trim() || otp.length !== 6) { setError('Please enter the 6-digit reset code'); return; }
-    if (!newPassword) { setError('Please enter a new password'); return; }
-    if (newPassword.length < 6) { setError('Password must be at least 6 characters'); return; }
-    if (newPassword !== confirmPassword) { setError('Passwords do not match'); return; }
+    if (!otp.trim() || otp.length !== 6) { setError(t('enterResetCode')); return; }
+    if (!newPassword) { setError(t('enterNewPassword')); return; }
+    if (newPassword.length < 6) { setError(t('passwordMinLength')); return; }
+    if (newPassword !== confirmPassword) { setError(t('passwordMismatch')); return; }
 
     setLoading(true);
     try {
@@ -44,14 +46,14 @@ const ResetPasswordScreen = ({ navigation, route }) => {
           <View style={styles.successIcon}>
             <Ionicons name="checkmark-circle" size={64} color={COLORS.income} />
           </View>
-          <Text style={styles.successTitle}>Password Reset!</Text>
-          <Text style={styles.successSub}>Your password has been updated successfully.</Text>
+          <Text style={styles.successTitle}>{t('passwordResetSuccess')}</Text>
+          <Text style={styles.successSub}>{t('passwordUpdated')}</Text>
           <TouchableOpacity
             style={styles.loginBtn}
             onPress={() => navigation.navigate('Login')}
           >
             <Ionicons name="log-in" size={20} color={COLORS.white} />
-            <Text style={styles.loginBtnText}>Go to Login</Text>
+            <Text style={styles.loginBtnText}>{t('goToLogin')}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -70,16 +72,16 @@ const ResetPasswordScreen = ({ navigation, route }) => {
           <View style={styles.headerIconWrap}>
             <Ionicons name="shield-checkmark" size={40} color={COLORS.white} />
           </View>
-          <Text style={styles.headerTitle}>Reset Password</Text>
+          <Text style={styles.headerTitle}>{t('resetPassword')}</Text>
           <Text style={styles.headerSub}>
-            {email ? `Resetting password for\n${email}` : 'Enter your reset code and new password'}
+            {email ? t('resettingFor', { email }) : t('enterCodeAndPassword')}
           </Text>
         </View>
 
         <View style={styles.formCard}>
 
           {/* OTP field */}
-          <Text style={styles.fieldLabel}>Reset Code</Text>
+          <Text style={styles.fieldLabel}>{t('resetCode')}</Text>
           <View style={[styles.inputBox, error && !otp && styles.inputBoxError]}>
             <Ionicons name="keypad-outline" size={20} color={COLORS.primary} style={styles.inputIcon} />
             <TextInput
@@ -95,7 +97,7 @@ const ResetPasswordScreen = ({ navigation, route }) => {
           </View>
 
           {/* New Password */}
-          <Text style={[styles.fieldLabel, { marginTop: 18 }]}>New Password</Text>
+          <Text style={[styles.fieldLabel, { marginTop: 18 }]}>{t('newPassword')}</Text>
           <View style={styles.inputBox}>
             <Ionicons name="lock-closed-outline" size={20} color={COLORS.primary} style={styles.inputIcon} />
             <TextInput
@@ -112,7 +114,7 @@ const ResetPasswordScreen = ({ navigation, route }) => {
           </View>
 
           {/* Confirm Password */}
-          <Text style={[styles.fieldLabel, { marginTop: 18 }]}>Confirm New Password</Text>
+          <Text style={[styles.fieldLabel, { marginTop: 18 }]}>{t('confirmNewPassword')}</Text>
           <View style={[styles.inputBox, confirmPassword && newPassword !== confirmPassword && styles.inputBoxError]}>
             <Ionicons name="lock-closed-outline" size={20} color={COLORS.primary} style={styles.inputIcon} />
             <TextInput
@@ -140,7 +142,7 @@ const ResetPasswordScreen = ({ navigation, route }) => {
               ? <ActivityIndicator color={COLORS.white} />
               : <>
                   <Ionicons name="shield-checkmark" size={20} color={COLORS.white} />
-                  <Text style={styles.submitText}>Reset Password</Text>
+                  <Text style={styles.submitText}>{t('resetPassword')}</Text>
                 </>
             }
           </TouchableOpacity>
@@ -149,8 +151,8 @@ const ResetPasswordScreen = ({ navigation, route }) => {
             onPress={() => navigation.navigate('ForgotPassword')}
             style={styles.resendRow}
           >
-            <Text style={styles.resendText}>Didn't get a code? </Text>
-            <Text style={styles.resendLink}>Request again</Text>
+            <Text style={styles.resendText}>{t('didntGetCode')} </Text>
+            <Text style={styles.resendLink}>{t('requestAgain')}</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
