@@ -7,8 +7,10 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { authAPI } from '../../services/api';
 import { COLORS, SIZES, SHADOWS } from '../../constants/theme';
+import { useLanguage } from '../../context/LanguageContext';
 
 const ForgotPasswordScreen = ({ navigation }) => {
+  const { t } = useLanguage();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -16,7 +18,7 @@ const ForgotPasswordScreen = ({ navigation }) => {
 
   const handleSend = async () => {
     setError('');
-    if (!email.trim()) { setError('Please enter your email address'); return; }
+    if (!email.trim()) { setError(t('enterEmailFirst')); return; }
 
     setLoading(true);
     try {
@@ -36,21 +38,21 @@ const ForgotPasswordScreen = ({ navigation }) => {
           <View style={styles.successIcon}>
             <Ionicons name="lock-open" size={40} color={COLORS.primary} />
           </View>
-          <Text style={styles.successTitle}>Reset Code Generated</Text>
-          <Text style={styles.successSub}>Your 6-digit reset code is:</Text>
+          <Text style={styles.successTitle}>{t('resetCodeGenerated')}</Text>
+          <Text style={styles.successSub}>{t('yourResetCode')}</Text>
           <View style={styles.otpBox}>
             <Text style={styles.otpText}>{otpResult.otp}</Text>
           </View>
-          <Text style={styles.expiryNote}>⏱ Valid for {otpResult.expiresIn}</Text>
+          <Text style={styles.expiryNote}>⏱ {t('validFor', { time: otpResult.expiresIn })}</Text>
           <TouchableOpacity
             style={styles.continueBtn}
             onPress={() => navigation.navigate('ResetPassword', { email: email.trim(), otp: otpResult.otp })}
           >
-            <Text style={styles.continueBtnText}>Continue to Reset Password</Text>
+            <Text style={styles.continueBtnText}>{t('continueToReset')}</Text>
             <Ionicons name="arrow-forward" size={20} color={COLORS.white} />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => navigation.navigate('Login')} style={styles.backLink}>
-            <Text style={styles.backLinkText}>Back to Login</Text>
+            <Text style={styles.backLinkText}>{t('backToLogin')}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -69,12 +71,12 @@ const ForgotPasswordScreen = ({ navigation }) => {
           <View style={styles.headerIconWrap}>
             <Ionicons name="key" size={40} color={COLORS.white} />
           </View>
-          <Text style={styles.headerTitle}>Forgot Password?</Text>
-          <Text style={styles.headerSub}>Enter your email to get a reset code</Text>
+          <Text style={styles.headerTitle}>{t('forgotPassword')}</Text>
+          <Text style={styles.headerSub}>{t('enterEmailForCode')}</Text>
         </View>
 
         <View style={styles.formCard}>
-          <Text style={styles.fieldLabel}>Email Address</Text>
+          <Text style={styles.fieldLabel}>{t('emailAddress')}</Text>
           <View style={[styles.inputBox, error && styles.inputBoxError]}>
             <Ionicons name="mail-outline" size={20} color={error ? COLORS.expense : COLORS.primary} style={styles.inputIcon} />
             <TextInput
@@ -100,14 +102,14 @@ const ForgotPasswordScreen = ({ navigation }) => {
               ? <ActivityIndicator color={COLORS.white} />
               : <>
                   <Ionicons name="send" size={20} color={COLORS.white} />
-                  <Text style={styles.submitText}>Send Reset Code</Text>
+                  <Text style={styles.submitText}>{t('sendResetCode')}</Text>
                 </>
             }
           </TouchableOpacity>
 
           <TouchableOpacity onPress={() => navigation.navigate('Login')} style={styles.backLink}>
             <Ionicons name="arrow-back" size={16} color={COLORS.primary} />
-            <Text style={styles.backLinkText}>Back to Login</Text>
+            <Text style={styles.backLinkText}>{t('backToLogin')}</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
