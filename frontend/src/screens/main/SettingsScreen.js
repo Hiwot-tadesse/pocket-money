@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, Alert, TextInput } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, Alert, TextInput, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { useSmartAlerts } from '../../context/SmartAlertsContext';
@@ -23,6 +25,71 @@ const SettingsScreen = () => {
   const [reminderTime, setReminderTime] = useState(expenseReminder.time || '08:00');
   const [editingReminder, setEditingReminder] = useState(false);
   const [editingTime, setEditingTime] = useState(false);
+  const [profilePic, setProfilePic] = useState(null);
+
+  const PIC_KEY = `profile_pic_${user?._id}`;
+
+  useEffect(() => {
+    if (!user?._id) return;
+    AsyncStorage.getItem(PIC_KEY).then((uri) => { if (uri) setProfilePic(uri); });
+  }, [user?._id]);
+
+  const handlePickImage = () => {
+    Alert.alert('Profile Photo', 'Choose an option', [
+      {
+        text: 'Choose from Gallery',
+        onPress: async () => {
+          const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+          if (status !== 'granted') {
+            Alert.alert('Permission needed', 'Please allow access to your photo library.');
+            return;
+          }
+          const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 0.5,
+          });
+          if (!result.canceled && result.assets?.[0]?.uri) {
+            const uri = result.assets[0].uri;
+            setProfilePic(uri);
+            await AsyncStorage.setItem(PIC_KEY, uri);
+          }
+        },
+      },
+      {
+        text: 'Take Photo',
+        onPress: async () => {
+          const { status } = await ImagePicker.requestCameraPermissionsAsync();
+          if (status !== 'granted') {
+            Alert.alert('Permission needed', 'Please allow camera access.');
+            return;
+          }
+          const result = await ImagePicker.launchCameraAsync({
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 0.5,
+          });
+          if (!result.canceled && result.assets?.[0]?.uri) {
+            const uri = result.assets[0].uri;
+            setProfilePic(uri);
+            await AsyncStorage.setItem(PIC_KEY, uri);
+          }
+        },
+      },
+      profilePic
+        ? {
+            text: 'Remove Photo',
+            style: 'destructive',
+            onPress: async () => {
+              setProfilePic(null);
+              await AsyncStorage.removeItem(PIC_KEY);
+            },
+          }
+        : null,
+      { text: 'Cancel', style: 'cancel' },
+    ].filter(Boolean));
+  };
 
   const handleToggleNotifications = async (value) => {
     setNotifications(value);
@@ -84,9 +151,18 @@ const SettingsScreen = () => {
       <View style={[s.section, SHADOWS.small]}>
         <Text style={s.sectionTitle}>{t('profile')}</Text>
         <View style={s.profileRow}>
-          <View style={s.avatar}>
-            <Text style={s.avatarText}>{(user?.username || 'U')[0].toUpperCase()}</Text>
-          </View>
+          <TouchableOpacity onPress={handlePickImage} style={s.avatarWrap} activeOpacity={0.8}>
+            {profilePic ? (
+              <Image source={{ uri: profilePic }} style={s.avatarImg} />
+            ) : (
+              <View style={s.avatar}>
+                <Text style={s.avatarText}>{(user?.username || 'U')[0].toUpperCase()}</Text>
+              </View>
+            )}
+            <View style={s.avatarEditBadge}>
+              <Ionicons name="camera" size={12} color="#fff" />
+            </View>
+          </TouchableOpacity>
           <View style={{ flex: 1 }}>
             {editingName ? (
               <View style={s.editRow}>
@@ -316,7 +392,10 @@ const getStyles = (theme) => StyleSheet.create({
   },
   sectionTitle: { fontSize: SIZES.xs, fontWeight: '700', color: theme.primary, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 16 },
   profileRow: { flexDirection: 'row', alignItems: 'center', gap: 16 },
-  avatar: { width: 60, height: 60, borderRadius: 30, backgroundColor: theme.primaryLight + '30', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: theme.primary + '20' },
+  avatarWrap: { position: 'relative', width: 64, height: 64 },
+  avatar: { width: 64, height: 64, borderRadius: 32, backgroundColor: theme.primaryLight + '30', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: theme.primary + '30' },
+  avatarImg: { width: 64, height: 64, borderRadius: 32, borderWidth: 2, borderColor: theme.primary + '40' },
+  avatarEditBadge: { position: 'absolute', bottom: 0, right: 0, width: 22, height: 22, borderRadius: 11, backgroundColor: theme.primary, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: theme.surface },
   avatarText: { color: theme.primary, fontSize: SIZES.xxl, fontWeight: '800' },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   userName: { fontSize: SIZES.lg, fontWeight: '700', color: theme.text },
