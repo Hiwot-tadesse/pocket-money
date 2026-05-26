@@ -69,19 +69,23 @@ const AddTransactionScreen = ({ navigation, route }) => {
   const [customFrequency, setCustomFrequency] = useState(existing?.recurringCustomLabel || '');
   const [loading, setLoading] = useState(false);
   const [autoDetected, setAutoDetected] = useState(false);
+  const [matchedKeyword, setMatchedKeyword] = useState('');
 
   // Auto-detect category from description keywords
   useEffect(() => {
     if (type !== 'expense' || !description.trim() || isEdit) return;
     const lower = description.toLowerCase();
     for (const [cat, keywords] of Object.entries(CATEGORY_KEYWORDS)) {
-      if (keywords.some(kw => lower.includes(kw))) {
+      const hit = keywords.find(kw => lower.includes(kw));
+      if (hit) {
         setCategory(cat);
         setAutoDetected(true);
+        setMatchedKeyword(hit);
         return;
       }
     }
     setAutoDetected(false);
+    setMatchedKeyword('');
   }, [description, type]);
 
   const isOtherSelected = category === 'Other Expense' || category === 'Other Income';
@@ -285,9 +289,10 @@ const AddTransactionScreen = ({ navigation, route }) => {
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
             <Text style={styles.formCardTitle}>{type === 'income' ? 'Income Source' : t('category')}</Text>
             {autoDetected && type === 'expense' && (
-              <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.primary + '18', borderRadius: 12, paddingHorizontal: 8, paddingVertical: 3, gap: 4 }}>
-                <Ionicons name="flash" size={12} color={COLORS.primary} />
-                <Text style={{ fontSize: 10, color: COLORS.primary, fontWeight: '700' }}>Auto-detected</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#10B981' + '18', borderRadius: 20, paddingHorizontal: 10, paddingVertical: 4, gap: 4, borderWidth: 1, borderColor: '#10B981' + '40' }}>
+                <Ionicons name="flash" size={12} color="#10B981" />
+                <Text style={{ fontSize: 11, color: '#10B981', fontWeight: '700' }}>AI detected</Text>
+                {!!matchedKeyword && <Text style={{ fontSize: 11, color: '#10B981', fontWeight: '500' }}>· "{matchedKeyword}"</Text>}
               </View>
             )}
           </View>
@@ -308,7 +313,7 @@ const AddTransactionScreen = ({ navigation, route }) => {
                     styles.categoryChip,
                     isSelected && { backgroundColor: catInfo.color, borderColor: catInfo.color },
                   ]}
-                  onPress={() => setCategory(cat)}
+                  onPress={() => { setCategory(cat); setAutoDetected(false); setMatchedKeyword(''); }}
                 >
                   <Ionicons
                     name={catInfo.icon}

@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { COLORS } from '../constants/theme';
 import { useTheme } from '../context/ThemeContext';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // Auth screens
 import LoginScreen from '../screens/auth/LoginScreen';
@@ -74,6 +75,8 @@ const GoalStackNavigator = () => {
 const MainTabs = () => {
   const { t } = useLanguage();
   const { theme } = useTheme();
+  const insets = useSafeAreaInsets();
+  const bottomInset = Math.max(insets.bottom, 0);
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -106,18 +109,20 @@ const MainTabs = () => {
         tabBarStyle: {
           backgroundColor: theme.surface,
           borderTopColor: theme.border,
-          paddingBottom: 8,
-          paddingTop: 6,
-          height: 68,
-          marginBottom: 6,
-          borderRadius: 20,
-          marginHorizontal: 10,
+          paddingBottom: 10,
+          paddingTop: 8,
+          height: 68 + bottomInset,
+          borderRadius: 24,
+          marginHorizontal: 12,
           position: 'absolute',
-          elevation: 10,
+          bottom: bottomInset > 0 ? bottomInset + 8 : 12,
+          left: 0,
+          right: 0,
+          elevation: 12,
           shadowColor: '#000',
-          shadowOffset: { width: 0, height: -2 },
-          shadowOpacity: 0.08,
-          shadowRadius: 12,
+          shadowOffset: { width: 0, height: -3 },
+          shadowOpacity: 0.1,
+          shadowRadius: 16,
         },
         tabBarLabelStyle: {
           fontSize: 11,

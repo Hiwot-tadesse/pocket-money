@@ -107,8 +107,8 @@ const ChatScreen = ({ navigation }) => {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={0}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 25}
     >
       {/* Header */}
       <View style={styles.header}>
@@ -172,11 +172,14 @@ const ChatScreen = ({ navigation }) => {
         <TextInput
           style={styles.inputField}
           placeholder="Ask about your finances..."
-          placeholderTextColor={COLORS.placeholder}
+          placeholderTextColor={theme.textLight}
           value={input}
           onChangeText={setInput}
           multiline
           maxLength={500}
+          returnKeyType="send"
+          onSubmitEditing={() => sendMessage()}
+          blurOnSubmit={false}
         />
         <TouchableOpacity
           style={[styles.sendBtn, (!input.trim() || loading) && styles.sendBtnOff]}
@@ -186,6 +189,7 @@ const ChatScreen = ({ navigation }) => {
           <Ionicons name="send" size={20} color={COLORS.white} />
         </TouchableOpacity>
       </View>
+      <View style={{ height: Platform.OS === 'android' ? 0 : 0 }} />
     </KeyboardAvoidingView>
   );
 };
