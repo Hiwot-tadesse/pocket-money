@@ -13,6 +13,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { chatAPI } from '../../services/api';
 import { COLORS, SIZES, SHADOWS } from '../../constants/theme';
+import { useTheme } from '../../context/ThemeContext';
 
 const SUGGESTIONS = [
   "How am I doing this month?",
@@ -29,6 +30,7 @@ const INITIAL_MESSAGE = {
 };
 
 const ChatScreen = ({ navigation }) => {
+  const { theme } = useTheme();
   const [messages, setMessages] = useState([INITIAL_MESSAGE]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -100,6 +102,7 @@ const ChatScreen = ({ navigation }) => {
   };
 
   const showSuggestions = messages.length === 1 && !loading;
+  const styles = getStyles(theme);
 
   return (
     <KeyboardAvoidingView
@@ -187,130 +190,35 @@ const ChatScreen = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
-
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: COLORS.primary,
-    paddingTop: 56,
-    paddingBottom: 20,
-    paddingHorizontal: SIZES.paddingLg,
-    borderBottomLeftRadius: 28,
-    borderBottomRightRadius: 28,
-    ...SHADOWS.large,
-  },
-  backBtn: {
-    width: 44, height: 44, borderRadius: 22,
-    backgroundColor: 'rgba(255,255,255,0.15)',
-    alignItems: 'center', justifyContent: 'center',
-  },
+const getStyles = (theme) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: theme.background },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: COLORS.primary, paddingTop: 56, paddingBottom: 20, paddingHorizontal: SIZES.paddingLg, borderBottomLeftRadius: 28, borderBottomRightRadius: 28, ...SHADOWS.large },
+  backBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(255,255,255,0.15)', alignItems: 'center', justifyContent: 'center' },
   headerCenter: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  headerAvatar: {
-    width: 44, height: 44, borderRadius: 22,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    alignItems: 'center', justifyContent: 'center',
-  },
-  headerTitle: { fontSize: SIZES.lg, fontWeight: '800', color: COLORS.white },
+  headerAvatar: { width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
+  headerTitle: { fontSize: SIZES.lg, fontWeight: '800', color: '#FFFFFF' },
   headerSubtitle: { fontSize: 11, color: 'rgba(255,255,255,0.7)', marginTop: 2, fontWeight: '500' },
-
   messageList: { padding: 16, paddingBottom: 8, flexGrow: 1 },
-
   row: { flexDirection: 'row', marginBottom: 12, alignItems: 'flex-end', gap: 8 },
   rowUser: { justifyContent: 'flex-end' },
   rowBot: { justifyContent: 'flex-start' },
-
-  botAvatar: {
-    width: 30, height: 30, borderRadius: 15,
-    backgroundColor: COLORS.primary,
-    alignItems: 'center', justifyContent: 'center',
-    flexShrink: 0,
-  },
-  userAvatar: {
-    width: 30, height: 30, borderRadius: 15,
-    backgroundColor: COLORS.primaryDark || COLORS.primary,
-    alignItems: 'center', justifyContent: 'center',
-    flexShrink: 0,
-  },
-
-  bubble: {
-    maxWidth: '75%',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 20,
-  },
-  bubbleBot: {
-    backgroundColor: COLORS.white,
-    borderBottomLeftRadius: 4,
-    ...SHADOWS.small,
-  },
-  bubbleUser: {
-    backgroundColor: COLORS.primary,
-    borderBottomRightRadius: 4,
-  },
-  bubbleText: {
-    fontSize: SIZES.md,
-    color: COLORS.text,
-    lineHeight: 22,
-  },
-  bubbleTextUser: { color: COLORS.white },
+  botAvatar: { width: 30, height: 30, borderRadius: 15, backgroundColor: COLORS.primary, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
+  userAvatar: { width: 30, height: 30, borderRadius: 15, backgroundColor: COLORS.primaryDark || COLORS.primary, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
+  bubble: { maxWidth: '75%', paddingHorizontal: 16, paddingVertical: 12, borderRadius: 20 },
+  bubbleBot: { backgroundColor: theme.surface, borderBottomLeftRadius: 4, ...SHADOWS.small },
+  bubbleUser: { backgroundColor: COLORS.primary, borderBottomRightRadius: 4 },
+  bubbleText: { fontSize: SIZES.md, color: theme.text, lineHeight: 22 },
+  bubbleTextUser: { color: '#FFFFFF' },
   typingBubble: { paddingVertical: 14, paddingHorizontal: 20 },
-
-  suggestionsWrap: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    backgroundColor: COLORS.white,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.border,
-  },
-  suggestionsLabel: {
-    fontSize: SIZES.xs,
-    fontWeight: '700',
-    color: COLORS.textSecondary,
-    marginBottom: 8,
-    letterSpacing: 0.5,
-  },
+  suggestionsWrap: { paddingHorizontal: 16, paddingVertical: 10, backgroundColor: theme.surface, borderTopWidth: 1, borderTopColor: theme.border },
+  suggestionsLabel: { fontSize: SIZES.xs, fontWeight: '700', color: theme.textSecondary, marginBottom: 8, letterSpacing: 0.5 },
   suggestionsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  chip: {
-    backgroundColor: COLORS.primary + '12',
-    borderRadius: 20,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderWidth: 1,
-    borderColor: COLORS.primary + '30',
-  },
+  chip: { backgroundColor: COLORS.primary + '12', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 8, borderWidth: 1, borderColor: COLORS.primary + '30' },
   chipText: { fontSize: SIZES.sm, color: COLORS.primary, fontWeight: '600' },
-
-  inputBar: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    padding: 12,
-    gap: 10,
-    backgroundColor: COLORS.white,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.border,
-  },
-  inputField: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-    borderRadius: 24,
-    paddingHorizontal: 18,
-    paddingVertical: 12,
-    fontSize: SIZES.md,
-    color: COLORS.text,
-    maxHeight: 120,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  sendBtn: {
-    width: 46, height: 46, borderRadius: 23,
-    backgroundColor: COLORS.primary,
-    alignItems: 'center', justifyContent: 'center',
-    ...SHADOWS.small,
-  },
-  sendBtnOff: { backgroundColor: COLORS.border },
+  inputBar: { flexDirection: 'row', alignItems: 'flex-end', padding: 12, gap: 10, backgroundColor: theme.surface, borderTopWidth: 1, borderTopColor: theme.border },
+  inputField: { flex: 1, backgroundColor: theme.background, borderRadius: 24, paddingHorizontal: 18, paddingVertical: 12, fontSize: SIZES.md, color: theme.text, maxHeight: 120, borderWidth: 1, borderColor: theme.border },
+  sendBtn: { width: 46, height: 46, borderRadius: 23, backgroundColor: COLORS.primary, alignItems: 'center', justifyContent: 'center', ...SHADOWS.small },
+  sendBtnOff: { backgroundColor: theme.border },
 });
 
 export default ChatScreen;

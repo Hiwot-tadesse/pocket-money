@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { COLORS } from '../constants/theme';
+import { useTheme } from '../context/ThemeContext';
 
 // Auth screens
 import LoginScreen from '../screens/auth/LoginScreen';
@@ -72,6 +73,7 @@ const GoalStackNavigator = () => {
 
 const MainTabs = () => {
   const { t } = useLanguage();
+  const { theme } = useTheme();
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -99,14 +101,23 @@ const MainTabs = () => {
           }
           return <Ionicons name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: COLORS.primary,
-        tabBarInactiveTintColor: COLORS.textLight,
+        tabBarActiveTintColor: theme.primary,
+        tabBarInactiveTintColor: theme.textLight,
         tabBarStyle: {
-          backgroundColor: COLORS.white,
-          borderTopColor: COLORS.border,
-          paddingBottom: 5,
-          paddingTop: 5,
-          height: 60,
+          backgroundColor: theme.surface,
+          borderTopColor: theme.border,
+          paddingBottom: 8,
+          paddingTop: 6,
+          height: 68,
+          marginBottom: 6,
+          borderRadius: 20,
+          marginHorizontal: 10,
+          position: 'absolute',
+          elevation: 10,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.08,
+          shadowRadius: 12,
         },
         tabBarLabelStyle: {
           fontSize: 11,

@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const { validationResult } = require('express-validator');
 const User = require('../models/User');
+const { sendPasswordResetEmail, sendWelcomeEmail } = require('../utils/emailService');
 
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -37,13 +38,19 @@ const register = async (req, res, next) => {
 
     const token = generateToken(user._id);
 
+    sendWelcomeEmail(email, username).catch((err) => {
+      console.error('[Email] Welcome email failed:', err.message);
+    });
+
     res.status(201).json({
       success: true,
       data: {
         _id: user._id,
         username: user.username,
         email: user.email,
+        phone: user.phone || '',
         currency: user.currency,
+        notificationsEnabled: user.notificationsEnabled,
         token,
       },
     });
@@ -87,7 +94,9 @@ const login = async (req, res, next) => {
         _id: user._id,
         username: user.username,
         email: user.email,
+        phone: user.phone || '',
         currency: user.currency,
+        notificationsEnabled: user.notificationsEnabled,
         token,
       },
     });
@@ -133,7 +142,9 @@ const loginWithPin = async (req, res, next) => {
         _id: user._id,
         username: user.username,
         email: user.email,
+        phone: user.phone || '',
         currency: user.currency,
+        notificationsEnabled: user.notificationsEnabled,
         token,
       },
     });
@@ -160,11 +171,12 @@ const getProfile = async (req, res, next) => {
 // @route   PUT /api/auth/me
 const updateProfile = async (req, res, next) => {
   try {
-    const { username, currency, notificationsEnabled } = req.body;
+    const { username, currency, notificationsEnabled, phone } = req.body;
     const updates = {};
 
     if (username) updates.username = username;
     if (currency) updates.currency = currency;
+    if (typeof phone === 'string') updates.phone = phone;
     if (typeof notificationsEnabled === 'boolean') {
       updates.notificationsEnabled = notificationsEnabled;
     }
@@ -202,10 +214,14 @@ const forgotPassword = async (req, res, next) => {
     user.resetPasswordExpires = new Date(Date.now() + 15 * 60 * 1000);
     await user.save({ validateBeforeSave: false });
 
+    const emailSent = await sendPasswordResetEmail(user.email, otp).catch(() => false);
+
     res.json({
       success: true,
-      message: 'Reset code generated',
-      data: { otp, expiresIn: '15 minutes' },
+      message: emailSent
+        ? 'Reset code sent to your email'
+        : 'Reset code generated (email not configured)',
+      data: { otp, expiresIn: '15 minutes', emailSent },
     });
   } catch (error) {
     next(error);
@@ -220,8 +236,8 @@ const resetPassword = async (req, res, next) => {
     if (!email || !otp || !newPassword) {
       return res.status(400).json({ success: false, message: 'Email, OTP, and new password are required' });
     }
-    if (newPassword.length < 6) {
-      return res.status(400).json({ success: false, message: 'Password must be at least 6 characters' });
+    if (newPassword.length < 8) {
+      return res.status(400).json({ success: false, message: 'Password must be at least 8 characters' });
     }
 
     const user = await User.findOne({ email: email.toLowerCase().trim() })

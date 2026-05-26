@@ -16,9 +16,13 @@ const SettingsScreen = () => {
   const [notifications, setNotifications] = useState(user?.notificationsEnabled ?? true);
   const [editingName, setEditingName] = useState(false);
   const [newName, setNewName] = useState(user?.username || '');
+  const [editingPhone, setEditingPhone] = useState(false);
+  const [newPhone, setNewPhone] = useState(user?.phone || '');
   const [reminderEnabled, setReminderEnabled] = useState(expenseReminder.enabled);
   const [reminderTitle, setReminderTitle] = useState(expenseReminder.title);
+  const [reminderTime, setReminderTime] = useState(expenseReminder.time || '08:00');
   const [editingReminder, setEditingReminder] = useState(false);
+  const [editingTime, setEditingTime] = useState(false);
 
   const handleToggleNotifications = async (value) => {
     setNotifications(value);
@@ -42,6 +46,25 @@ const SettingsScreen = () => {
     } catch (e) {
       Alert.alert(t('error'), e.message);
     }
+  };
+
+  const handleUpdatePhone = async () => {
+    try {
+      await updateUser({ phone: newPhone.trim() });
+      setEditingPhone(false);
+    } catch (e) {
+      Alert.alert(t('error'), e.message);
+    }
+  };
+
+  const handleSaveTime = () => {
+    const timeRegex = /^([01]?\d|2[0-3]):([0-5]\d)$/;
+    if (!timeRegex.test(reminderTime)) {
+      Alert.alert(t('error'), 'Please enter a valid time in HH:MM format (e.g. 08:30)');
+      return;
+    }
+    setEditingTime(false);
+    setExpenseReminder(reminderEnabled, reminderTitle, reminderTime);
   };
 
   const handleLogout = () => {
@@ -82,6 +105,35 @@ const SettingsScreen = () => {
               </TouchableOpacity>
             )}
             <Text style={s.userEmail}>{user?.email}</Text>
+            {/* Phone field */}
+            {editingPhone ? (
+              <View style={[s.editRow, { marginTop: 8 }]}>
+                <Ionicons name="call-outline" size={14} color={theme.textLight} />
+                <TextInput
+                  style={[s.editInput, { fontSize: SIZES.sm }]}
+                  value={newPhone}
+                  onChangeText={setNewPhone}
+                  placeholder="Phone number"
+                  placeholderTextColor={theme.textLight}
+                  keyboardType="phone-pad"
+                  autoFocus
+                />
+                <TouchableOpacity onPress={handleUpdatePhone} style={s.saveBtn}>
+                  <Ionicons name="checkmark" size={18} color={theme.white} />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => { setEditingPhone(false); setNewPhone(user?.phone || ''); }}>
+                  <Ionicons name="close" size={18} color={theme.textLight} />
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <TouchableOpacity onPress={() => setEditingPhone(true)} style={[s.nameRow, { marginTop: 6 }]}>
+                <Ionicons name="call-outline" size={13} color={theme.textLight} />
+                <Text style={[s.userEmail, { marginTop: 0, marginLeft: 4 }]}>
+                  {user?.phone || 'Add phone number'}
+                </Text>
+                <Ionicons name="pencil" size={12} color={theme.textLight} />
+              </TouchableOpacity>
+            )}
           </View>
         </View>
       </View>
@@ -173,11 +225,43 @@ const SettingsScreen = () => {
                   <TouchableOpacity
                     onPress={() => {
                       setEditingReminder(false);
-                      setExpenseReminder(reminderEnabled, reminderTitle);
+                      setExpenseReminder(reminderEnabled, reminderTitle, reminderTime);
                     }}
                     style={[s.saveBtn, { backgroundColor: '#6366F1' }]}
                   >
                     <Ionicons name="checkmark" size={20} color={theme.white} />
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+          <View style={s.divider} />
+            <View style={s.settingRow}>
+              <View style={s.settingLeft}>
+                <Ionicons name="time-outline" size={22} color={theme.warning} />
+                <Text style={s.settingLabel}>Reminder Time</Text>
+              </View>
+              {!editingTime ? (
+                <TouchableOpacity onPress={() => setEditingTime(true)} style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                  <Text style={s.settingValue}>{reminderTime || '08:00'}</Text>
+                  <Ionicons name="pencil" size={12} color={theme.textLight} />
+                </TouchableOpacity>
+              ) : (
+                <View style={[s.editRow, { flex: 1, marginLeft: 8 }]}>
+                  <TextInput
+                    style={[s.editInput, { fontSize: SIZES.sm, textAlign: 'center' }]}
+                    value={reminderTime}
+                    onChangeText={setReminderTime}
+                    placeholder="HH:MM"
+                    placeholderTextColor={theme.textLight}
+                    keyboardType="numbers-and-punctuation"
+                    maxLength={5}
+                    autoFocus
+                  />
+                  <TouchableOpacity onPress={handleSaveTime} style={[s.saveBtn, { backgroundColor: '#6366F1' }]}>
+                    <Ionicons name="checkmark" size={20} color={theme.white} />
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => setEditingTime(false)}>
+                    <Ionicons name="close" size={18} color={theme.textLight} />
                   </TouchableOpacity>
                 </View>
               )}

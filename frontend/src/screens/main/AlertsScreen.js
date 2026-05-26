@@ -5,6 +5,7 @@ import { alertAPI } from '../../services/api';
 import { COLORS, SIZES, SHADOWS } from '../../constants/theme';
 import { useLanguage } from '../../context/LanguageContext';
 import { useSmartAlerts } from '../../context/SmartAlertsContext';
+import { useTheme } from '../../context/ThemeContext';
 
 const ALERT_ICONS = {
   budget_warning: { icon: 'warning', color: COLORS.warning },
@@ -20,6 +21,7 @@ const ALERT_ICONS = {
 
 const AlertsScreen = ({ navigation }) => {
   const { t, language } = useLanguage();
+  const { theme } = useTheme();
   const {
     localAlerts, markAlertRead, markAllAlertsRead, deleteAlert: deleteLocalAlert,
   } = useSmartAlerts();
@@ -183,6 +185,8 @@ const AlertsScreen = ({ navigation }) => {
     <Text style={st.sectionTitle}>{title}</Text>
   );
 
+  const st = getStyles(theme);
+
   return (
     <View style={st.container}>
       <View style={st.header}>
@@ -217,39 +221,27 @@ const AlertsScreen = ({ navigation }) => {
   );
 };
 
-const st = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
+const getStyles = (theme) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: theme.background },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  header: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    justifyContent: 'space-between', 
-    backgroundColor: COLORS.primary, 
-    paddingTop: 56, 
-    paddingBottom: 24, 
-    paddingHorizontal: SIZES.paddingLg,
-    borderBottomLeftRadius: 32,
-    borderBottomRightRadius: 32,
-    ...SHADOWS.large,
-    zIndex: 10,
-  },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: COLORS.primary, paddingTop: 56, paddingBottom: 24, paddingHorizontal: SIZES.paddingLg, borderBottomLeftRadius: 32, borderBottomRightRadius: 32, ...SHADOWS.large, zIndex: 10 },
   backBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(255,255,255,0.15)', alignItems: 'center', justifyContent: 'center' },
-  headerTitle: { fontSize: 24, fontWeight: '800', color: COLORS.white, letterSpacing: -0.5 },
+  headerTitle: { fontSize: 24, fontWeight: '800', color: '#FFFFFF', letterSpacing: -0.5 },
   markAll: { fontSize: SIZES.sm, color: 'rgba(255,255,255,0.9)', fontWeight: '700' },
   list: { padding: SIZES.margin, paddingBottom: 30 },
-  sectionTitle: { fontSize: SIZES.sm, fontWeight: '700', color: COLORS.textSecondary, textTransform: 'uppercase', letterSpacing: 1, marginTop: 16, marginBottom: 12 },
-  alertCard: { flexDirection: 'row', alignItems: 'flex-start', backgroundColor: COLORS.white, borderRadius: SIZES.borderRadius, padding: 16, marginBottom: 12, gap: 12 },
+  sectionTitle: { fontSize: SIZES.sm, fontWeight: '700', color: theme.textSecondary, textTransform: 'uppercase', letterSpacing: 1, marginTop: 16, marginBottom: 12 },
+  alertCard: { flexDirection: 'row', alignItems: 'flex-start', backgroundColor: theme.surface, borderRadius: SIZES.borderRadius, padding: 16, marginBottom: 12, gap: 12 },
   unread: { borderLeftWidth: 4, borderLeftColor: COLORS.primary },
   iconWrap: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', marginTop: 2 },
   alertTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  alertTitle: { fontSize: SIZES.md, fontWeight: '700', color: COLORS.text, flex: 1, marginRight: 8 },
-  alertTime: { fontSize: 11, color: COLORS.textLight, fontWeight: '500' },
-  alertMsg: { fontSize: SIZES.sm, color: COLORS.textSecondary, marginTop: 6, lineHeight: 20 },
+  alertTitle: { fontSize: SIZES.md, fontWeight: '700', color: theme.text, flex: 1, marginRight: 8 },
+  alertTime: { fontSize: 11, color: theme.textLight, fontWeight: '500' },
+  alertMsg: { fontSize: SIZES.sm, color: theme.textSecondary, marginTop: 6, lineHeight: 20 },
   unreadDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: COLORS.primary, marginTop: 6 },
   tipBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFBEB', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4, marginTop: 8, alignSelf: 'flex-start', gap: 6 },
   tipBadgeText: { fontSize: 10, fontWeight: '700', color: '#D97706', textTransform: 'uppercase', letterSpacing: 0.5 },
   empty: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 60 },
-  emptyText: { fontSize: SIZES.base, fontWeight: '600', color: COLORS.textSecondary, marginTop: 12 },
+  emptyText: { fontSize: SIZES.base, fontWeight: '600', color: theme.textSecondary, marginTop: 12 },
 });
 
 export default AlertsScreen;

@@ -4,6 +4,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { reportAPI } from '../../services/api';
 import { COLORS, SIZES, SHADOWS, CATEGORIES } from '../../constants/theme';
+import { useTheme } from '../../context/ThemeContext';
 import { useLanguage } from '../../context/LanguageContext';
 
 const TAB_KEYS = [
@@ -16,6 +17,7 @@ const fmt = (n) => `ETB ${(n || 0).toFixed(2)}`;
 
 const ReportsScreen = () => {
   const { t } = useLanguage();
+  const { theme } = useTheme();
   const [tab, setTab] = useState('monthly');
   const [summary, setSummary] = useState(null);
   const [periodData, setPeriodData] = useState([]);
@@ -45,6 +47,8 @@ const ReportsScreen = () => {
   };
 
   useFocusEffect(useCallback(() => { load(); }, [tab]));
+
+  const s = getStyles(theme);
 
   if (loading) {
     return <View style={s.center}><ActivityIndicator size="large" color={COLORS.primary} /></View>;
@@ -164,7 +168,7 @@ const ReportsScreen = () => {
             {periodData.slice(-10).reverse().map((item, i) => {
               const lbl = item.date || item.week || item.month || '';
               return (
-                <View key={i} style={[s.tblRow, i % 2 === 0 && { backgroundColor: COLORS.background }]}>
+                <View key={i} style={[s.tblRow, i % 2 === 0 && { backgroundColor: theme.background }]}>
                   <Text style={[s.tblCell, { flex: 1.5 }]}>{lbl}</Text>
                   <Text style={[s.tblCell, { flex: 1, textAlign: 'right', color: COLORS.income }]}>{fmt(item.income)}</Text>
                   <Text style={[s.tblCell, { flex: 1, textAlign: 'right', color: COLORS.expense }]}>{fmt(item.expense)}</Text>
@@ -179,49 +183,49 @@ const ReportsScreen = () => {
   );
 };
 
-const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: COLORS.background },
+const getStyles = (theme) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: theme.background },
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.background },
   header: { backgroundColor: COLORS.primary, paddingTop: 56, paddingBottom: 16, paddingHorizontal: SIZES.paddingLg },
-  headerTitle: { fontSize: SIZES.xxl, fontWeight: 'bold', color: COLORS.white },
+  headerTitle: { fontSize: SIZES.xxl, fontWeight: 'bold', color: '#FFFFFF' },
   sumRow: { flexDirection: 'row', paddingHorizontal: SIZES.margin, marginTop: 16, gap: 10 },
-  sumCard: { flex: 1, backgroundColor: COLORS.white, borderRadius: SIZES.borderRadius, padding: 14, alignItems: 'center' },
-  sumLabel: { fontSize: SIZES.xs, color: COLORS.textSecondary, marginTop: 6 },
+  sumCard: { flex: 1, backgroundColor: theme.surface, borderRadius: SIZES.borderRadius, padding: 14, alignItems: 'center' },
+  sumLabel: { fontSize: SIZES.xs, color: theme.textSecondary, marginTop: 6 },
   sumVal: { fontSize: SIZES.lg, fontWeight: 'bold', marginTop: 2 },
-  balCard: { backgroundColor: COLORS.white, marginHorizontal: SIZES.margin, marginTop: 10, borderRadius: SIZES.borderRadius, padding: 16, alignItems: 'center' },
-  balLabel: { fontSize: SIZES.sm, color: COLORS.textSecondary },
+  balCard: { backgroundColor: theme.surface, marginHorizontal: SIZES.margin, marginTop: 10, borderRadius: SIZES.borderRadius, padding: 16, alignItems: 'center' },
+  balLabel: { fontSize: SIZES.sm, color: theme.textSecondary },
   balVal: { fontSize: SIZES.xxl, fontWeight: 'bold', marginTop: 4 },
   tabs: { flexDirection: 'row', marginHorizontal: SIZES.margin, marginTop: 16, gap: 8 },
-  tab: { flex: 1, paddingVertical: 10, borderRadius: 20, backgroundColor: COLORS.white, borderWidth: 1, borderColor: COLORS.border, alignItems: 'center' },
+  tab: { flex: 1, paddingVertical: 10, borderRadius: 20, backgroundColor: theme.surface, borderWidth: 1, borderColor: theme.border, alignItems: 'center' },
   tabActive: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
-  tabText: { fontSize: SIZES.md, fontWeight: '600', color: COLORS.textSecondary },
-  tabTextActive: { color: COLORS.white },
-  card: { backgroundColor: COLORS.white, marginHorizontal: SIZES.margin, marginTop: 16, borderRadius: SIZES.borderRadius, padding: SIZES.padding },
-  cardTitle: { fontSize: SIZES.base, fontWeight: 'bold', color: COLORS.text, marginBottom: 12 },
-  noData: { fontSize: SIZES.sm, color: COLORS.textLight, textAlign: 'center', paddingVertical: 20 },
+  tabText: { fontSize: SIZES.md, fontWeight: '600', color: theme.textSecondary },
+  tabTextActive: { color: '#FFFFFF' },
+  card: { backgroundColor: theme.surface, marginHorizontal: SIZES.margin, marginTop: 16, borderRadius: SIZES.borderRadius, padding: SIZES.padding },
+  cardTitle: { fontSize: SIZES.base, fontWeight: 'bold', color: theme.text, marginBottom: 12 },
+  noData: { fontSize: SIZES.sm, color: theme.textLight, textAlign: 'center', paddingVertical: 20 },
   barChart: { flexDirection: 'row', alignItems: 'flex-end', height: 120, gap: 12, paddingHorizontal: 4 },
   barGroup: { alignItems: 'center', width: 36 },
   barPair: { flexDirection: 'row', alignItems: 'flex-end', gap: 3 },
   bar: { width: 14, borderRadius: 3, minHeight: 4 },
-  barLabel: { fontSize: 9, color: COLORS.textLight, marginTop: 4 },
+  barLabel: { fontSize: 9, color: theme.textLight, marginTop: 4 },
   legend: { flexDirection: 'row', justifyContent: 'center', marginTop: 12, gap: 20 },
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   dot: { width: 10, height: 10, borderRadius: 5 },
-  legendText: { fontSize: SIZES.xs, color: COLORS.textSecondary },
+  legendText: { fontSize: SIZES.xs, color: theme.textSecondary },
   catRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 14, gap: 10 },
   catIcon: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
   catNameRow: { flexDirection: 'row', justifyContent: 'space-between' },
-  catName: { fontSize: SIZES.sm, fontWeight: '600', color: COLORS.text },
-  catAmt: { fontSize: SIZES.sm, fontWeight: 'bold', color: COLORS.text },
-  catBarBg: { height: 6, backgroundColor: COLORS.divider, borderRadius: 3, marginTop: 6, overflow: 'hidden' },
+  catName: { fontSize: SIZES.sm, fontWeight: '600', color: theme.text },
+  catAmt: { fontSize: SIZES.sm, fontWeight: 'bold', color: theme.text },
+  catBarBg: { height: 6, backgroundColor: theme.divider, borderRadius: 3, marginTop: 6, overflow: 'hidden' },
   catBarFill: { height: '100%', borderRadius: 3 },
   catMeta: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 4 },
-  catPct: { fontSize: 10, color: COLORS.textSecondary, fontWeight: '600' },
-  catCount: { fontSize: 10, color: COLORS.textLight },
-  tblHeader: { flexDirection: 'row', paddingVertical: 8, borderBottomWidth: 1, borderColor: COLORS.border },
-  tblH: { fontSize: SIZES.xs, fontWeight: '600', color: COLORS.textSecondary },
+  catPct: { fontSize: 10, color: theme.textSecondary, fontWeight: '600' },
+  catCount: { fontSize: 10, color: theme.textLight },
+  tblHeader: { flexDirection: 'row', paddingVertical: 8, borderBottomWidth: 1, borderColor: theme.border },
+  tblH: { fontSize: SIZES.xs, fontWeight: '600', color: theme.textSecondary },
   tblRow: { flexDirection: 'row', paddingVertical: 10, borderRadius: 4 },
-  tblCell: { fontSize: SIZES.xs, color: COLORS.text },
+  tblCell: { fontSize: SIZES.xs, color: theme.text },
 });
 
 export default ReportsScreen;

@@ -15,10 +15,22 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { COLORS, SIZES, SHADOWS } from '../../constants/theme';
+import { useTheme } from '../../context/ThemeContext';
+
+const validatePassword = (pw) => {
+  if (pw.length < 8) return 'Password must be at least 8 characters.';
+  if (!/[A-Z]/.test(pw)) return 'Password must contain at least one uppercase letter.';
+  if (!/[0-9]/.test(pw)) return 'Password must contain at least one number.';
+  if (!/[^A-Za-z0-9]/.test(pw)) return 'Password must contain at least one special character.';
+  const weak = ['password', '12345678', 'qwerty123', 'letmein1'];
+  if (weak.some((w) => pw.toLowerCase().includes(w))) return 'Password is too common. Please choose a stronger one.';
+  return null;
+};
 
 const RegisterScreen = ({ navigation }) => {
   const { register } = useAuth();
   const { t } = useLanguage();
+  const { theme } = useTheme();
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -36,8 +48,9 @@ const RegisterScreen = ({ navigation }) => {
       Alert.alert(t('error'), t('usernameMin'));
       return;
     }
-    if (password.length < 6) {
-      Alert.alert(t('error'), t('passwordMin6'));
+    const pwError = validatePassword(password);
+    if (pwError) {
+      Alert.alert(t('error'), pwError);
       return;
     }
     if (password !== confirmPassword) {
@@ -64,6 +77,8 @@ const RegisterScreen = ({ navigation }) => {
       setLoading(false);
     }
   };
+
+  const styles = getStyles(theme);
 
   return (
     <KeyboardAvoidingView
@@ -110,7 +125,7 @@ const RegisterScreen = ({ navigation }) => {
             <Ionicons name="lock-closed-outline" size={20} color={COLORS.textLight} style={styles.inputIcon} />
             <TextInput
               style={[styles.input, { flex: 1 }]}
-              placeholder={t('passwordMin')}
+              placeholder="Password (8+ chars, A-Z, 0-9, special)"
               placeholderTextColor={COLORS.placeholder}
               value={password}
               onChangeText={setPassword}
@@ -124,6 +139,7 @@ const RegisterScreen = ({ navigation }) => {
               />
             </TouchableOpacity>
           </View>
+          <Text style={styles.pwHint}>Min 8 chars · uppercase · number · special char</Text>
 
           <View style={styles.inputContainer}>
             <Ionicons name="lock-closed-outline" size={20} color={COLORS.textLight} style={styles.inputIcon} />
@@ -171,104 +187,23 @@ const RegisterScreen = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.primary,
-  },
-  scrollContent: {
-    flexGrow: 1,
-  },
-  header: {
-    alignItems: 'center',
-    paddingTop: 80,
-    paddingBottom: 40,
-  },
-  iconContainer: {
-    width: 88,
-    height: 88,
-    borderRadius: 44,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 16,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: '800',
-    color: COLORS.white,
-    letterSpacing: -0.5,
-  },
-  subtitle: {
-    fontSize: SIZES.base,
-    color: 'rgba(255,255,255,0.8)',
-    marginTop: 4,
-    fontWeight: '500',
-  },
-  form: {
-    flex: 1,
-    backgroundColor: COLORS.white,
-    borderTopLeftRadius: 40,
-    borderTopRightRadius: 40,
-    paddingHorizontal: SIZES.paddingLg,
-    paddingTop: 40,
-  },
-  formTitle: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: COLORS.text,
-    marginBottom: 32,
-    letterSpacing: -0.5,
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.background,
-    borderRadius: SIZES.borderRadiusLg,
-    paddingHorizontal: 20,
-    marginBottom: 16,
-    height: 60,
-  },
-  inputIcon: {
-    marginRight: 16,
-  },
-  input: {
-    flex: 1,
-    fontSize: SIZES.base,
-    fontWeight: '600',
-    color: COLORS.text,
-  },
-  registerButton: {
-    backgroundColor: COLORS.primary,
-    borderRadius: SIZES.borderRadiusLg,
-    height: 60,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 16,
-    marginBottom: 24,
-    ...SHADOWS.medium,
-  },
-  registerButtonText: {
-    color: COLORS.white,
-    fontSize: SIZES.lg,
-    fontWeight: '800',
-  },
-  loginRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginBottom: 40,
-  },
-  loginText: {
-    color: COLORS.textSecondary,
-    fontSize: SIZES.md,
-    fontWeight: '500',
-  },
-  loginLink: {
-    color: COLORS.primary,
-    fontSize: SIZES.md,
-    fontWeight: '800',
-    marginLeft: 6,
-  },
+const getStyles = (theme) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: COLORS.primary },
+  scrollContent: { flexGrow: 1 },
+  header: { alignItems: 'center', paddingTop: 80, paddingBottom: 40 },
+  backButton: { position: 'absolute', top: 56, left: 20, width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(255,255,255,0.15)', alignItems: 'center', justifyContent: 'center' },
+  title: { fontSize: 32, fontWeight: '800', color: '#FFFFFF', letterSpacing: -0.5 },
+  subtitle: { fontSize: SIZES.base, color: 'rgba(255,255,255,0.8)', marginTop: 4, fontWeight: '500' },
+  form: { flex: 1, backgroundColor: theme.surface, borderTopLeftRadius: 40, borderTopRightRadius: 40, paddingHorizontal: SIZES.paddingLg, paddingTop: 40 },
+  inputContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: theme.background, borderRadius: SIZES.borderRadiusLg, paddingHorizontal: 20, marginBottom: 16, height: 60 },
+  inputIcon: { marginRight: 16 },
+  input: { flex: 1, fontSize: SIZES.base, fontWeight: '600', color: theme.text },
+  pwHint: { fontSize: SIZES.xs, color: theme.textLight, marginBottom: 12, marginTop: -8, paddingHorizontal: 4 },
+  registerButton: { backgroundColor: COLORS.primary, borderRadius: SIZES.borderRadiusLg, height: 60, alignItems: 'center', justifyContent: 'center', marginTop: 16, marginBottom: 24, ...SHADOWS.medium },
+  registerButtonText: { color: '#FFFFFF', fontSize: SIZES.lg, fontWeight: '800' },
+  loginRow: { flexDirection: 'row', justifyContent: 'center', marginBottom: 40 },
+  loginText: { color: theme.textSecondary, fontSize: SIZES.md, fontWeight: '500' },
+  loginLink: { color: COLORS.primary, fontSize: SIZES.md, fontWeight: '800', marginLeft: 6 },
 });
 
 export default RegisterScreen;

@@ -15,8 +15,12 @@ import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { goalAPI } from '../../services/api';
 import { COLORS, SIZES, SHADOWS } from '../../constants/theme';
+import { useTheme } from '../../context/ThemeContext';
+import { useLanguage } from '../../context/LanguageContext';
 
 const GoalsScreen = ({ navigation }) => {
+  const { theme } = useTheme();
+  const { t } = useLanguage();
   const [goals, setGoals] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -161,6 +165,8 @@ const GoalsScreen = ({ navigation }) => {
     );
   };
 
+  const styles = getStyles(theme);
+
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -256,8 +262,8 @@ const GoalsScreen = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
+const getStyles = (theme) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: theme.background },
   header: {
     backgroundColor: COLORS.primary,
     paddingTop: 56,
@@ -270,7 +276,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     ...SHADOWS.large,
   },
-  headerTitle: { fontSize: 28, fontWeight: '800', color: COLORS.white, letterSpacing: -0.5 },
+  headerTitle: { fontSize: 28, fontWeight: '800', color: '#FFFFFF', letterSpacing: -0.5 },
   headerSubtitle: { fontSize: SIZES.sm, color: 'rgba(255,255,255,0.7)', marginTop: 4, fontWeight: '500' },
   addBtn: {
     width: 48, height: 48, borderRadius: 24,
@@ -280,7 +286,7 @@ const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   listContent: { padding: SIZES.margin, paddingTop: 20, paddingBottom: 40 },
   goalCard: {
-    backgroundColor: COLORS.white,
+    backgroundColor: theme.surface,
     borderRadius: SIZES.borderRadiusLg,
     padding: 20,
     marginBottom: 16,
@@ -291,8 +297,8 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center', marginRight: 14,
   },
   goalMeta: { flex: 1 },
-  goalTitle: { fontSize: SIZES.base, fontWeight: '800', color: COLORS.text },
-  goalDesc: { fontSize: SIZES.sm, color: COLORS.textSecondary, marginTop: 3 },
+  goalTitle: { fontSize: SIZES.base, fontWeight: '800', color: theme.text },
+  goalDesc: { fontSize: SIZES.sm, color: theme.textSecondary, marginTop: 3 },
   deadlineBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
     alignSelf: 'flex-start', borderRadius: 10,
@@ -302,18 +308,18 @@ const styles = StyleSheet.create({
   goalActions: { flexDirection: 'row', gap: 6, marginLeft: 8 },
   actionBtn: {
     width: 32, height: 32, borderRadius: 16,
-    backgroundColor: COLORS.background,
+    backgroundColor: theme.background,
     alignItems: 'center', justifyContent: 'center',
   },
   progressSection: { marginBottom: 14 },
   progressBar: {
-    height: 10, borderRadius: 5, backgroundColor: COLORS.border, overflow: 'hidden', marginBottom: 8,
+    height: 10, borderRadius: 5, backgroundColor: theme.border, overflow: 'hidden', marginBottom: 8,
   },
   progressFill: { height: '100%', borderRadius: 5 },
   progressLabels: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  progressCurrent: { fontSize: SIZES.sm, fontWeight: '700', color: COLORS.text },
-  progressPct: { fontSize: SIZES.xs, fontWeight: '800', color: COLORS.textSecondary },
-  progressTarget: { fontSize: SIZES.sm, fontWeight: '600', color: COLORS.textLight },
+  progressCurrent: { fontSize: SIZES.sm, fontWeight: '700', color: theme.text },
+  progressPct: { fontSize: SIZES.xs, fontWeight: '800', color: theme.textSecondary },
+  progressTarget: { fontSize: SIZES.sm, fontWeight: '600', color: theme.textLight },
   contributeBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     paddingVertical: 12, borderRadius: SIZES.borderRadius, gap: 6,
@@ -327,11 +333,11 @@ const styles = StyleSheet.create({
   completedText: { fontWeight: '800', color: COLORS.income, fontSize: SIZES.md },
   emptyState: { alignItems: 'center', paddingVertical: 60 },
   emptyIconBg: {
-    width: 100, height: 100, borderRadius: 50, backgroundColor: COLORS.white,
+    width: 100, height: 100, borderRadius: 50, backgroundColor: theme.surface,
     alignItems: 'center', justifyContent: 'center', marginBottom: 20, ...SHADOWS.small,
   },
-  emptyTitle: { fontSize: SIZES.xl, fontWeight: '800', color: COLORS.text, marginBottom: 8 },
-  emptySubtitle: { fontSize: SIZES.md, color: COLORS.textSecondary, marginBottom: 24 },
+  emptyTitle: { fontSize: SIZES.xl, fontWeight: '800', color: theme.text, marginBottom: 8 },
+  emptySubtitle: { fontSize: SIZES.md, color: theme.textSecondary, marginBottom: 24 },
   emptyAddBtn: {
     backgroundColor: COLORS.primary, paddingHorizontal: 32, paddingVertical: 14,
     borderRadius: SIZES.borderRadiusLg, ...SHADOWS.medium,
@@ -342,7 +348,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalCard: {
-    backgroundColor: COLORS.white, borderTopLeftRadius: 32, borderTopRightRadius: 32,
+    backgroundColor: theme.surface, borderTopLeftRadius: 32, borderTopRightRadius: 32,
     padding: 28, paddingBottom: 40,
   },
   modalHeader: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 20 },
@@ -350,19 +356,19 @@ const styles = StyleSheet.create({
     width: 48, height: 48, borderRadius: 24,
     alignItems: 'center', justifyContent: 'center',
   },
-  modalTitle: { fontSize: SIZES.lg, fontWeight: '800', color: COLORS.text },
-  modalSubtitle: { fontSize: SIZES.sm, color: COLORS.textSecondary, marginTop: 2 },
+  modalTitle: { fontSize: SIZES.lg, fontWeight: '800', color: theme.text },
+  modalSubtitle: { fontSize: SIZES.sm, color: theme.textSecondary, marginTop: 2 },
   modalRemaining: {
-    fontSize: SIZES.sm, color: COLORS.textSecondary, fontWeight: '600',
+    fontSize: SIZES.sm, color: theme.textSecondary, fontWeight: '600',
     textAlign: 'center', marginBottom: 20,
   },
   modalInputRow: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     marginBottom: 28,
   },
-  modalCurrency: { fontSize: 24, fontWeight: '800', color: COLORS.textSecondary, marginRight: 8 },
+  modalCurrency: { fontSize: 24, fontWeight: '800', color: theme.textSecondary, marginRight: 8 },
   modalInput: {
-    fontSize: 48, fontWeight: '800', color: COLORS.text,
+    fontSize: 48, fontWeight: '800', color: theme.text,
     minWidth: 120, textAlign: 'center',
   },
   modalBtn: {

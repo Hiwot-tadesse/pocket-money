@@ -11,6 +11,7 @@ const DEFAULT_DATA = {
   expenseReminder: {
     enabled: false,
     title: '',
+    time: '08:00',
   },
   // Local alerts generated
   localAlerts: [],
@@ -58,10 +59,10 @@ export const SmartAlertsProvider = ({ children }) => {
   };
 
   // ---- Expense Reminder ----
-  const setExpenseReminder = useCallback((enabled, title) => {
+  const setExpenseReminder = useCallback((enabled, title, time) => {
     setData((prev) => ({
       ...prev,
-      expenseReminder: { enabled, title: title || '' },
+      expenseReminder: { enabled, title: title || '', time: time || prev.expenseReminder.time || '08:00' },
     }));
   }, []);
 

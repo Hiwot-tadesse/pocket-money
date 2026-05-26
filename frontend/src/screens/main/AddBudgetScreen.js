@@ -14,6 +14,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { budgetAPI } from '../../services/api';
 import { COLORS, SIZES, CATEGORIES, SHADOWS } from '../../constants/theme';
+import { useTheme } from '../../context/ThemeContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { useGamification } from '../../context/GamificationContext';
 import { useCustomCategories } from '../../context/CustomCategoriesContext';
@@ -32,6 +33,7 @@ const PERIOD_KEYS = [
 
 const AddBudgetScreen = ({ navigation }) => {
   const { t } = useLanguage();
+  const { theme } = useTheme();
   const { onBudgetCreated } = useGamification();
   const { getCategories, addCustomCategory } = useCustomCategories();
   const [category, setCategory] = useState('');
@@ -84,6 +86,8 @@ const AddBudgetScreen = ({ navigation }) => {
       setLoading(false);
     }
   };
+
+  const styles = getStyles(theme);
 
   return (
     <KeyboardAvoidingView
@@ -182,7 +186,7 @@ const AddBudgetScreen = ({ navigation }) => {
               <View style={[styles.inputContainer, { borderWidth: 1.5, borderColor: '#6366F1', borderStyle: 'dashed' }]}>
                 <Ionicons name="add-circle-outline" size={20} color="#6366F1" style={{ marginRight: 12 }} />
                 <TextInput
-                  style={{ flex: 1, fontSize: SIZES.base, color: COLORS.text }}
+                  style={{ flex: 1, fontSize: SIZES.base, color: theme.text }}
                   placeholder={t('customCategoryPlaceholder')}
                   placeholderTextColor={COLORS.placeholder}
                   value={customCategoryName}
@@ -191,7 +195,7 @@ const AddBudgetScreen = ({ navigation }) => {
                   maxLength={30}
                 />
               </View>
-              <Text style={{ fontSize: SIZES.xs, color: COLORS.textLight, marginTop: 6, marginLeft: 4 }}>
+              <Text style={{ fontSize: SIZES.xs, color: theme.textLight, marginTop: 6, marginLeft: 4 }}>
                 {t('customCategoryHint')}
               </Text>
             </View>
@@ -214,10 +218,10 @@ const AddBudgetScreen = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: theme.background,
   },
   scrollContent: {
     paddingBottom: 40,
@@ -250,7 +254,7 @@ const styles = StyleSheet.create({
     letterSpacing: -0.5,
   },
   amountCard: {
-    backgroundColor: COLORS.white,
+    backgroundColor: theme.surface,
     marginHorizontal: SIZES.margin,
     marginTop: 20,
     marginBottom: 8,
@@ -262,7 +266,7 @@ const styles = StyleSheet.create({
   amountCardLabel: {
     fontSize: SIZES.sm,
     fontWeight: '700',
-    color: COLORS.textSecondary,
+    color: theme.textSecondary,
     textTransform: 'uppercase',
     letterSpacing: 1,
     marginBottom: 12,
@@ -281,12 +285,12 @@ const styles = StyleSheet.create({
   },
   amountHint: {
     fontSize: SIZES.xs,
-    color: COLORS.textSecondary,
+    color: theme.textSecondary,
     marginTop: 10,
     fontWeight: '500',
   },
   formCard: {
-    backgroundColor: COLORS.white,
+    backgroundColor: theme.surface,
     marginHorizontal: SIZES.margin,
     marginTop: 16,
     borderRadius: SIZES.borderRadiusLg,
@@ -318,7 +322,7 @@ const styles = StyleSheet.create({
   currencySymbol: {
     fontSize: 28,
     fontWeight: '800',
-    color: COLORS.textSecondary,
+    color: theme.textSecondary,
     marginRight: 8,
   },
   amountInput: {
@@ -343,7 +347,7 @@ const styles = StyleSheet.create({
   },
   periodRow: {
     flexDirection: 'row',
-    backgroundColor: COLORS.white,
+    backgroundColor: theme.background,
     borderRadius: 24,
     padding: 6,
     ...SHADOWS.small,
@@ -362,10 +366,10 @@ const styles = StyleSheet.create({
   periodText: {
     fontSize: SIZES.md,
     fontWeight: '700',
-    color: COLORS.textSecondary,
+    color: theme.textSecondary,
   },
   periodTextActive: {
-    color: COLORS.white,
+    color: '#FFFFFF',
   },
   categoryGrid: {
     flexDirection: 'row',
@@ -378,20 +382,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 10,
     borderRadius: 24,
-    backgroundColor: COLORS.white,
+    backgroundColor: theme.background,
     borderWidth: 1.5,
-    borderColor: COLORS.divider,
+    borderColor: theme.divider,
     gap: 8,
   },
   categoryChipText: {
     fontSize: SIZES.sm,
-    color: COLORS.text,
+    color: theme.text,
     fontWeight: '700',
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.white,
+    backgroundColor: theme.background,
     borderRadius: SIZES.borderRadiusLg,
     paddingHorizontal: 16,
     height: 56,

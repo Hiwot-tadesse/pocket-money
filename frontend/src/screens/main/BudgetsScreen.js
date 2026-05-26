@@ -13,12 +13,14 @@ import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { budgetAPI } from '../../services/api';
 import { COLORS, SIZES, SHADOWS, CATEGORIES } from '../../constants/theme';
+import { useTheme } from '../../context/ThemeContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { useGamification } from '../../context/GamificationContext';
 import { useSmartAlerts } from '../../context/SmartAlertsContext';
 
 const BudgetsScreen = ({ navigation }) => {
   const { t } = useLanguage();
+  const { theme } = useTheme();
   const { onBudgetUnderControl } = useGamification();
   const { checkBudgetAlerts } = useSmartAlerts();
   const [budgets, setBudgets] = useState([]);
@@ -127,6 +129,8 @@ const BudgetsScreen = ({ navigation }) => {
     );
   };
 
+  const styles = getStyles(theme);
+
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -202,10 +206,10 @@ const BudgetsScreen = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: theme.background,
   },
   header: {
     flexDirection: 'row',
@@ -240,7 +244,7 @@ const styles = StyleSheet.create({
     zIndex: 11,
   },
   summaryCard: {
-    backgroundColor: COLORS.white,
+    backgroundColor: theme.surface,
     borderRadius: SIZES.borderRadiusLg,
     padding: SIZES.padding,
   },
@@ -254,7 +258,7 @@ const styles = StyleSheet.create({
   },
   summaryLabel: {
     fontSize: SIZES.xs,
-    color: COLORS.textSecondary,
+    color: theme.textSecondary,
     marginBottom: 6,
     fontWeight: '500',
     textTransform: 'uppercase',
@@ -262,12 +266,12 @@ const styles = StyleSheet.create({
   summaryValue: {
     fontSize: SIZES.base,
     fontWeight: '800',
-    color: COLORS.text,
+    color: theme.text,
   },
   summaryDivider: {
     width: 1,
     height: 36,
-    backgroundColor: COLORS.divider,
+    backgroundColor: theme.divider,
   },
   loadingContainer: {
     flex: 1,
@@ -280,7 +284,7 @@ const styles = StyleSheet.create({
     paddingBottom: 24,
   },
   budgetCard: {
-    backgroundColor: COLORS.white,
+    backgroundColor: theme.surface,
     borderRadius: SIZES.borderRadius,
     padding: SIZES.padding,
     marginBottom: 16,
@@ -306,11 +310,11 @@ const styles = StyleSheet.create({
   budgetCategory: {
     fontSize: SIZES.md,
     fontWeight: '700',
-    color: COLORS.text,
+    color: theme.text,
   },
   budgetPeriod: {
     fontSize: SIZES.xs,
-    color: COLORS.textSecondary,
+    color: theme.textSecondary,
     textTransform: 'capitalize',
     marginTop: 2,
     fontWeight: '500',
@@ -321,17 +325,17 @@ const styles = StyleSheet.create({
   budgetSpent: {
     fontSize: SIZES.lg,
     fontWeight: '800',
-    color: COLORS.text,
+    color: theme.text,
   },
   budgetLimit: {
     fontSize: SIZES.xs,
-    color: COLORS.textSecondary,
+    color: theme.textSecondary,
     fontWeight: '500',
     marginTop: 2,
   },
   progressBarBg: {
     height: 8,
-    backgroundColor: COLORS.divider,
+    backgroundColor: theme.divider,
     borderRadius: 4,
     overflow: 'hidden',
   },
@@ -350,7 +354,7 @@ const styles = StyleSheet.create({
   },
   remainingText: {
     fontSize: SIZES.xs,
-    color: COLORS.textSecondary,
+    color: theme.textSecondary,
     fontWeight: '500',
   },
   emptyState: {
@@ -361,7 +365,7 @@ const styles = StyleSheet.create({
     width: 90,
     height: 90,
     borderRadius: 45,
-    backgroundColor: COLORS.white,
+    backgroundColor: theme.surface,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
@@ -370,11 +374,11 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: SIZES.base,
     fontWeight: '700',
-    color: COLORS.text,
+    color: theme.text,
   },
   emptySubtext: {
     fontSize: SIZES.sm,
-    color: COLORS.textSecondary,
+    color: theme.textSecondary,
     marginTop: 6,
   },
   hintContainer: {
@@ -383,11 +387,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 12,
     gap: 6,
-    backgroundColor: COLORS.background,
+    backgroundColor: theme.background,
   },
   hintText: {
     fontSize: SIZES.xs,
-    color: COLORS.textLight,
+    color: theme.textLight,
     fontWeight: '500',
   },
 });

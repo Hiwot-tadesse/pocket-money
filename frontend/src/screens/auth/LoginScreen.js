@@ -15,10 +15,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { COLORS, SIZES, SHADOWS } from '../../constants/theme';
+import { useTheme } from '../../context/ThemeContext';
 
 const LoginScreen = ({ navigation }) => {
   const { login, loginWithPin } = useAuth();
   const { t } = useLanguage();
+  const { theme } = useTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [pin, setPin] = useState('');
@@ -55,6 +57,8 @@ const LoginScreen = ({ navigation }) => {
       setLoading(false);
     }
   };
+
+  const styles = getStyles(theme);
 
   return (
     <KeyboardAvoidingView
@@ -155,119 +159,26 @@ const LoginScreen = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.primary,
-  },
-  scrollContent: {
-    flexGrow: 1,
-  },
-  header: {
-    alignItems: 'center',
-    paddingTop: 80,
-    paddingBottom: 40,
-  },
-  iconContainer: {
-    width: 88,
-    height: 88,
-    borderRadius: 44,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 16,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: '800',
-    color: COLORS.white,
-    letterSpacing: -0.5,
-  },
-  subtitle: {
-    fontSize: SIZES.base,
-    color: 'rgba(255,255,255,0.8)',
-    marginTop: 4,
-    fontWeight: '500',
-  },
-  form: {
-    flex: 1,
-    backgroundColor: COLORS.white,
-    borderTopLeftRadius: 40,
-    borderTopRightRadius: 40,
-    paddingHorizontal: SIZES.paddingLg,
-    paddingTop: 40,
-  },
-  formTitle: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: COLORS.text,
-    marginBottom: 32,
-    letterSpacing: -0.5,
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.background,
-    borderRadius: SIZES.borderRadiusLg,
-    paddingHorizontal: 20,
-    marginBottom: 16,
-    height: 60,
-  },
-  inputIcon: {
-    marginRight: 16,
-  },
-  input: {
-    flex: 1,
-    fontSize: SIZES.base,
-    fontWeight: '600',
-    color: COLORS.text,
-  },
-  switchText: {
-    color: COLORS.primary,
-    fontSize: SIZES.sm,
-    textAlign: 'right',
-    marginBottom: 32,
-    fontWeight: '700',
-  },
-  loginButton: {
-    backgroundColor: COLORS.primary,
-    borderRadius: SIZES.borderRadiusLg,
-    height: 60,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 24,
-    ...SHADOWS.medium,
-  },
-  loginButtonText: {
-    color: COLORS.white,
-    fontSize: SIZES.lg,
-    fontWeight: '800',
-  },
-  forgotRow: {
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  forgotText: {
-    color: COLORS.primary,
-    fontSize: SIZES.md,
-    fontWeight: '700',
-  },
-  registerRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginBottom: 40,
-  },
-  registerText: {
-    color: COLORS.textSecondary,
-    fontSize: SIZES.md,
-    fontWeight: '500',
-  },
-  registerLink: {
-    color: COLORS.primary,
-    fontSize: SIZES.md,
-    fontWeight: '800',
-    marginLeft: 6,
-  },
+const getStyles = (theme) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: COLORS.primary },
+  scrollContent: { flexGrow: 1 },
+  header: { alignItems: 'center', paddingTop: 80, paddingBottom: 40 },
+  iconContainer: { width: 88, height: 88, borderRadius: 44, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center', marginBottom: 16 },
+  title: { fontSize: 32, fontWeight: '800', color: '#FFFFFF', letterSpacing: -0.5 },
+  subtitle: { fontSize: SIZES.base, color: 'rgba(255,255,255,0.8)', marginTop: 4, fontWeight: '500' },
+  form: { flex: 1, backgroundColor: theme.surface, borderTopLeftRadius: 40, borderTopRightRadius: 40, paddingHorizontal: SIZES.paddingLg, paddingTop: 40 },
+  formTitle: { fontSize: 28, fontWeight: '800', color: theme.text, marginBottom: 32, letterSpacing: -0.5 },
+  inputContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: theme.background, borderRadius: SIZES.borderRadiusLg, paddingHorizontal: 20, marginBottom: 16, height: 60 },
+  inputIcon: { marginRight: 16 },
+  input: { flex: 1, fontSize: SIZES.base, fontWeight: '600', color: theme.text },
+  switchText: { color: COLORS.primary, fontSize: SIZES.sm, textAlign: 'right', marginBottom: 32, fontWeight: '700' },
+  loginButton: { backgroundColor: COLORS.primary, borderRadius: SIZES.borderRadiusLg, height: 60, alignItems: 'center', justifyContent: 'center', marginBottom: 24, ...SHADOWS.medium },
+  loginButtonText: { color: '#FFFFFF', fontSize: SIZES.lg, fontWeight: '800' },
+  forgotRow: { alignItems: 'center', marginBottom: 16 },
+  forgotText: { color: COLORS.primary, fontSize: SIZES.md, fontWeight: '700' },
+  registerRow: { flexDirection: 'row', justifyContent: 'center', marginBottom: 40 },
+  registerText: { color: theme.textSecondary, fontSize: SIZES.md, fontWeight: '500' },
+  registerLink: { color: COLORS.primary, fontSize: SIZES.md, fontWeight: '800', marginLeft: 6 },
 });
 
 export default LoginScreen;

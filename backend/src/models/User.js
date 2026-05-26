@@ -35,6 +35,11 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: 'ETB',
     },
+    phone: {
+      type: String,
+      default: '',
+      trim: true,
+    },
     notificationsEnabled: {
       type: Boolean,
       default: true,

@@ -8,9 +8,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { authAPI } from '../../services/api';
 import { COLORS, SIZES, SHADOWS } from '../../constants/theme';
 import { useLanguage } from '../../context/LanguageContext';
+import { useTheme } from '../../context/ThemeContext';
 
 const ForgotPasswordScreen = ({ navigation }) => {
   const { t } = useLanguage();
+  const { theme } = useTheme();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -31,6 +33,8 @@ const ForgotPasswordScreen = ({ navigation }) => {
     }
   };
 
+  const styles = getStyles(theme);
+
   if (otpResult) {
     return (
       <View style={styles.container}>
@@ -39,10 +43,18 @@ const ForgotPasswordScreen = ({ navigation }) => {
             <Ionicons name="lock-open" size={40} color={COLORS.primary} />
           </View>
           <Text style={styles.successTitle}>{t('resetCodeGenerated')}</Text>
-          <Text style={styles.successSub}>{t('yourResetCode')}</Text>
-          <View style={styles.otpBox}>
-            <Text style={styles.otpText}>{otpResult.otp}</Text>
-          </View>
+          {otpResult.emailSent ? (
+            <Text style={styles.successSub}>
+              A reset code was sent to{'\n'}<Text style={{ fontWeight: '700', color: COLORS.primary }}>{email}</Text>
+            </Text>
+          ) : (
+            <Text style={styles.successSub}>{t('yourResetCode')}</Text>
+          )}
+          {!otpResult.emailSent && (
+            <View style={styles.otpBox}>
+              <Text style={styles.otpText}>{otpResult.otp}</Text>
+            </View>
+          )}
           <Text style={styles.expiryNote}>⏱ {t('validFor', { time: otpResult.expiresIn })}</Text>
           <TouchableOpacity
             style={styles.continueBtn}
@@ -117,86 +129,35 @@ const ForgotPasswordScreen = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
+const getStyles = (theme) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: theme.background },
   scroll: { flexGrow: 1 },
-  header: {
-    backgroundColor: COLORS.primary,
-    paddingTop: 64,
-    paddingBottom: 48,
-    paddingHorizontal: SIZES.paddingLg,
-    alignItems: 'center',
-    borderBottomLeftRadius: 40,
-    borderBottomRightRadius: 40,
-    ...SHADOWS.large,
-  },
-  backBtn: {
-    position: 'absolute', top: 56, left: 24,
-    width: 44, height: 44, borderRadius: 22,
-    backgroundColor: 'rgba(255,255,255,0.15)',
-    alignItems: 'center', justifyContent: 'center',
-  },
-  headerIconWrap: {
-    width: 80, height: 80, borderRadius: 40,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    alignItems: 'center', justifyContent: 'center',
-    marginBottom: 16,
-  },
-  headerTitle: { fontSize: 26, fontWeight: '800', color: COLORS.white, marginBottom: 8 },
+  header: { backgroundColor: COLORS.primary, paddingTop: 64, paddingBottom: 48, paddingHorizontal: SIZES.paddingLg, alignItems: 'center', borderBottomLeftRadius: 40, borderBottomRightRadius: 40, ...SHADOWS.large },
+  backBtn: { position: 'absolute', top: 56, left: 24, width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(255,255,255,0.15)', alignItems: 'center', justifyContent: 'center' },
+  headerIconWrap: { width: 80, height: 80, borderRadius: 40, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center', marginBottom: 16 },
+  headerTitle: { fontSize: 26, fontWeight: '800', color: '#FFFFFF', marginBottom: 8 },
   headerSub: { fontSize: SIZES.md, color: 'rgba(255,255,255,0.8)', textAlign: 'center' },
-  formCard: {
-    backgroundColor: COLORS.white,
-    margin: 20,
-    marginTop: 24,
-    borderRadius: 24,
-    padding: 24,
-    ...SHADOWS.medium,
-  },
-  fieldLabel: { fontSize: SIZES.sm, fontWeight: '700', color: COLORS.textSecondary, marginBottom: 10 },
-  inputBox: {
-    flexDirection: 'row', alignItems: 'center',
-    backgroundColor: COLORS.background, borderRadius: 14,
-    paddingHorizontal: 16, height: 56,
-    borderWidth: 1.5, borderColor: COLORS.border,
-  },
+  formCard: { backgroundColor: theme.surface, margin: 20, marginTop: 24, borderRadius: 24, padding: 24, ...SHADOWS.medium },
+  fieldLabel: { fontSize: SIZES.sm, fontWeight: '700', color: theme.textSecondary, marginBottom: 10 },
+  inputBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: theme.background, borderRadius: 14, paddingHorizontal: 16, height: 56, borderWidth: 1.5, borderColor: theme.border },
   inputBoxError: { borderColor: COLORS.expense },
   inputIcon: { marginRight: 12 },
-  input: { flex: 1, fontSize: SIZES.base, color: COLORS.text, fontWeight: '500' },
+  input: { flex: 1, fontSize: SIZES.base, color: theme.text, fontWeight: '500' },
   errorRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 8 },
   errorText: { fontSize: SIZES.sm, color: COLORS.expense, fontWeight: '500' },
-  submitBtn: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    backgroundColor: COLORS.primary, borderRadius: 14,
-    paddingVertical: 18, marginTop: 24, gap: 10, ...SHADOWS.medium,
-  },
-  submitText: { color: COLORS.white, fontSize: SIZES.lg, fontWeight: '800' },
+  submitBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: COLORS.primary, borderRadius: 14, paddingVertical: 18, marginTop: 24, gap: 10, ...SHADOWS.medium },
+  submitText: { color: '#FFFFFF', fontSize: SIZES.lg, fontWeight: '800' },
   backLink: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 20 },
   backLinkText: { color: COLORS.primary, fontSize: SIZES.md, fontWeight: '700' },
-
-  successCard: {
-    flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32,
-  },
-  successIcon: {
-    width: 96, height: 96, borderRadius: 48,
-    backgroundColor: COLORS.primary + '15',
-    alignItems: 'center', justifyContent: 'center', marginBottom: 20,
-  },
-  successTitle: { fontSize: 24, fontWeight: '800', color: COLORS.text, marginBottom: 8 },
-  successSub: { fontSize: SIZES.md, color: COLORS.textSecondary, marginBottom: 20 },
-  otpBox: {
-    backgroundColor: COLORS.primary + '12',
-    borderRadius: 16, paddingHorizontal: 40, paddingVertical: 20,
-    borderWidth: 2, borderColor: COLORS.primary + '40', marginBottom: 12,
-  },
+  successCard: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32 },
+  successIcon: { width: 96, height: 96, borderRadius: 48, backgroundColor: COLORS.primary + '15', alignItems: 'center', justifyContent: 'center', marginBottom: 20 },
+  successTitle: { fontSize: 24, fontWeight: '800', color: theme.text, marginBottom: 8 },
+  successSub: { fontSize: SIZES.md, color: theme.textSecondary, marginBottom: 20 },
+  otpBox: { backgroundColor: COLORS.primary + '12', borderRadius: 16, paddingHorizontal: 40, paddingVertical: 20, borderWidth: 2, borderColor: COLORS.primary + '40', marginBottom: 12 },
   otpText: { fontSize: 40, fontWeight: '900', color: COLORS.primary, letterSpacing: 10 },
-  expiryNote: { fontSize: SIZES.sm, color: COLORS.textSecondary, marginBottom: 28 },
-  continueBtn: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    backgroundColor: COLORS.primary, borderRadius: 14,
-    paddingVertical: 16, paddingHorizontal: 28, gap: 10,
-    width: '100%', ...SHADOWS.medium,
-  },
-  continueBtnText: { color: COLORS.white, fontSize: SIZES.lg, fontWeight: '800' },
+  expiryNote: { fontSize: SIZES.sm, color: theme.textSecondary, marginBottom: 28 },
+  continueBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: COLORS.primary, borderRadius: 14, paddingVertical: 16, paddingHorizontal: 28, gap: 10, width: '100%', ...SHADOWS.medium },
+  continueBtnText: { color: '#FFFFFF', fontSize: SIZES.lg, fontWeight: '800' },
 });
 
 export default ForgotPasswordScreen;

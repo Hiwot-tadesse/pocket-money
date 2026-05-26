@@ -7,6 +7,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { goalAPI } from '../../services/api';
 import { COLORS, SIZES, SHADOWS } from '../../constants/theme';
+import { useTheme } from '../../context/ThemeContext';
 
 const PRESET_GOALS = [
   { icon: 'airplane',        title: 'Vacation',   color: '#06B6D4' },
@@ -37,6 +38,7 @@ const findMatchingPreset = (title, icon) => {
 };
 
 const AddGoalScreen = ({ navigation, route }) => {
+  const { theme } = useTheme();
   const existing = route.params?.goal;
   const isEdit = !!existing;
 
@@ -104,6 +106,8 @@ const AddGoalScreen = ({ navigation, route }) => {
       setLoading(false);
     }
   };
+
+  const styles = getStyles(theme);
 
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
@@ -253,86 +257,36 @@ const AddGoalScreen = ({ navigation, route }) => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
+const getStyles = (theme) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: theme.background },
   scrollContent: { paddingBottom: 48 },
-  header: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    backgroundColor: COLORS.primary, paddingTop: 56, paddingBottom: 32,
-    paddingHorizontal: SIZES.paddingLg, borderBottomLeftRadius: 32, borderBottomRightRadius: 32,
-    ...SHADOWS.large,
-  },
-  backBtn: {
-    width: 44, height: 44, borderRadius: 22,
-    backgroundColor: 'rgba(255,255,255,0.15)',
-    alignItems: 'center', justifyContent: 'center',
-  },
-  headerTitle: { fontSize: 24, fontWeight: '800', color: COLORS.white, letterSpacing: -0.5 },
-  amountCard: {
-    backgroundColor: COLORS.white, marginHorizontal: SIZES.margin,
-    marginTop: 20, borderRadius: SIZES.borderRadiusLg,
-    padding: 24, alignItems: 'center', ...SHADOWS.medium,
-  },
-  amountLabel: {
-    fontSize: SIZES.xs, fontWeight: '700', color: COLORS.textSecondary,
-    letterSpacing: 1.2, marginBottom: 12,
-  },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: COLORS.primary, paddingTop: 56, paddingBottom: 32, paddingHorizontal: SIZES.paddingLg, borderBottomLeftRadius: 32, borderBottomRightRadius: 32, ...SHADOWS.large },
+  backBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(255,255,255,0.15)', alignItems: 'center', justifyContent: 'center' },
+  headerTitle: { fontSize: 24, fontWeight: '800', color: '#FFFFFF', letterSpacing: -0.5 },
+  amountCard: { backgroundColor: theme.surface, marginHorizontal: SIZES.margin, marginTop: 20, borderRadius: SIZES.borderRadiusLg, padding: 24, alignItems: 'center', ...SHADOWS.medium },
+  amountLabel: { fontSize: SIZES.xs, fontWeight: '700', color: theme.textSecondary, letterSpacing: 1.2, marginBottom: 12 },
   amountRow: { flexDirection: 'row', alignItems: 'center' },
   currency: { fontSize: 28, fontWeight: '800', marginRight: 8 },
   amountInput: { fontSize: 56, fontWeight: '800', minWidth: 140, textAlign: 'center', letterSpacing: -1 },
   amountUnderline: { width: '60%', height: 3, borderRadius: 2, marginTop: 12, opacity: 0.6 },
-  formCard: {
-    backgroundColor: COLORS.white, marginHorizontal: SIZES.margin,
-    marginTop: 16, borderRadius: SIZES.borderRadiusLg,
-    padding: 20, ...SHADOWS.small,
-  },
-  cardTitle: {
-    fontSize: SIZES.xs, fontWeight: '800', color: COLORS.primary,
-    letterSpacing: 1.2, marginBottom: 16,
-  },
+  formCard: { backgroundColor: theme.surface, marginHorizontal: SIZES.margin, marginTop: 16, borderRadius: SIZES.borderRadiusLg, padding: 20, ...SHADOWS.small },
+  cardTitle: { fontSize: SIZES.xs, fontWeight: '800', color: COLORS.primary, letterSpacing: 1.2, marginBottom: 16 },
   presetGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  presetTile: {
-    alignItems: 'center', justifyContent: 'center',
-    width: '29%', paddingVertical: 14, paddingHorizontal: 6,
-    borderRadius: 16, borderWidth: 1.5, borderColor: COLORS.border,
-    backgroundColor: COLORS.background, gap: 8,
-  },
-  presetIconBg: {
-    width: 44, height: 44, borderRadius: 22,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  presetLabel: {
-    fontSize: 11, fontWeight: '700', color: COLORS.textSecondary,
-    textAlign: 'center',
-  },
-  presetLabelActive: { color: COLORS.white },
-  fieldLabel: { fontSize: SIZES.sm, fontWeight: '600', color: COLORS.textSecondary, marginBottom: 8 },
-  optional: { fontWeight: '400', color: COLORS.textLight, fontStyle: 'italic' },
-  inputBox: {
-    flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.background,
-    borderRadius: SIZES.borderRadius, paddingHorizontal: 14, height: 52,
-    borderWidth: 1.5, borderColor: COLORS.border,
-  },
+  presetTile: { alignItems: 'center', justifyContent: 'center', width: '29%', paddingVertical: 14, paddingHorizontal: 6, borderRadius: 16, borderWidth: 1.5, borderColor: theme.border, backgroundColor: theme.background, gap: 8 },
+  presetIconBg: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
+  presetLabel: { fontSize: 11, fontWeight: '700', color: theme.textSecondary, textAlign: 'center' },
+  presetLabelActive: { color: '#FFFFFF' },
+  fieldLabel: { fontSize: SIZES.sm, fontWeight: '600', color: theme.textSecondary, marginBottom: 8 },
+  optional: { fontWeight: '400', color: theme.textLight, fontStyle: 'italic' },
+  inputBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: theme.background, borderRadius: SIZES.borderRadius, paddingHorizontal: 14, height: 52, borderWidth: 1.5, borderColor: theme.border },
   inputIcon: { marginRight: 10 },
-  input: { flex: 1, fontSize: SIZES.base, color: COLORS.text, fontWeight: '500' },
-  previewCard: {
-    flexDirection: 'row', alignItems: 'center', gap: 14,
-    marginHorizontal: SIZES.margin, marginTop: 16,
-    backgroundColor: COLORS.white, borderRadius: SIZES.borderRadiusLg,
-    padding: 16, borderWidth: 2, ...SHADOWS.small,
-  },
-  previewIconBg: {
-    width: 56, height: 56, borderRadius: 28,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  previewTitle: { fontSize: SIZES.base, fontWeight: '800', color: COLORS.text },
+  input: { flex: 1, fontSize: SIZES.base, color: theme.text, fontWeight: '500' },
+  previewCard: { flexDirection: 'row', alignItems: 'center', gap: 14, marginHorizontal: SIZES.margin, marginTop: 16, backgroundColor: theme.surface, borderRadius: SIZES.borderRadiusLg, padding: 16, borderWidth: 2, ...SHADOWS.small },
+  previewIconBg: { width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center' },
+  previewTitle: { fontSize: SIZES.base, fontWeight: '800', color: theme.text },
   previewAmount: { fontSize: SIZES.md, fontWeight: '700', marginTop: 4 },
-  submitBtn: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    marginHorizontal: SIZES.margin, marginTop: 20, paddingVertical: 18,
-    borderRadius: SIZES.borderRadiusLg, gap: 10, ...SHADOWS.medium,
-  },
-  submitText: { color: COLORS.white, fontSize: SIZES.lg, fontWeight: '800' },
+  submitBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginHorizontal: SIZES.margin, marginTop: 20, paddingVertical: 18, borderRadius: SIZES.borderRadiusLg, gap: 10, ...SHADOWS.medium },
+  submitText: { color: '#FFFFFF', fontSize: SIZES.lg, fontWeight: '800' },
 });
 
 export default AddGoalScreen;
