@@ -1,6 +1,7 @@
 import React, { createContext, useState, useContext, useCallback, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { POINTS, ACHIEVEMENTS, getLevelForPoints, getNextLevel } from '../constants/gamification';
+import { useAuth } from './AuthContext';
 
 const GamificationContext = createContext();
 
@@ -20,7 +21,39 @@ const DEFAULT_DATA = {
   lastPointsEarned: null,
 };
 
+const DEMO_EMAIL = 'demo@gmail.com';
+
+const DEMO_DATA = {
+  totalPoints: 2450,
+  streak: 30,
+  lastActiveDate: new Date().toISOString().split('T')[0],
+  totalTransactions: 48,
+  totalIncome: 35400,
+  totalBudgets: 3,
+  budgetUnderControl: true,
+  unlockedAchievements: [
+    'first_transaction',
+    'ten_transactions',
+    'fifty_transactions',
+    'streak_3',
+    'streak_7',
+    'streak_30',
+    'budget_hero',
+    'first_budget',
+    'saver_100',
+  ],
+  pointsHistory: [
+    { amount: 240, reason: '48 demo transactions', date: new Date().toISOString() },
+    { amount: 250, reason: '30-day streak', date: new Date().toISOString() },
+    { amount: 100, reason: 'dedicated tracker', date: new Date().toISOString() },
+    { amount: 30, reason: 'budget hero', date: new Date().toISOString() },
+  ],
+  newAchievement: null,
+  lastPointsEarned: null,
+};
+
 export const GamificationProvider = ({ children }) => {
+  const { user } = useAuth();
   const [data, setData] = useState(DEFAULT_DATA);
   const [loaded, setLoaded] = useState(false);
 
@@ -33,6 +66,14 @@ export const GamificationProvider = ({ children }) => {
       saveData();
     }
   }, [data, loaded]);
+
+  useEffect(() => {
+    if (!loaded || user?.email !== DEMO_EMAIL) return;
+    setData((prev) => {
+      if (prev.totalPoints >= DEMO_DATA.totalPoints) return prev;
+      return { ...DEFAULT_DATA, ...DEMO_DATA };
+    });
+  }, [loaded, user?.email]);
 
   const loadData = async () => {
     try {

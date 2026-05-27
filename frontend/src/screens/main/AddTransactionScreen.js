@@ -20,15 +20,24 @@ import { useCustomCategories } from '../../context/CustomCategoriesContext';
 import { useTheme } from '../../context/ThemeContext';
 
 const CATEGORY_KEYWORDS = {
-  'Food & Drinks': ['food','burger','pizza','coffee','tea','lunch','dinner','breakfast','snack','restaurant','cafe','drink','juice','water','bread','rice','pasta','soda','milk','egg','meat','chicken','fish','vegetable','fruit','grocery','market','shiro','injera','tibs','kitfo','firfir','wot','enjera'],
-  Transport: ['taxi','uber','bus','train','metro','fuel','gas','petrol','fare','trip','ride','transport','car','vehicle','minibus','bajaj','ferry','flight','ticket','highway','toll'],
-  Entertainment: ['movie','cinema','game','concert','show','netflix','spotify','music','fun','play','event','ticket','theater','party','festival'],
-  Shopping: ['shop','mall','clothes','shirt','shoes','bag','dress','fashion','buy','purchase','store','supermarket','market','gift','jewelry','cosmetic'],
-  Education: ['school','college','university','tuition','book','course','class','training','study','exam','fee','library','pen','notebook'],
-  Health: ['hospital','clinic','medicine','doctor','pharmacy','drug','health','medical','dental','eye','prescription','therapy','gym','fitness'],
-  'Bills & Utilities': ['bill','electric','water','internet','phone','rent','utility','subscription','wifi','cable','gas','insurance','maintenance','service'],
+  'Food & Drinks': ['food','meal','burger','pizza','coffee','tea','latte','cappuccino','lunch','dinner','breakfast','snack','restaurant','cafe','cafeteria','drink','juice','water','bread','rice','pasta','noodle','soda','milk','egg','meat','chicken','fish','vegetable','fruit','grocery','groceries','market','supermarket','bakery','sandwich','cake','cookie','ice cream','shiro','injera','tibs','kitfo','firfir','wot','enjera'],
+  Transport: ['taxi','uber','bus','train','metro','fuel','petrol','diesel','fare','trip','ride','transport','transportation','car','vehicle','minibus','bajaj','ferry','flight','ticket','highway','toll','parking','driver','cab','ride share','rideshare'],
+  Entertainment: ['movie','cinema','game','concert','show','netflix','spotify','music','fun','play','event','theater','party','festival','streaming','youtube','subscription'],
+  Shopping: ['shop','shopping','mall','clothes','shirt','shoes','bag','dress','fashion','buy','purchase','store','gift shop','jewelry','cosmetic','makeup','electronics','phone case'],
+  Education: ['school','college','university','tuition','book','course','class','training','study','exam','fee','library','pen','notebook','stationery','assignment'],
+  Health: ['hospital','clinic','medicine','doctor','pharmacy','drug','health','medical','dental','eye','prescription','therapy','gym','fitness','vitamin'],
+  'Bills & Utilities': ['bill','electric','electricity','internet','phone bill','rent','utility','utilities','wifi','cable','insurance','maintenance','service charge','airtime','mobile data'],
   Gifts: ['gift','present','donate','donation','charity','wedding','birthday','anniversary'],
-  Savings: ['save','saving','deposit','investment','piggy','bank','wallet'],
+  Savings: ['save','saving','savings','deposit','investment','piggy','bank','wallet'],
+};
+
+const normalizeText = (value) => value.toLowerCase().replace(/[^a-z0-9\s&]/g, ' ');
+
+const descriptionHasKeyword = (descriptionText, keyword) => {
+  const normalizedDescription = ` ${normalizeText(descriptionText)} `;
+  const normalizedKeyword = normalizeText(keyword).trim();
+  if (!normalizedKeyword) return false;
+  return normalizedDescription.includes(` ${normalizedKeyword} `);
 };
 
 const EXPENSE_CATEGORIES = [
@@ -76,7 +85,7 @@ const AddTransactionScreen = ({ navigation, route }) => {
     if (type !== 'expense' || !description.trim() || isEdit) return;
     const lower = description.toLowerCase();
     for (const [cat, keywords] of Object.entries(CATEGORY_KEYWORDS)) {
-      const hit = keywords.find(kw => lower.includes(kw));
+      const hit = keywords.find(kw => descriptionHasKeyword(lower, kw));
       if (hit) {
         setCategory(cat);
         setAutoDetected(true);

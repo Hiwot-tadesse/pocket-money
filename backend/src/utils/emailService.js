@@ -80,9 +80,19 @@ const RESET_HTML = (resetUrl, expiresIn = '1 hour') => `
   </div>`;
 
 const WELCOME_HTML = (username) => `
-  <div style="font-family:Arial,sans-serif;max-width:480px;margin:auto;padding:32px;background:#f9fafb;border-radius:16px;">
-    <h2 style="text-align:center;color:#111827;">Welcome, ${username}!</h2>
-    <p style="text-align:center;color:#6B7280;">Your Pocket Money account is ready. Start tracking your finances today!</p>
+  <div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;padding:32px;background:#f9fafb;border-radius:16px;">
+    <h2 style="text-align:center;color:#111827;">Welcome to Pocket Money, ${username}!</h2>
+    <p style="text-align:center;color:#6B7280;font-size:16px;line-height:1.6;">
+      You have taken a smart step toward understanding your money, building better habits, and reaching your financial goals.
+    </p>
+    <div style="background:#EEF2FF;border-radius:14px;padding:20px;margin:24px 0;">
+      <p style="margin:0;color:#4338CA;font-size:16px;line-height:1.6;text-align:center;font-weight:700;">
+        Small daily choices become big financial wins. Keep tracking, keep learning, and keep moving forward.
+      </p>
+    </div>
+    <p style="text-align:center;color:#6B7280;font-size:15px;line-height:1.6;">
+      Start by recording your first income or expense today — your future self will thank you.
+    </p>
   </div>`;
 
 const trySend = async (toEmail, toName, subject, html, text) => {
@@ -120,7 +130,7 @@ const sendWelcomeEmail = async (toEmail, username) => {
     toEmail, username,
     `Welcome to Pocket Money, ${username}!`,
     WELCOME_HTML(username),
-    `Welcome to Pocket Money, ${username}!\n\nYour account is ready.`,
+    `Welcome to Pocket Money, ${username}!\n\nYou have taken a smart step toward understanding your money, building better habits, and reaching your financial goals.\n\nSmall daily choices become big financial wins. Keep tracking, keep learning, and keep moving forward.\n\nStart by recording your first income or expense today — your future self will thank you.`,
   );
 };
 
