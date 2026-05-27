@@ -578,6 +578,7 @@ const getStyles = (theme) => StyleSheet.create({
   amountCardLabel: { fontSize: SIZES.sm, fontWeight: '700', color: theme.textSecondary, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 12 },
   amountRow: { flexDirection: 'row', alignItems: 'center' },
   amountUnderline: { width: '60%', height: 3, borderRadius: 2, marginTop: 12, opacity: 0.6 },
+  amountErrorText: { marginTop: 8, color: COLORS.expense, fontSize: SIZES.xs, fontWeight: '600' },
   formCard: { backgroundColor: theme.surface, marginHorizontal: SIZES.margin, marginTop: 16, borderRadius: SIZES.borderRadiusLg, padding: 20, ...SHADOWS.small },
   formCardTitle: { fontSize: SIZES.sm, fontWeight: '800', color: COLORS.primary, textTransform: 'uppercase', letterSpacing: 1 },
   fieldLabel: { fontSize: SIZES.sm, fontWeight: '600', color: theme.textSecondary, marginBottom: 8 },
@@ -608,6 +609,14 @@ const getStyles = (theme) => StyleSheet.create({
   customCatContainer: { marginTop: 16 },
   customCatInput: { flexDirection: 'row', alignItems: 'center', backgroundColor: theme.background, borderRadius: SIZES.borderRadiusLg, paddingHorizontal: 16, height: 56, borderWidth: 2, borderColor: '#6366F1', borderStyle: 'dashed' },
   customCatHint: { fontSize: SIZES.xs, color: theme.textLight, marginTop: 8, marginLeft: 4, fontWeight: '500' },
+  scanCard: { backgroundColor: theme.surface, marginHorizontal: SIZES.margin, marginTop: 12, borderRadius: SIZES.borderRadiusLg, padding: 16, ...SHADOWS.small },
+  scanHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 12 },
+  scanTitle: { fontSize: SIZES.sm, fontWeight: '800', color: theme.text },
+  scanSubtitle: { fontSize: SIZES.xs, color: theme.textLight, marginTop: 4, maxWidth: 200 },
+  scanButton: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: COLORS.primary, paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20 },
+  scanButtonText: { color: COLORS.white, fontSize: SIZES.sm, fontWeight: '700' },
+  scanResult: { marginTop: 12, backgroundColor: theme.background, padding: 10, borderRadius: 12 },
+  scanResultText: { fontSize: SIZES.xs, color: theme.textSecondary, fontWeight: '600' },
 });
 
 export default AddTransactionScreen;
