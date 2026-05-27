@@ -11,6 +11,7 @@ const alertRoutes = require('./routes/alert.routes');
 const goalRoutes = require('./routes/goal.routes');
 const chatRoutes = require('./routes/chat.routes');
 const predictionRoutes = require('./routes/prediction.routes');
+const receiptRoutes = require('./routes/receipt.routes');
 const { errorHandler, notFound } = require('./middleware/error.middleware');
 
 const app = express();
@@ -21,8 +22,8 @@ app.use(cors());
 app.use(morgan('dev'));
 
 // Body parsing
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -38,6 +39,7 @@ app.use('/api/alerts', alertRoutes);
 app.use('/api/goals', goalRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/predictions', predictionRoutes);
+app.use('/api/receipts', receiptRoutes);
 
 // Error handling
 app.use(notFound);

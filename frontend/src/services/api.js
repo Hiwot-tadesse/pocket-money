@@ -59,6 +59,11 @@ export const transactionAPI = {
   suggestCategory: (params) => api.get('/transactions/suggest-category', { params }),
 };
 
+// ============ RECEIPTS ==========
+export const receiptAPI = {
+  scan: (data) => api.post('/receipts/scan', data),
+};
+
 // ============ BUDGETS ============
 export const budgetAPI = {
   getAll: (params) => api.get('/budgets', { params }),

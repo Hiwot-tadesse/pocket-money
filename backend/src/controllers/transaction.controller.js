@@ -10,10 +10,25 @@ const createTransaction = async (req, res, next) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ success: false, errors: errors.array() });
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array(),
+      });
     }
 
     let { type, amount, category, description, date, tags, isRecurring, recurringInterval, recurringCustomLabel } = req.body;
+    const parsedAmount = Number(amount);
+
+    if (!Number.isFinite(parsedAmount)) {
+      return res.status(400).json({ success: false, message: 'Amount must be a valid number' });
+    }
+    if (type === 'expense' && parsedAmount < 0) {
+      return res.status(400).json({ success: false, message: 'Expense amount cannot be negative.' });
+    }
+    if (parsedAmount <= 0) {
+      return res.status(400).json({ success: false, message: 'Amount must be greater than 0' });
+    }
 
     // Auto-categorize if no category provided
     if (!category && description) {
@@ -23,7 +38,7 @@ const createTransaction = async (req, res, next) => {
     const transaction = await Transaction.create({
       user: req.user._id,
       type,
-      amount,
+      amount: parsedAmount,
       category,
       description,
       date: date || Date.now(),
@@ -37,7 +52,7 @@ const createTransaction = async (req, res, next) => {
     if (type === 'expense') {
       await Budget.updateMany(
         { user: req.user._id, category, isActive: true },
-        { $inc: { spent: amount } }
+        { $inc: { spent: parsedAmount } }
       );
       await checkBudgetThresholds(req.user._id, transaction);
     }
@@ -130,7 +145,11 @@ const updateTransaction = async (req, res, next) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ success: false, errors: errors.array() });
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array(),
+      });
     }
 
     const existing = await Transaction.findOne({
@@ -154,10 +173,22 @@ const updateTransaction = async (req, res, next) => {
     }
 
     const { type, amount, category, description, date, tags, isRecurring, recurringInterval } = req.body;
+    const updatedType = type || existing.type;
+    const parsedAmount = amount !== undefined ? Number(amount) : existing.amount;
+
+    if (!Number.isFinite(parsedAmount)) {
+      return res.status(400).json({ success: false, message: 'Amount must be a valid number' });
+    }
+    if (updatedType === 'expense' && parsedAmount < 0) {
+      return res.status(400).json({ success: false, message: 'Expense amount cannot be negative.' });
+    }
+    if (parsedAmount <= 0) {
+      return res.status(400).json({ success: false, message: 'Amount must be greater than 0' });
+    }
 
     const updates = {};
     if (type) updates.type = type;
-    if (amount) updates.amount = amount;
+    if (amount !== undefined) updates.amount = parsedAmount;
     if (category) updates.category = category;
     if (description !== undefined) updates.description = description;
     if (date) updates.date = date;
@@ -172,8 +203,7 @@ const updateTransaction = async (req, res, next) => {
     );
 
     // Re-add budget amount for updated expense
-    const updatedType = type || existing.type;
-    const updatedAmount = amount || existing.amount;
+    const updatedAmount = parsedAmount;
     const updatedCategory = category || existing.category;
 
     if (updatedType === 'expense') {

@@ -3,6 +3,12 @@ const { validationResult } = require('express-validator');
 const crypto = require('crypto');
 const User = require('../models/User');
 const { sendPasswordResetEmail, sendWelcomeEmail } = require('../utils/emailService');
+const {
+  getLoginKey,
+  isLoginBlocked,
+  registerLoginFailure,
+  clearLoginAttempts,
+} = require('../utils/loginAttemptStore');
 
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -16,7 +22,11 @@ const register = async (req, res, next) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ success: false, errors: errors.array() });
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array(),
+      });
     }
 
     const { username, email, password, pin } = req.body;
@@ -67,13 +77,32 @@ const login = async (req, res, next) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ success: false, errors: errors.array() });
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array(),
+      });
     }
 
     const { email, password } = req.body;
+    const loginKey = getLoginKey(req, email);
+    const blockStatus = isLoginBlocked(loginKey);
+    if (blockStatus.blocked) {
+      return res.status(429).json({
+        success: false,
+        message: 'Too many login attempts. Please try again later.',
+      });
+    }
 
     const user = await User.findOne({ email }).select('+password');
     if (!user) {
+      const attempt = registerLoginFailure(loginKey);
+      if (attempt.blockedUntil) {
+        return res.status(429).json({
+          success: false,
+          message: 'Too many login attempts. Please try again later.',
+        });
+      }
       return res.status(401).json({
         success: false,
         message: 'Invalid email or password',
@@ -82,11 +111,20 @@ const login = async (req, res, next) => {
 
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
+      const attempt = registerLoginFailure(loginKey);
+      if (attempt.blockedUntil) {
+        return res.status(429).json({
+          success: false,
+          message: 'Too many login attempts. Please try again later.',
+        });
+      }
       return res.status(401).json({
         success: false,
         message: 'Invalid email or password',
       });
     }
+
+    clearLoginAttempts(loginKey);
 
     const token = generateToken(user._id);
 
@@ -112,6 +150,14 @@ const login = async (req, res, next) => {
 const loginWithPin = async (req, res, next) => {
   try {
     const { email, pin } = req.body;
+    const loginKey = getLoginKey(req, email);
+    const blockStatus = isLoginBlocked(loginKey);
+    if (blockStatus.blocked) {
+      return res.status(429).json({
+        success: false,
+        message: 'Too many login attempts. Please try again later.',
+      });
+    }
 
     if (!email || !pin) {
       return res.status(400).json({
@@ -122,6 +168,13 @@ const loginWithPin = async (req, res, next) => {
 
     const user = await User.findOne({ email }).select('+pin');
     if (!user || !user.pin) {
+      const attempt = registerLoginFailure(loginKey);
+      if (attempt.blockedUntil) {
+        return res.status(429).json({
+          success: false,
+          message: 'Too many login attempts. Please try again later.',
+        });
+      }
       return res.status(401).json({
         success: false,
         message: 'Invalid credentials or PIN not set',
@@ -130,11 +183,20 @@ const loginWithPin = async (req, res, next) => {
 
     const isMatch = await user.comparePin(pin);
     if (!isMatch) {
+      const attempt = registerLoginFailure(loginKey);
+      if (attempt.blockedUntil) {
+        return res.status(429).json({
+          success: false,
+          message: 'Too many login attempts. Please try again later.',
+        });
+      }
       return res.status(401).json({
         success: false,
         message: 'Invalid PIN',
       });
     }
+
+    clearLoginAttempts(loginKey);
 
     const token = generateToken(user._id);
 

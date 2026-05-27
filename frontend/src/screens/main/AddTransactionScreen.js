@@ -12,7 +12,8 @@ import {
   Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { transactionAPI } from '../../services/api';
+import * as ImagePicker from 'expo-image-picker';
+import { reportAPI, receiptAPI, transactionAPI } from '../../services/api';
 import { COLORS, SIZES, CATEGORIES, SHADOWS } from '../../constants/theme';
 import { useLanguage } from '../../context/LanguageContext';
 import { useGamification } from '../../context/GamificationContext';
@@ -77,8 +78,12 @@ const AddTransactionScreen = ({ navigation, route }) => {
   const [frequency, setFrequency] = useState(existing?.recurringInterval || 'monthly');
   const [customFrequency, setCustomFrequency] = useState(existing?.recurringCustomLabel || '');
   const [loading, setLoading] = useState(false);
+  const [scanLoading, setScanLoading] = useState(false);
   const [autoDetected, setAutoDetected] = useState(false);
   const [matchedKeyword, setMatchedKeyword] = useState('');
+  const [amountError, setAmountError] = useState('');
+  const [summary, setSummary] = useState(null);
+  const [receiptData, setReceiptData] = useState(null);
 
   // Auto-detect category from description keywords
   useEffect(() => {
@@ -97,6 +102,96 @@ const AddTransactionScreen = ({ navigation, route }) => {
     setMatchedKeyword('');
   }, [description, type]);
 
+  useEffect(() => {
+    let active = true;
+    reportAPI
+      .getSummary()
+      .then((res) => {
+        if (active) setSummary(res.data);
+      })
+      .catch(() => {
+        if (active) setSummary(null);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const amountPattern = /^\d*(\.\d{0,2})?$/;
+
+  const handleAmountChange = (value) => {
+    setAmount(value);
+    if (!value) {
+      setAmountError('');
+      return;
+    }
+    if (!amountPattern.test(value)) {
+      setAmountError(t('amountNumbersOnly'));
+    } else {
+      setAmountError('');
+    }
+  };
+
+  const getAvailableBalance = () => {
+    if (!summary) return null;
+    let balance = summary.balance ?? 0;
+    if (isEdit && existing) {
+      if (existing.type === 'expense') {
+        balance += existing.amount;
+      }
+      if (existing.type === 'income') {
+        balance -= existing.amount;
+      }
+    }
+    return balance;
+  };
+
+  const handleScanReceipt = async () => {
+    if (scanLoading) return;
+    setScanLoading(true);
+    try {
+      const permission = await ImagePicker.requestCameraPermissionsAsync();
+      const libraryPermission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (permission.status !== 'granted' && libraryPermission.status !== 'granted') {
+        Alert.alert(t('error'), t('receiptPermissionNeeded'));
+        setScanLoading(false);
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        base64: true,
+        quality: 0.7,
+      });
+
+      if (result.canceled || !result.assets?.[0]?.base64) {
+        setScanLoading(false);
+        return;
+      }
+
+      const asset = result.assets[0];
+      const response = await receiptAPI.scan({ imageBase64: asset.base64 });
+      const scanned = response.data;
+      setReceiptData(scanned);
+
+      if (scanned?.amount) {
+        setAmount(scanned.amount.toFixed(2));
+        setAmountError('');
+      }
+      if (scanned?.storeName) {
+        setDescription(scanned.storeName);
+      }
+      if (scanned?.category) {
+        setCategory(scanned.category);
+      }
+      Alert.alert(t('success'), t('receiptScanSuccess'));
+    } catch (error) {
+      Alert.alert(t('error'), error.message || t('receiptScanFailed'));
+    } finally {
+      setScanLoading(false);
+    }
+  };
+
   const isOtherSelected = category === 'Other Expense' || category === 'Other Income';
 
   const categories = useMemo(() => {
@@ -109,7 +204,22 @@ const AddTransactionScreen = ({ navigation, route }) => {
   }, [type, getCategories]);
 
   const handleSubmit = async () => {
-    if (!amount || parseFloat(amount) <= 0) {
+    const trimmedAmount = amount.trim();
+    if (!trimmedAmount || !amountPattern.test(trimmedAmount)) {
+      Alert.alert(t('error'), t('enterValidAmount'));
+      return;
+    }
+
+    const numericAmount = Number(trimmedAmount);
+    if (!Number.isFinite(numericAmount)) {
+      Alert.alert(t('error'), t('enterValidAmount'));
+      return;
+    }
+    if (type === 'expense' && numericAmount < 0) {
+      Alert.alert(t('error'), t('expenseAmountNegative'));
+      return;
+    }
+    if (numericAmount <= 0) {
       Alert.alert(t('error'), t('enterValidAmount'));
       return;
     }
@@ -128,40 +238,59 @@ const AddTransactionScreen = ({ navigation, route }) => {
       addCustomCategory(type, finalCategory);
     }
 
-    setLoading(true);
-    try {
-      const data = {
-        type,
-        amount: parseFloat(amount),
-        category: finalCategory,
-        description: description.trim(),
-        tags: type === 'expense'
-          ? tags.split(',').map((t) => t.trim()).filter(Boolean)
-          : [],
-      };
+    const proceedSubmit = async () => {
+      setLoading(true);
+      try {
+        const data = {
+          type,
+          amount: numericAmount,
+          category: finalCategory,
+          description: description.trim(),
+          tags: type === 'expense'
+            ? tags.split(',').map((t) => t.trim()).filter(Boolean)
+            : [],
+        };
 
-      if (type === 'income') {
-        data.isRecurring = frequency !== 'one-time';
-        data.recurringInterval = frequency;
-        if (frequency === 'custom') {
-          data.recurringCustomLabel = customFrequency.trim();
+        if (receiptData?.date) {
+          data.date = receiptData.date;
         }
-      }
 
-      if (isEdit) {
-        await transactionAPI.update(existing._id, data);
-      } else {
-        await transactionAPI.create(data);
-        onTransactionAdded(type, parseFloat(amount));
+        if (type === 'income') {
+          data.isRecurring = frequency !== 'one-time';
+          data.recurringInterval = frequency;
+          if (frequency === 'custom') {
+            data.recurringCustomLabel = customFrequency.trim();
+          }
+        }
+
+        if (isEdit) {
+          await transactionAPI.update(existing._id, data);
+        } else {
+          await transactionAPI.create(data);
+          onTransactionAdded(type, numericAmount);
+        }
+        Alert.alert(t('success'), isEdit ? 'Transaction updated!' : t('transactionAdded'), [
+          { text: t('ok'), onPress: () => navigation.goBack() },
+        ]);
+      } catch (error) {
+        Alert.alert(t('error'), error.message);
+      } finally {
+        setLoading(false);
       }
-      Alert.alert(t('success'), isEdit ? 'Transaction updated!' : t('transactionAdded'), [
-        { text: t('ok'), onPress: () => navigation.goBack() },
-      ]);
-    } catch (error) {
-      Alert.alert(t('error'), error.message);
-    } finally {
-      setLoading(false);
+    };
+
+    if (type === 'expense') {
+      const availableBalance = getAvailableBalance();
+      if (availableBalance !== null && numericAmount > availableBalance) {
+        Alert.alert(t('warning'), t('expenseExceedsBalanceWarning'), [
+          { text: t('cancel'), style: 'cancel' },
+          { text: t('continue'), onPress: proceedSubmit },
+        ]);
+        return;
+      }
     }
+
+    await proceedSubmit();
   };
 
   const styles = getStyles(theme);
@@ -209,13 +338,49 @@ const AddTransactionScreen = ({ navigation, route }) => {
               placeholder="0.00"
               placeholderTextColor={COLORS.placeholder}
               value={amount}
-              onChangeText={setAmount}
+              onChangeText={handleAmountChange}
               keyboardType="decimal-pad"
               autoFocus
             />
           </View>
           <View style={[styles.amountUnderline, { backgroundColor: type === 'income' ? COLORS.income : COLORS.expense }]} />
+          {!!amountError && (
+            <Text style={styles.amountErrorText}>{amountError}</Text>
+          )}
         </View>
+
+        {type === 'expense' && (
+          <View style={styles.scanCard}>
+            <View style={styles.scanHeader}>
+              <View>
+                <Text style={styles.scanTitle}>{t('scanReceipt')}</Text>
+                <Text style={styles.scanSubtitle}>{t('scanReceiptHint')}</Text>
+              </View>
+              <TouchableOpacity
+                style={styles.scanButton}
+                onPress={handleScanReceipt}
+                disabled={scanLoading}
+              >
+                {scanLoading ? (
+                  <ActivityIndicator color={COLORS.white} />
+                ) : (
+                  <>
+                    <Ionicons name="scan-outline" size={18} color={COLORS.white} />
+                    <Text style={styles.scanButtonText}>{t('scanNow')}</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            </View>
+            {receiptData && (
+              <View style={styles.scanResult}>
+                <Text style={styles.scanResultText}>
+                  {receiptData.storeName ? `${receiptData.storeName} · ` : ''}
+                  {receiptData.date || t('receiptScanned')}
+                </Text>
+              </View>
+            )}
+          </View>
+        )}
 
         {/* Details Card */}
         <View style={styles.formCard}>
