@@ -78,15 +78,11 @@ const MainTabs = () => {
   const insets = useSafeAreaInsets();
   const bottomInset = Math.max(insets.bottom, 0);
 
-  // Total vertical space the floating tab bar occupies from the screen bottom:
-  // tab bar height (68) + its bottom offset + a small breathing gap
-  const tabBarBottom = bottomInset > 0 ? bottomInset + 8 : 12;
-  const TAB_BAR_HEIGHT = 68;
-  const SCENE_BOTTOM_PAD = TAB_BAR_HEIGHT + tabBarBottom + 8;
+  // Normal solid-docked tab bar height (60px height + safe area bottom inset)
+  const TAB_BAR_HEIGHT = 60 + bottomInset;
 
   return (
     <Tab.Navigator
-      sceneContainerStyle={{ paddingBottom: SCENE_BOTTOM_PAD }}
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarIcon: ({ focused, color, size }) => {
@@ -116,26 +112,20 @@ const MainTabs = () => {
         tabBarInactiveTintColor: theme.textLight,
         tabBarStyle: {
           backgroundColor: theme.surface,
-          borderTopWidth: 0,
-          paddingBottom: 10,
+          borderTopWidth: 1,
+          borderTopColor: theme.border,
+          paddingBottom: bottomInset > 0 ? bottomInset - 4 : 8,
           paddingTop: 8,
           height: TAB_BAR_HEIGHT,
-          borderRadius: 24,
-          marginHorizontal: 12,
-          position: 'absolute',
-          bottom: tabBarBottom,
-          left: 0,
-          right: 0,
-          elevation: 20,
-          zIndex: 999,
+          elevation: 10,
           shadowColor: '#000',
           shadowOffset: { width: 0, height: -3 },
-          shadowOpacity: 0.12,
-          shadowRadius: 16,
+          shadowOpacity: 0.08,
+          shadowRadius: 10,
         },
         tabBarLabelStyle: {
           fontSize: 11,
-          fontWeight: '600',
+          fontWeight: '700',
         },
       })}
     >
