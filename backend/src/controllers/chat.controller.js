@@ -44,45 +44,90 @@ RULES:
 - Encourage good saving habits and celebrate progress`;
 };
 
-const callGemini = async (systemPrompt, history, userMessage) => {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) throw new Error('GEMINI_API_KEY is not set on the server');
+const normalizeHistory = (history = []) => {
+  return history
+    .filter((item) => item?.content || item?.text)
+    .slice(-14)
+    .map((item) => ({
+      role: item.role === 'assistant' ? 'assistant' : 'user',
+      content: item.content || item.text,
+    }));
+};
 
-  // Embed system prompt as first turn so it works with all model versions
-  const systemTurn = [
-    { role: 'user', parts: [{ text: `[SYSTEM CONTEXT - follow these instructions for all replies]\n${systemPrompt}` }] },
-    { role: 'model', parts: [{ text: 'Understood. I will follow these instructions.' }] },
-  ];
+const getOpenRouterModels = async () => {
+  const configured = process.env.OPENROUTER_MODEL;
+  const fallbackModels = [
+    configured,
+    'deepseek/deepseek-chat-v3-0324:free',
+    'deepseek/deepseek-chat:free',
+    'deepseek/deepseek-r1:free',
+    'deepseek/deepseek-r1-0528:free',
+  ].filter(Boolean);
 
-  const contents = [
-    ...systemTurn,
-    ...history,
-    { role: 'user', parts: [{ text: userMessage }] },
-  ];
+  try {
+    const response = await fetch('https://openrouter.ai/api/v1/models');
+    const result = await response.json();
+    const liveDeepSeekFreeModels = (result?.data || [])
+      .map((model) => model.id)
+      .filter((id) => id?.startsWith('deepseek/') && id.endsWith(':free'));
+    return [...new Set([...fallbackModels, ...liveDeepSeekFreeModels])];
+  } catch (_) {
+    return [...new Set(fallbackModels)];
+  }
+};
 
-  // v1beta supports all current Gemini models including 2.0-flash
-  const model = 'gemini-2.0-flash';
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents,
-        generationConfig: { maxOutputTokens: 512, temperature: 0.75 },
-      }),
+const callOpenRouter = async (systemPrompt, history, userMessage) => {
+  const apiKey = process.env.OPENROUTER_API_KEY;
+  if (!apiKey) throw new Error('OPENROUTER_API_KEY is not set on the server');
+
+  let lastError = null;
+
+  for (const model of await getOpenRouterModels()) {
+    const response = await fetch(
+      'https://openrouter.ai/api/v1/chat/completions',
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': process.env.APP_PUBLIC_URL || 'http://localhost:5000',
+          'X-Title': 'Pocket Money Finance Assistant',
+        },
+        body: JSON.stringify({
+          model,
+          messages: [
+            {
+              role: 'system',
+              content: `${systemPrompt}
+
+SAFETY RULES:
+- Help users manage budgets, understand expenses, and learn financial concepts clearly.
+- Do not invent balances, transactions, budgets, or goals. Only use the data provided in the system context.
+- Do not claim access to bank accounts, cards, mobile money, or external financial accounts.
+- Do not give unsafe investment advice, guaranteed returns, or high-risk recommendations.
+- If data is missing, say what information is needed instead of guessing.`,
+            },
+            ...normalizeHistory(history),
+            { role: 'user', content: userMessage },
+          ],
+          max_tokens: 512,
+          temperature: 0.7,
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (response.ok) {
+      const text = data?.choices?.[0]?.message?.content;
+      if (!text) throw new Error('Empty response from OpenRouter');
+      return text;
     }
-  );
 
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data?.error?.message || `Gemini API error: ${response.status}`);
+    lastError = data?.error?.message || `OpenRouter API error: ${response.status}`;
   }
 
-  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!text) throw new Error('Empty response from Gemini');
-  return text;
+  throw new Error(lastError || 'OpenRouter request failed');
 };
 
 // @route POST /api/chat
@@ -119,7 +164,7 @@ const chat = async (req, res, next) => {
     };
 
     const systemPrompt = buildSystemPrompt(financialContext);
-    const reply = await callGemini(systemPrompt, history, message.trim());
+    const reply = await callOpenRouter(systemPrompt, history, message.trim());
 
     res.json({ success: true, data: { reply } });
   } catch (error) {

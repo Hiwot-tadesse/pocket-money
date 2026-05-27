@@ -14,33 +14,66 @@ const PORT = process.env.PORT || 5000;
 
 const mask = (v) => (!v ? '(not set)' : v.length <= 6 ? '****' : v.slice(0, 4) + '****' + v.slice(-4));
 
-const verifyGeminiKey = async () => {
-  const key = process.env.GEMINI_API_KEY;
+const getOpenRouterModels = async () => {
+  const configured = process.env.OPENROUTER_MODEL;
+  const fallbackModels = [
+    configured,
+    'deepseek/deepseek-chat-v3-0324:free',
+    'deepseek/deepseek-chat:free',
+    'deepseek/deepseek-r1:free',
+    'deepseek/deepseek-r1-0528:free',
+  ].filter(Boolean);
+
+  try {
+    const response = await fetch('https://openrouter.ai/api/v1/models');
+    const result = await response.json();
+    const liveDeepSeekFreeModels = (result?.data || [])
+      .map((model) => model.id)
+      .filter((id) => id?.startsWith('deepseek/') && id.endsWith(':free'));
+    return [...new Set([...fallbackModels, ...liveDeepSeekFreeModels])];
+  } catch (_) {
+    return [...new Set(fallbackModels)];
+  }
+};
+
+const verifyOpenRouterKey = async () => {
+  const key = process.env.OPENROUTER_API_KEY;
   if (!key) {
-    console.log('[Gemini] API key: ✗ NOT SET – chatbot will not work');
+    console.log('[OpenRouter] API key: ✗ NOT SET – chatbot will not work');
     return;
   }
   try {
+    let lastError = null;
+
+    for (const model of await getOpenRouterModels()) {
     const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,
+      'https://openrouter.ai/api/v1/chat/completions',
       {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          Authorization: `Bearer ${key}`,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': process.env.APP_PUBLIC_URL || 'http://localhost:5000',
+          'X-Title': 'Pocket Money API Verification',
+        },
         body: JSON.stringify({
-          contents: [{ parts: [{ text: 'ping' }] }],
-          generationConfig: { maxOutputTokens: 8 },
+          model,
+          messages: [{ role: 'user', content: 'ping' }],
+          max_tokens: 8,
         }),
       }
     );
     const data = await res.json();
-    if (res.ok && data?.candidates) {
-      console.log('[Gemini] API key: ✓ VALID – chatbot ready');
-    } else {
-      const msg = data?.error?.message || `HTTP ${res.status}`;
-      console.log('[Gemini] API key: ✗ INVALID / QUOTA –', msg);
+    if (res.ok && data?.choices) {
+      console.log(`[OpenRouter] API key: ✓ VALID – chatbot ready (${model})`);
+      return;
     }
+    lastError = data?.error?.message || `HTTP ${res.status}`;
+    }
+
+    console.log('[OpenRouter] API key: ✗ INVALID / QUOTA –', lastError);
   } catch (e) {
-    console.log('[Gemini] API key: ✗ NETWORK ERROR –', e.message);
+    console.log('[OpenRouter] API key: ✗ NETWORK ERROR –', e.message);
   }
 };
 
@@ -55,7 +88,8 @@ const printEnvDiagnostics = () => {
   console.log(`PORT:            ${process.env.PORT || '(not set)'}`);
   console.log(`MONGODB_URI:     ${process.env.MONGODB_URI ? '✓ set (' + mask(process.env.MONGODB_URI) + ')' : '✗ NOT SET'}`);
   console.log(`JWT_SECRET:      ${process.env.JWT_SECRET ? '✓ set' : '✗ NOT SET'}`);
-  console.log(`GEMINI_API_KEY:  ${process.env.GEMINI_API_KEY ? '✓ set (' + mask(process.env.GEMINI_API_KEY) + ')' : '✗ NOT SET'}`);
+  console.log(`OPENROUTER_API_KEY: ${process.env.OPENROUTER_API_KEY ? '✓ set (' + mask(process.env.OPENROUTER_API_KEY) + ')' : '✗ NOT SET'}`);
+  console.log(`OPENROUTER_MODEL:   ${process.env.OPENROUTER_MODEL || 'deepseek/deepseek-chat:free'}`);
   console.log(`SMTP_HOST:       ${process.env.SMTP_HOST || '(not set)'}`);
   console.log(`SMTP_USER:       ${process.env.SMTP_USER || '(not set)'}`);
   console.log(`SMTP_PASS:       ${process.env.SMTP_PASS ? '✓ set (' + mask(process.env.SMTP_PASS) + ')' : '✗ NOT SET'}`);
@@ -73,8 +107,8 @@ const startServer = async () => {
       // --- Verify every external API declared in .env ---
       console.log('--- API VERIFICATION ---');
 
-      // 1. Gemini (chatbot)
-      await verifyGeminiKey();
+      // 1. OpenRouter (chatbot)
+      await verifyOpenRouterKey();
 
       // 2. Email (SMTP or Brevo)
       if (process.env.BREVO_API_KEY) {

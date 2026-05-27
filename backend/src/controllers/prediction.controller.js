@@ -22,48 +22,72 @@ const predictNextValue = (values) => {
 
 const round2 = (v) => Math.round(v * 100) / 100;
 
-const callGeminiInsight = async (apiKey, data) => {
+const getOpenRouterModels = () => {
+  const configured = process.env.OPENROUTER_MODEL;
+  return [
+    configured,
+    'deepseek/deepseek-chat:free',
+    'deepseek/deepseek-r1:free',
+    'deepseek/deepseek-r1-0528:free',
+  ].filter(Boolean);
+};
+
+const callOpenRouterInsight = async (apiKey, data) => {
   const { predicted, trends, topCategories, monthsAnalyzed, historical } = data;
 
   const categoryLines = topCategories
     .map((c) => `  • ${c.category}: ETB ${c.amount.toFixed(2)}`)
     .join('\n');
 
-  const prompt = `You are a personal finance assistant for an Ethiopian student/youth pocket money app (currency: ETB).
+  let lastError = null;
 
-Based on ${monthsAnalyzed} months of transaction history, here are the predictions for NEXT MONTH:
-  • Predicted Income:   ETB ${predicted.income.toFixed(2)} (trend: ${trends.income})
-  • Predicted Expense:  ETB ${predicted.expense.toFixed(2)} (trend: ${trends.expense})
-  • Predicted Savings:  ETB ${predicted.savings.toFixed(2)}
+  for (const model of getOpenRouterModels()) {
+    const response = await fetch(
+      'https://openrouter.ai/api/v1/chat/completions',
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': process.env.APP_PUBLIC_URL || 'http://localhost:5000',
+          'X-Title': 'Pocket Money Forecast Assistant',
+        },
+        body: JSON.stringify({
+          model,
+          messages: [
+            {
+              role: 'system',
+              content: 'You are a safe personal finance assistant. Explain only the provided forecast data. Do not invent balances, bank account data, transactions, or guaranteed investment advice.',
+            },
+            {
+              role: 'user',
+              content: `Based on ${monthsAnalyzed} months of transaction history, here are the predictions for NEXT MONTH:
+  • Predicted Income: ETB ${predicted.income.toFixed(2)} (trend: ${trends.income})
+  • Predicted Expense: ETB ${predicted.expense.toFixed(2)} (trend: ${trends.expense})
+  • Predicted Savings: ETB ${predicted.savings.toFixed(2)}
 
 Historical averages:
-  • Avg Monthly Income:  ETB ${historical.avgIncome.toFixed(2)}
+  • Avg Monthly Income: ETB ${historical.avgIncome.toFixed(2)}
   • Avg Monthly Expense: ETB ${historical.avgExpense.toFixed(2)}
 
 Top predicted expense categories next month:
 ${categoryLines}
 
-Write a short, friendly 2-3 sentence financial insight about these predictions. Mention the savings outlook and one actionable tip. Be warm and encouraging. Keep it concise.`;
+Write a short, friendly 2-3 sentence financial insight. Mention the savings outlook and one safe actionable budgeting tip.`,
+            },
+          ],
+          max_tokens: 200,
+          temperature: 0.7,
+        }),
+      }
+    );
 
-  const contents = [
-    { role: 'user', parts: [{ text: prompt }] },
-  ];
+    const result = await response.json();
+    if (response.ok) return result?.choices?.[0]?.message?.content || null;
+    lastError = result?.error?.message || `OpenRouter error: ${response.status}`;
+  }
 
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents,
-        generationConfig: { maxOutputTokens: 200, temperature: 0.7 },
-      }),
-    }
-  );
-
-  const result = await response.json();
-  if (!response.ok) throw new Error(result?.error?.message || 'Gemini error');
-  return result?.candidates?.[0]?.content?.parts?.[0]?.text || null;
+  throw new Error(lastError || 'OpenRouter insight request failed');
 };
 
 // @route GET /api/predictions
@@ -160,10 +184,10 @@ const getPredictions = async (req, res, next) => {
     };
 
     let aiInsight = null;
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = process.env.OPENROUTER_API_KEY;
     if (apiKey) {
       try {
-        aiInsight = await callGeminiInsight(apiKey, predictionPayload);
+        aiInsight = await callOpenRouterInsight(apiKey, predictionPayload);
       } catch (_) {
         // Prediction data still returned even without AI insight
       }
