@@ -28,6 +28,7 @@ import AddBudgetScreen from '../screens/main/AddBudgetScreen';
 import GoalsScreen from '../screens/main/GoalsScreen';
 import AddGoalScreen from '../screens/main/AddGoalScreen';
 import ChatScreen from '../screens/main/ChatScreen';
+import ForecastDetailsScreen from '../screens/main/ForecastDetailsScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -53,6 +54,7 @@ const HomeStackNavigator = () => (
     <HomeStack.Screen name="Alerts" component={AlertsScreen} />
     <HomeStack.Screen name="Chat" component={ChatScreen} />
     <HomeStack.Screen name="Reports" component={ReportsScreen} />
+    <HomeStack.Screen name="ForecastDetails" component={ForecastDetailsScreen} />
   </HomeStack.Navigator>
 );
 

@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 import { predictionAPI } from '../services/api';
 import { COLORS, SIZES, SHADOWS } from '../constants/theme';
 import { useLanguage } from '../context/LanguageContext';
@@ -24,11 +25,11 @@ const TrendIcon = ({ trend, type }) => {
 };
 
 const PredictionCard = () => {
+  const navigation = useNavigation();
   const { t } = useLanguage();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [expanded, setExpanded] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -56,12 +57,17 @@ const PredictionCard = () => {
       ? COLORS.income
       : '#F87171';
 
+  const topCategory = data?.topCategories?.[0];
+  const previewText = topCategory
+    ? `${topCategory.category} may be higher next month too. Tap to see the full explanation.`
+    : 'Tap to see the full forecast explanation.';
+
   return (
     <View style={[styles.card, SHADOWS.medium]}>
       {/* Header */}
       <TouchableOpacity
         style={styles.header}
-        onPress={() => setExpanded((v) => !v)}
+        onPress={() => data?.hasData && navigation.navigate('ForecastDetails', { prediction: data })}
         activeOpacity={0.8}
       >
         <View style={styles.headerLeft}>
@@ -80,7 +86,7 @@ const PredictionCard = () => {
           </View>
         </View>
         <Ionicons
-          name={expanded ? 'chevron-up' : 'chevron-down'}
+          name="open-outline"
           size={20}
           color={COLORS.textSecondary}
         />
@@ -115,6 +121,16 @@ const PredictionCard = () => {
       {/* Prediction content */}
       {!loading && !error && data?.hasData && (
         <>
+          <TouchableOpacity
+            style={styles.previewBox}
+            onPress={() => navigation.navigate('ForecastDetails', { prediction: data })}
+            activeOpacity={0.85}
+          >
+            <Ionicons name="bulb-outline" size={18} color={COLORS.primary} />
+            <Text style={styles.previewText}>{previewText}</Text>
+            <Ionicons name="chevron-forward" size={18} color={COLORS.primary} />
+          </TouchableOpacity>
+
           {/* Summary row — always visible */}
           <View style={styles.summaryRow}>
             <View style={styles.summaryItem}>
@@ -156,48 +172,6 @@ const PredictionCard = () => {
             </View>
           </View>
 
-          {/* Expanded details */}
-          {expanded && (
-            <>
-              {/* Top spending categories */}
-              {data.topCategories?.length > 0 && (
-                <View style={styles.section}>
-                  <Text style={styles.sectionTitle}>
-                    {t('topSpendingCategories') || 'Top Predicted Expenses'}
-                  </Text>
-                  {data.topCategories.map((cat, i) => {
-                    const max = data.topCategories[0].amount || 1;
-                    const barWidth = `${Math.round((cat.amount / max) * 100)}%`;
-                    return (
-                      <View key={cat.category} style={styles.catRow}>
-                        <Text style={styles.catRank}>{i + 1}</Text>
-                        <View style={styles.catInfo}>
-                          <View style={styles.catLabelRow}>
-                            <Text style={styles.catName}>{cat.category}</Text>
-                            <Text style={styles.catAmount}>{fmt(cat.amount)}</Text>
-                          </View>
-                          <View style={styles.barTrack}>
-                            <View style={[styles.barFill, { width: barWidth }]} />
-                          </View>
-                        </View>
-                      </View>
-                    );
-                  })}
-                </View>
-              )}
-
-              {/* AI Insight */}
-              {data.aiInsight && (
-                <View style={styles.insightBox}>
-                  <View style={styles.insightHeader}>
-                    <Ionicons name="sparkles" size={16} color={COLORS.primary} />
-                    <Text style={styles.insightTitle}>{t('aiInsight') || 'AI Insight'}</Text>
-                  </View>
-                  <Text style={styles.insightText}>{data.aiInsight}</Text>
-                </View>
-              )}
-            </>
-          )}
         </>
       )}
     </View>
@@ -277,6 +251,25 @@ const styles = StyleSheet.create({
     marginTop: 8,
     lineHeight: 20,
     paddingHorizontal: 8,
+  },
+  previewBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginHorizontal: 14,
+    marginTop: 12,
+    padding: 12,
+    borderRadius: 14,
+    backgroundColor: COLORS.primary + '10',
+    borderWidth: 1,
+    borderColor: COLORS.primary + '22',
+  },
+  previewText: {
+    flex: 1,
+    fontSize: SIZES.sm || 13,
+    color: COLORS.primary,
+    fontWeight: '700',
+    lineHeight: 19,
   },
   summaryRow: {
     flexDirection: 'row',
