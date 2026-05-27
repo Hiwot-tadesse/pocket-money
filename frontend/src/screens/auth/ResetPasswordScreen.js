@@ -21,7 +21,7 @@ const validatePassword = (pw) => {
 const ResetPasswordScreen = ({ navigation, route }) => {
   const { t } = useLanguage();
   const { theme } = useTheme();
-  const [otp, setOtp] = useState(route.params?.otp || '');
+  const [token] = useState(route.params?.token || '');
   const [email] = useState(route.params?.email || '');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -33,7 +33,7 @@ const ResetPasswordScreen = ({ navigation, route }) => {
 
   const handleReset = async () => {
     setError('');
-    if (!otp.trim() || otp.length !== 6) { setError(t('enterResetCode')); return; }
+    if (!token) { setError('Invalid or missing reset link. Please request a new one.'); return; }
     if (!newPassword) { setError(t('enterNewPassword')); return; }
     const pwErr = validatePassword(newPassword);
     if (pwErr) { setError(pwErr); return; }
@@ -41,7 +41,7 @@ const ResetPasswordScreen = ({ navigation, route }) => {
 
     setLoading(true);
     try {
-      await authAPI.resetPassword({ email, otp: otp.trim(), newPassword });
+      await authAPI.resetPassword({ token, newPassword });
       setSuccess(true);
     } catch (e) {
       setError(e.message);
@@ -87,27 +87,11 @@ const ResetPasswordScreen = ({ navigation, route }) => {
           </View>
           <Text style={styles.headerTitle}>{t('resetPassword')}</Text>
           <Text style={styles.headerSub}>
-            {email ? t('resettingFor', { email }) : t('enterCodeAndPassword')}
+            {email ? t('resettingFor', { email }) : t('enterNewPasswordOnly')}
           </Text>
         </View>
 
         <View style={styles.formCard}>
-
-          {/* OTP field */}
-          <Text style={styles.fieldLabel}>{t('resetCode')}</Text>
-          <View style={[styles.inputBox, error && !otp && styles.inputBoxError]}>
-            <Ionicons name="keypad-outline" size={20} color={COLORS.primary} style={styles.inputIcon} />
-            <TextInput
-              style={[styles.input, styles.otpInput]}
-              placeholder="• • • • • •"
-              placeholderTextColor={COLORS.placeholder}
-              value={otp}
-              onChangeText={(t) => { setOtp(t.replace(/\D/g, '').slice(0, 6)); setError(''); }}
-              keyboardType="number-pad"
-              maxLength={6}
-              autoFocus={!route.params?.otp}
-            />
-          </View>
 
           {/* New Password */}
           <Text style={[styles.fieldLabel, { marginTop: 18 }]}>{t('newPassword')}</Text>
@@ -164,7 +148,7 @@ const ResetPasswordScreen = ({ navigation, route }) => {
             onPress={() => navigation.navigate('ForgotPassword')}
             style={styles.resendRow}
           >
-            <Text style={styles.resendText}>{t('didntGetCode')} </Text>
+            <Text style={styles.resendText}>{t('didntReceiveLink')} </Text>
             <Text style={styles.resendLink}>{t('requestAgain')}</Text>
           </TouchableOpacity>
         </View>
@@ -187,7 +171,6 @@ const getStyles = (theme) => StyleSheet.create({
   inputBoxError: { borderColor: COLORS.expense },
   inputIcon: { marginRight: 12 },
   input: { flex: 1, fontSize: SIZES.base, color: theme.text, fontWeight: '500' },
-  otpInput: { fontSize: 22, fontWeight: '800', letterSpacing: 8, color: COLORS.primary },
   errorRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 10 },
   errorText: { fontSize: SIZES.sm, color: COLORS.expense, fontWeight: '500', flex: 1 },
   submitBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: COLORS.primary, borderRadius: 14, paddingVertical: 18, marginTop: 24, gap: 10, ...SHADOWS.medium },

@@ -1,8 +1,9 @@
-import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import React, { useEffect } from 'react';
+import { NavigationContainer, createNavigationContainerRef } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
+import * as Linking from 'expo-linking';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { COLORS } from '../constants/theme';
@@ -31,6 +32,19 @@ import ChatScreen from '../screens/main/ChatScreen';
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 const HomeStack = createNativeStackNavigator();
+
+// Deep link configuration for password reset (and future links)
+const navigationRef = createNavigationContainerRef();
+
+const linking = {
+  prefixes: ['pocketmoney://', 'exp://', Linking.createURL('/')],
+  config: {
+    screens: {
+      ResetPassword: 'reset-password',
+      // Add other deep-linkable screens here if needed
+    },
+  },
+};
 
 const HomeStackNavigator = () => (
   <HomeStack.Navigator screenOptions={{ headerShown: false }}>
@@ -148,14 +162,55 @@ const AuthStack = () => (
 );
 
 const AppNavigator = () => {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading, logout } = useAuth();
+
+  // Handle deep links (e.g. password reset from email)
+  useEffect(() => {
+    const handleDeepLink = async (event) => {
+      const url = event?.url;
+      if (!url) return;
+
+      // pocketmoney://reset-password?token=XXXX
+      if (url.includes('reset-password')) {
+        const parsed = Linking.parse(url);
+        const token = parsed?.queryParams?.token;
+
+        if (token) {
+          // Security: if user is logged in, log them out before showing reset screen
+          if (isAuthenticated) {
+            await logout();
+          }
+
+          // Navigate to ResetPassword with the secure token
+          // We use a small timeout to ensure navigation is ready after possible logout
+          setTimeout(() => {
+            if (navigationRef.isReady()) {
+              navigationRef.navigate('ResetPassword', { token });
+            }
+          }, 50);
+        }
+      }
+    };
+
+    // Listen for links while app is running
+    const subscription = Linking.addEventListener('url', handleDeepLink);
+
+    // Handle link that opened the app from cold start
+    Linking.getInitialURL().then((url) => {
+      if (url) handleDeepLink({ url });
+    });
+
+    return () => {
+      subscription?.remove();
+    };
+  }, [isAuthenticated, logout]);
 
   if (loading) {
     return null;
   }
 
   return (
-    <NavigationContainer>
+    <NavigationContainer linking={linking} ref={navigationRef}>
       {isAuthenticated ? <MainTabs /> : <AuthStack />}
     </NavigationContainer>
   );

@@ -16,7 +16,8 @@ const ForgotPasswordScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [otpResult, setOtpResult] = useState(null);
+  const [sent, setSent] = useState(false);
+  const [sentInfo, setSentInfo] = useState(null);
 
   const handleSend = async () => {
     setError('');
@@ -25,7 +26,8 @@ const ForgotPasswordScreen = ({ navigation }) => {
     setLoading(true);
     try {
       const res = await authAPI.forgotPassword(email.trim());
-      setOtpResult(res.data);
+      setSent(true);
+      setSentInfo(res.data || {});
     } catch (e) {
       setError(e.message);
     } finally {
@@ -35,34 +37,27 @@ const ForgotPasswordScreen = ({ navigation }) => {
 
   const styles = getStyles(theme);
 
-  if (otpResult) {
+  if (sent) {
     return (
       <View style={styles.container}>
         <View style={styles.successCard}>
           <View style={styles.successIcon}>
-            <Ionicons name="lock-open" size={40} color={COLORS.primary} />
+            <Ionicons name="mail" size={48} color={COLORS.primary} />
           </View>
-          <Text style={styles.successTitle}>{t('resetCodeGenerated')}</Text>
-          {otpResult.emailSent ? (
-            <Text style={styles.successSub}>
-              A reset code was sent to{'\n'}<Text style={{ fontWeight: '700', color: COLORS.primary }}>{email}</Text>
-            </Text>
-          ) : (
-            <Text style={styles.successSub}>{t('yourResetCode')}</Text>
-          )}
-          {!otpResult.emailSent && (
-            <View style={styles.otpBox}>
-              <Text style={styles.otpText}>{otpResult.otp}</Text>
-            </View>
-          )}
-          <Text style={styles.expiryNote}>⏱ {t('validFor', { time: otpResult.expiresIn })}</Text>
+          <Text style={styles.successTitle}>Reset Link Sent</Text>
+          <Text style={styles.successSub}>
+            If an account exists for <Text style={{ fontWeight: '700', color: COLORS.primary }}>{email}</Text>, a secure reset link has been sent.
+          </Text>
+          <Text style={styles.expiryNote}>⏱ {t('validFor', { time: sentInfo?.expiresIn || '1 hour' })}</Text>
+
           <TouchableOpacity
             style={styles.continueBtn}
-            onPress={() => navigation.navigate('ResetPassword', { email: email.trim(), otp: otpResult.otp })}
+            onPress={() => navigation.navigate('ResetPassword', { email: email.trim() })}
           >
-            <Text style={styles.continueBtnText}>{t('continueToReset')}</Text>
+            <Text style={styles.continueBtnText}>Continue to Reset</Text>
             <Ionicons name="arrow-forward" size={20} color={COLORS.white} />
           </TouchableOpacity>
+
           <TouchableOpacity onPress={() => navigation.navigate('Login')} style={styles.backLink}>
             <Text style={styles.backLinkText}>{t('backToLogin')}</Text>
           </TouchableOpacity>
@@ -84,7 +79,7 @@ const ForgotPasswordScreen = ({ navigation }) => {
             <Ionicons name="key" size={40} color={COLORS.white} />
           </View>
           <Text style={styles.headerTitle}>{t('forgotPassword')}</Text>
-          <Text style={styles.headerSub}>{t('enterEmailForCode')}</Text>
+          <Text style={styles.headerSub}>Enter your email and we'll send a secure reset link</Text>
         </View>
 
         <View style={styles.formCard}>
@@ -114,7 +109,7 @@ const ForgotPasswordScreen = ({ navigation }) => {
               ? <ActivityIndicator color={COLORS.white} />
               : <>
                   <Ionicons name="send" size={20} color={COLORS.white} />
-                  <Text style={styles.submitText}>{t('sendResetCode')}</Text>
+                  <Text style={styles.submitText}>{t('sendResetLink')}</Text>
                 </>
             }
           </TouchableOpacity>
@@ -153,8 +148,6 @@ const getStyles = (theme) => StyleSheet.create({
   successIcon: { width: 96, height: 96, borderRadius: 48, backgroundColor: COLORS.primary + '15', alignItems: 'center', justifyContent: 'center', marginBottom: 20 },
   successTitle: { fontSize: 24, fontWeight: '800', color: theme.text, marginBottom: 8 },
   successSub: { fontSize: SIZES.md, color: theme.textSecondary, marginBottom: 20 },
-  otpBox: { backgroundColor: COLORS.primary + '12', borderRadius: 16, paddingHorizontal: 40, paddingVertical: 20, borderWidth: 2, borderColor: COLORS.primary + '40', marginBottom: 12 },
-  otpText: { fontSize: 40, fontWeight: '900', color: COLORS.primary, letterSpacing: 10 },
   expiryNote: { fontSize: SIZES.sm, color: theme.textSecondary, marginBottom: 28 },
   continueBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: COLORS.primary, borderRadius: 14, paddingVertical: 16, paddingHorizontal: 28, gap: 10, width: '100%', ...SHADOWS.medium },
   continueBtnText: { color: '#FFFFFF', fontSize: SIZES.lg, fontWeight: '800' },

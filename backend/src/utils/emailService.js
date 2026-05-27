@@ -57,30 +57,32 @@ const verifyTransporter = async () => {
   }
 };
 
-const RESET_HTML = (otp, expiresIn) => `
+const RESET_HTML = (resetUrl, expiresIn = '1 hour') => `
   <div style="font-family:Arial,sans-serif;max-width:480px;margin:auto;padding:32px;background:#f9fafb;border-radius:16px;">
-    <h2 style="text-align:center;color:#111827;">Password Reset</h2>
-    <p style="text-align:center;color:#6B7280;">Use the code below. Expires in <strong>${expiresIn}</strong>.</p>
-    <div style="background:#EEF2FF;border:2px solid #6366F1;border-radius:12px;padding:20px 32px;text-align:center;margin:24px 0;">
-      <span style="font-size:36px;font-weight:900;letter-spacing:10px;color:#4F46E5;">${otp}</span>
+    <h2 style="text-align:center;color:#111827;">Reset Your Password</h2>
+    <p style="text-align:center;color:#6B7280;">Click the button below to securely reset your password. This link expires in <strong>${expiresIn}</strong>.</p>
+    
+    <div style="text-align:center;margin:32px 0;">
+      <a href="${resetUrl}" 
+         style="background:#6366F1;color:#ffffff;text-decoration:none;padding:14px 32px;border-radius:12px;font-weight:700;font-size:16px;display:inline-block;">
+        Reset Password
+      </a>
     </div>
-    <p style="text-align:center;color:#9CA3AF;font-size:13px;">If you didn't request this, ignore this email.</p>
+
+    <p style="text-align:center;color:#9CA3AF;font-size:13px;">
+      If the button doesn't work, copy and paste this link:<br>
+      <a href="${resetUrl}" style="color:#6366F1;word-break:break-all;">${resetUrl}</a>
+    </p>
+
+    <p style="text-align:center;color:#9CA3AF;font-size:13px;margin-top:24px;">
+      If you didn't request a password reset, you can safely ignore this email.
+    </p>
   </div>`;
 
 const WELCOME_HTML = (username) => `
   <div style="font-family:Arial,sans-serif;max-width:480px;margin:auto;padding:32px;background:#f9fafb;border-radius:16px;">
     <h2 style="text-align:center;color:#111827;">Welcome, ${username}!</h2>
     <p style="text-align:center;color:#6B7280;">Your Pocket Money account is ready. Start tracking your finances today!</p>
-  </div>`;
-
-const VERIFY_HTML = (code) => `
-  <div style="font-family:Arial,sans-serif;max-width:480px;margin:auto;padding:32px;background:#f9fafb;border-radius:16px;">
-    <h2 style="text-align:center;color:#111827;">Verify Your Email</h2>
-    <p style="text-align:center;color:#6B7280;">Use the 6-digit code below to verify your email address. It expires in <strong>15 minutes</strong>.</p>
-    <div style="background:#EEF2FF;border:2px solid #6366F1;border-radius:12px;padding:20px 32px;text-align:center;margin:24px 0;">
-      <span style="font-size:36px;font-weight:900;letter-spacing:10px;color:#4F46E5;">${code}</span>
-    </div>
-    <p style="text-align:center;color:#9CA3AF;font-size:13px;">If you didn't create this account, you can ignore this email.</p>
   </div>`;
 
 const trySend = async (toEmail, toName, subject, html, text) => {
@@ -104,12 +106,12 @@ const trySend = async (toEmail, toName, subject, html, text) => {
   return false;
 };
 
-const sendPasswordResetEmail = async (toEmail, otp, expiresIn = '15 minutes') => {
+const sendPasswordResetEmail = async (toEmail, resetUrl, expiresIn = '1 hour') => {
   return trySend(
     toEmail, toEmail,
-    'Your Password Reset Code – Pocket Money',
-    RESET_HTML(otp, expiresIn),
-    `Your reset code is: ${otp}\nExpires in ${expiresIn}.`,
+    'Reset Your Password – Pocket Money',
+    RESET_HTML(resetUrl, expiresIn),
+    `Click this link to reset your password:\n${resetUrl}\n\nThis link expires in ${expiresIn}. If you did not request this, ignore this email.`,
   );
 };
 
@@ -122,19 +124,9 @@ const sendWelcomeEmail = async (toEmail, username) => {
   );
 };
 
-const sendVerificationEmail = async (toEmail, code) => {
-  return trySend(
-    toEmail, toEmail,
-    'Verify Your Email – Pocket Money',
-    VERIFY_HTML(code),
-    `Your verification code is: ${code}\nThis code expires in 15 minutes.`,
-  );
-};
-
 module.exports = {
   sendPasswordResetEmail,
   sendWelcomeEmail,
-  sendVerificationEmail,
   isConfigured,
   verifyTransporter,
 };

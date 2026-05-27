@@ -10,7 +10,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { SIZES, SHADOWS } from '../../constants/theme';
 
 const SettingsScreen = () => {
-  const { user, logout, updateUser, verifyEmail, resendVerification } = useAuth();
+  const { user, logout, updateUser } = useAuth();
   const { t } = useLanguage();
   const { expenseReminder, setExpenseReminder } = useSmartAlerts();
   const { isDark, theme, toggleTheme } = useTheme();
@@ -27,55 +27,12 @@ const SettingsScreen = () => {
   const [editingTime, setEditingTime] = useState(false);
   const [profilePic, setProfilePic] = useState(null);
 
-  // Email verification state
-  const [verificationCode, setVerificationCode] = useState('');
-  const [verifying, setVerifying] = useState(false);
-  const [resending, setResending] = useState(false);
-  const [verifyMessage, setVerifyMessage] = useState('');
-  const [verifyError, setVerifyError] = useState('');
-
   const PIC_KEY = `profile_pic_${user?._id}`;
 
   useEffect(() => {
     if (!user?._id) return;
     AsyncStorage.getItem(PIC_KEY).then((uri) => { if (uri) setProfilePic(uri); });
   }, [user?._id]);
-
-  const handleVerifyEmail = async () => {
-    if (!verificationCode.trim()) return;
-    setVerifying(true);
-    setVerifyMessage('');
-    setVerifyError('');
-    try {
-      await verifyEmail(verificationCode.trim());
-      setVerifyMessage('Email verified successfully!');
-      setVerificationCode('');
-      setTimeout(() => setVerifyMessage(''), 3000);
-    } catch (e) {
-      setVerifyError(e.message || 'Verification failed');
-    } finally {
-      setVerifying(false);
-    }
-  };
-
-  const handleResendVerification = async () => {
-    setResending(true);
-    setVerifyMessage('');
-    setVerifyError('');
-    try {
-      const res = await resendVerification();
-      if (res?.message) {
-        setVerifyMessage(res.message);
-      } else {
-        setVerifyMessage('Verification code sent');
-      }
-      setTimeout(() => setVerifyMessage(''), 4000);
-    } catch (e) {
-      setVerifyError(e.message || 'Failed to resend code');
-    } finally {
-      setResending(false);
-    }
-  };
 
   const handlePickImage = () => {
     Alert.alert('Profile Photo', 'Choose an option', [
@@ -256,55 +213,6 @@ const SettingsScreen = () => {
           </View>
         </View>
       </View>
-
-      {/* Email Verification */}
-      {!user?.emailVerified ? (
-        <View style={[s.section, SHADOWS.small]}>
-          <Text style={s.sectionTitle}>Email Verification</Text>
-          <View style={s.verifyRow}>
-            <Ionicons name="mail-outline" size={20} color={theme.primary} />
-            <Text style={s.verifyText}>Your email is not verified</Text>
-          </View>
-          <Text style={s.verifyHint}>Enter the 6-digit code sent to {user?.email}</Text>
-
-          <View style={s.verifyInputRow}>
-            <TextInput
-              style={s.verifyInput}
-              value={verificationCode}
-              onChangeText={(t) => {
-                setVerificationCode(t.replace(/\D/g, '').slice(0, 6));
-                setVerifyError('');
-                setVerifyMessage('');
-              }}
-              placeholder="000000"
-              placeholderTextColor={theme.textLight}
-              keyboardType="number-pad"
-              maxLength={6}
-            />
-            <TouchableOpacity
-              style={[s.verifyBtn, (!verificationCode || verifying) && s.verifyBtnDisabled]}
-              onPress={handleVerifyEmail}
-              disabled={!verificationCode || verifying}
-            >
-              <Text style={s.verifyBtnText}>{verifying ? 'Verifying...' : 'Verify'}</Text>
-            </TouchableOpacity>
-          </View>
-
-          <TouchableOpacity style={s.resendBtn} onPress={handleResendVerification} disabled={resending}>
-            <Text style={s.resendText}>{resending ? 'Sending...' : 'Resend Code'}</Text>
-          </TouchableOpacity>
-
-          {!!verifyMessage && <Text style={s.verifySuccess}>{verifyMessage}</Text>}
-          {!!verifyError && <Text style={s.verifyError}>{verifyError}</Text>}
-        </View>
-      ) : (
-        <View style={[s.section, SHADOWS.small]}>
-          <View style={s.verifyRow}>
-            <Ionicons name="checkmark-circle" size={20} color="#10B981" />
-            <Text style={[s.verifyText, { color: '#10B981' }]}>Email verified</Text>
-          </View>
-        </View>
-      )}
 
       {/* Preferences */}
       <View style={[s.section, SHADOWS.small]}>
@@ -515,38 +423,6 @@ const getStyles = (theme) => StyleSheet.create({
   },
   logoutText: { fontSize: SIZES.base, fontWeight: '700', color: theme.danger },
 
-  // Email verification styles
-  verifyRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 },
-  verifyText: { fontSize: SIZES.base, fontWeight: '600', color: theme.text },
-  verifyHint: { fontSize: SIZES.sm, color: theme.textSecondary, marginBottom: 12 },
-  verifyInputRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 10 },
-  verifyInput: {
-    flex: 1,
-    backgroundColor: theme.background,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: theme.border,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 20,
-    letterSpacing: 8,
-    color: theme.text,
-    textAlign: 'center',
-  },
-  verifyBtn: {
-    backgroundColor: theme.primary,
-    paddingHorizontal: 18,
-    paddingVertical: 12,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  verifyBtnDisabled: { backgroundColor: theme.border },
-  verifyBtnText: { color: theme.white, fontWeight: '700' },
-  resendBtn: { alignSelf: 'flex-start', paddingVertical: 4 },
-  resendText: { color: theme.primary, fontWeight: '600', fontSize: SIZES.sm },
-  verifySuccess: { marginTop: 8, color: '#10B981', fontWeight: '600' },
-  verifyError: { marginTop: 8, color: theme.danger, fontWeight: '600' },
 });
 
 export default SettingsScreen;

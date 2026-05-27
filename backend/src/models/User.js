@@ -44,24 +44,12 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
-    resetPasswordOTP: {
+    // Secure password reset token (hashed)
+    resetPasswordToken: {
       type: String,
       select: false,
     },
     resetPasswordExpires: {
-      type: Date,
-      select: false,
-    },
-    // Email verification
-    emailVerified: {
-      type: Boolean,
-      default: false,
-    },
-    verificationCode: {
-      type: String,
-      select: false,
-    },
-    verificationExpires: {
       type: Date,
       select: false,
     },
