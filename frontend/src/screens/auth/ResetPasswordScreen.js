@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity,
   StyleSheet, KeyboardAvoidingView, Platform,
   ActivityIndicator, ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as Linking from 'expo-linking';
 import { authAPI } from '../../services/api';
 import { COLORS, SIZES, SHADOWS } from '../../constants/theme';
 import { useLanguage } from '../../context/LanguageContext';
@@ -21,7 +22,7 @@ const validatePassword = (pw) => {
 const ResetPasswordScreen = ({ navigation, route }) => {
   const { t } = useLanguage();
   const { theme } = useTheme();
-  const [token] = useState(route.params?.token || '');
+  const [token, setToken] = useState(route.params?.token || '');
   const [email] = useState(route.params?.email || '');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -31,9 +32,35 @@ const ResetPasswordScreen = ({ navigation, route }) => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
+  useEffect(() => {
+    if (route.params?.token) {
+      setToken(route.params.token);
+    }
+  }, [route.params?.token]);
+
+  useEffect(() => {
+    if (token) return;
+    Linking.getInitialURL().then((url) => {
+      if (!url) return;
+      const parsed = Linking.parse(url);
+      const tokenParam = parsed?.queryParams?.token;
+      if (tokenParam) {
+        setToken(tokenParam);
+      }
+    });
+  }, [token]);
+
+  const mapResetError = (message) => {
+    if (!message) return t('resetTokenInvalid');
+    const normalized = message.toLowerCase();
+    if (normalized.includes('expired')) return t('resetTokenExpired');
+    if (normalized.includes('invalid')) return t('resetTokenInvalid');
+    return message;
+  };
+
   const handleReset = async () => {
     setError('');
-    if (!token) { setError('Invalid or missing reset link. Please request a new one.'); return; }
+    if (!token) { setError(t('resetTokenInvalid')); return; }
     if (!newPassword) { setError(t('enterNewPassword')); return; }
     const pwErr = validatePassword(newPassword);
     if (pwErr) { setError(pwErr); return; }
@@ -44,7 +71,7 @@ const ResetPasswordScreen = ({ navigation, route }) => {
       await authAPI.resetPassword({ token, newPassword });
       setSuccess(true);
     } catch (e) {
-      setError(e.message);
+      setError(mapResetError(e.message));
     } finally {
       setLoading(false);
     }
@@ -60,7 +87,7 @@ const ResetPasswordScreen = ({ navigation, route }) => {
             <Ionicons name="checkmark-circle" size={64} color={COLORS.income} />
           </View>
           <Text style={styles.successTitle}>{t('passwordResetSuccess')}</Text>
-          <Text style={styles.successSub}>{t('passwordUpdated')}</Text>
+          <Text style={styles.successSub}>{t('passwordResetSuccessMessage')}</Text>
           <TouchableOpacity
             style={styles.loginBtn}
             onPress={() => navigation.navigate('Login')}
@@ -99,7 +126,7 @@ const ResetPasswordScreen = ({ navigation, route }) => {
             <Ionicons name="lock-closed-outline" size={20} color={COLORS.primary} style={styles.inputIcon} />
             <TextInput
               style={styles.input}
-              placeholder="Min. 6 characters"
+              placeholder={t('newPasswordPlaceholder')}
               placeholderTextColor={COLORS.placeholder}
               value={newPassword}
               onChangeText={(t) => { setNewPassword(t); setError(''); }}
@@ -116,7 +143,7 @@ const ResetPasswordScreen = ({ navigation, route }) => {
             <Ionicons name="lock-closed-outline" size={20} color={COLORS.primary} style={styles.inputIcon} />
             <TextInput
               style={styles.input}
-              placeholder="Repeat new password"
+              placeholder={t('confirmNewPasswordPlaceholder')}
               placeholderTextColor={COLORS.placeholder}
               value={confirmPassword}
               onChangeText={(t) => { setConfirmPassword(t); setError(''); }}

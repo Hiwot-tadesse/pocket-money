@@ -57,7 +57,7 @@ const verifyTransporter = async () => {
   }
 };
 
-const RESET_HTML = (resetUrl, expiresIn = '1 hour') => `
+const RESET_HTML = (resetUrl, deepLinkUrl, expiresIn = '1 hour') => `
   <div style="font-family:Arial,sans-serif;max-width:480px;margin:auto;padding:32px;background:#f9fafb;border-radius:16px;">
     <h2 style="text-align:center;color:#111827;">Reset Your Password</h2>
     <p style="text-align:center;color:#6B7280;">Click the button below to securely reset your password. This link expires in <strong>${expiresIn}</strong>.</p>
@@ -73,6 +73,13 @@ const RESET_HTML = (resetUrl, expiresIn = '1 hour') => `
       If the button doesn't work, copy and paste this link:<br>
       <a href="${resetUrl}" style="color:#6366F1;word-break:break-all;">${resetUrl}</a>
     </p>
+
+    ${deepLinkUrl && deepLinkUrl !== resetUrl ? `
+      <p style="text-align:center;color:#9CA3AF;font-size:12px;margin-top:12px;">
+        Mobile app link:<br>
+        <a href="${deepLinkUrl}" style="color:#6366F1;word-break:break-all;">${deepLinkUrl}</a>
+      </p>
+    ` : ''}
 
     <p style="text-align:center;color:#9CA3AF;font-size:13px;margin-top:24px;">
       If you didn't request a password reset, you can safely ignore this email.
@@ -116,12 +123,12 @@ const trySend = async (toEmail, toName, subject, html, text) => {
   return false;
 };
 
-const sendPasswordResetEmail = async (toEmail, resetUrl, expiresIn = '1 hour') => {
+const sendPasswordResetEmail = async (toEmail, resetUrl, deepLinkUrl, expiresIn = '1 hour') => {
   return trySend(
     toEmail, toEmail,
     'Reset Your Password – Pocket Money',
-    RESET_HTML(resetUrl, expiresIn),
-    `Click this link to reset your password:\n${resetUrl}\n\nThis link expires in ${expiresIn}. If you did not request this, ignore this email.`,
+    RESET_HTML(resetUrl, deepLinkUrl, expiresIn),
+    `Click this link to reset your password:\n${resetUrl}\n\nMobile link: ${deepLinkUrl || resetUrl}\n\nThis link expires in ${expiresIn}. If you did not request this, ignore this email.`,
   );
 };
 

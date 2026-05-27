@@ -9,6 +9,11 @@ const {
   registerLoginFailure,
   clearLoginAttempts,
 } = require('../utils/loginAttemptStore');
+const {
+  getResetKey,
+  isResetBlocked,
+  registerResetAttempt,
+} = require('../utils/resetAttemptStore');
 
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -268,32 +273,57 @@ const forgotPassword = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'Email is required' });
     }
 
-    const user = await User.findOne({ email: email.toLowerCase().trim() });
-    if (!user) {
-      // Do not reveal whether the email exists (security)
-      return res.json({ success: true, message: 'If an account exists, a reset link has been sent.' });
+    const resetKey = getResetKey(req);
+    const blockStatus = isResetBlocked(resetKey);
+    if (blockStatus.blocked) {
+      return res.status(429).json({
+        success: false,
+        message: 'Too many reset requests. Please try again later.',
+      });
     }
 
-    // Generate a secure random token (not guessable like 6-digit OTP)
+    const user = await User.findOne({ email: email.toLowerCase().trim() });
+
+    const resetAttempt = registerResetAttempt(resetKey);
+    if (resetAttempt.blockedUntil) {
+      return res.status(429).json({
+        success: false,
+        message: 'Too many reset requests. Please try again later.',
+      });
+    }
+
+    if (!user) {
+      // Do not reveal whether the email exists (security)
+      return res.json({
+        success: true,
+        message: 'If an account exists, a reset link has been sent.',
+      });
+    }
+
     const resetToken = crypto.randomBytes(32).toString('hex');
     const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+    const resetExpiryMs = parseInt(process.env.RESET_TOKEN_EXPIRES_MS || '3600000', 10);
+    const expiresInLabel = process.env.RESET_TOKEN_EXPIRES_LABEL || '1 hour';
 
     user.resetPasswordToken = hashedToken;
-    user.resetPasswordExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+    user.resetPasswordExpires = new Date(Date.now() + resetExpiryMs);
     await user.save({ validateBeforeSave: false });
 
-    // The link the user will click (deep link into the app)
-    // Using custom scheme so it opens the mobile app directly
-    const resetUrl = `pocketmoney://reset-password?token=${resetToken}`;
+    const webBaseUrl = process.env.FRONTEND_URL || process.env.APP_PUBLIC_URL || 'pocketmoney://';
+    const normalizedBase = webBaseUrl.replace(/\/$/, '');
+    const webResetUrl = normalizedBase.startsWith('pocketmoney://')
+      ? `pocketmoney://reset-password?token=${resetToken}`
+      : `${normalizedBase}/reset-password?token=${resetToken}`;
+    const deepLinkUrl = `pocketmoney://reset-password?token=${resetToken}`;
 
-    const emailSent = await sendPasswordResetEmail(user.email, resetUrl).catch(() => false);
+    const emailSent = await sendPasswordResetEmail(user.email, webResetUrl, deepLinkUrl, expiresInLabel).catch(() => false);
 
     res.json({
       success: true,
       message: emailSent
         ? 'If an account exists, a reset link has been sent to your email.'
         : 'If an account exists, a reset link has been generated (email not configured).',
-      data: { expiresIn: '1 hour', emailSent: !!emailSent },
+      data: { expiresIn: expiresInLabel, emailSent: !!emailSent },
     });
   } catch (error) {
     next(error);
@@ -309,20 +339,29 @@ const resetPassword = async (req, res, next) => {
     if (!token || !newPassword) {
       return res.status(400).json({ success: false, message: 'Reset token and new password are required' });
     }
-    if (newPassword.length < 8) {
-      return res.status(400).json({ success: false, message: 'Password must be at least 8 characters' });
+    const strongPassword = /^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+    if (!strongPassword.test(newPassword)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password must be at least 8 characters and include an uppercase letter, number, and symbol.',
+      });
     }
 
     // Hash the token the same way we did on forgot-password
     const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
 
-    const user = await User.findOne({
-      resetPasswordToken: hashedToken,
-      resetPasswordExpires: { $gt: Date.now() },
-    }).select('+resetPasswordToken +resetPasswordExpires');
+    const user = await User.findOne({ resetPasswordToken: hashedToken })
+      .select('+resetPasswordToken +resetPasswordExpires');
 
     if (!user) {
-      return res.status(400).json({ success: false, message: 'Invalid or expired reset link. Please request a new one.' });
+      return res.status(400).json({ success: false, message: 'Invalid reset link. Please request a new one.' });
+    }
+
+    if (!user.resetPasswordExpires || user.resetPasswordExpires <= Date.now()) {
+      user.resetPasswordToken = undefined;
+      user.resetPasswordExpires = undefined;
+      await user.save({ validateBeforeSave: false });
+      return res.status(400).json({ success: false, message: 'Reset link has expired. Please request a new one.' });
     }
 
     // Set the new password
@@ -332,7 +371,7 @@ const resetPassword = async (req, res, next) => {
     user.resetPasswordExpires = undefined;
     await user.save();
 
-    res.json({ success: true, message: 'Password reset successfully. You can now log in.' });
+    res.json({ success: true, message: 'Password reset successful. Please login.' });
   } catch (error) {
     next(error);
   }

@@ -44,19 +44,11 @@ const ForgotPasswordScreen = ({ navigation }) => {
           <View style={styles.successIcon}>
             <Ionicons name="mail" size={48} color={COLORS.primary} />
           </View>
-          <Text style={styles.successTitle}>Reset Link Sent</Text>
+          <Text style={styles.successTitle}>{t('resetLinkSent')}</Text>
           <Text style={styles.successSub}>
-            If an account exists for <Text style={{ fontWeight: '700', color: COLORS.primary }}>{email}</Text>, a secure reset link has been sent.
+            {t('resetLinkSentInfo', { email })}
           </Text>
           <Text style={styles.expiryNote}>⏱ {t('validFor', { time: sentInfo?.expiresIn || '1 hour' })}</Text>
-
-          <TouchableOpacity
-            style={styles.continueBtn}
-            onPress={() => navigation.navigate('ResetPassword', { email: email.trim() })}
-          >
-            <Text style={styles.continueBtnText}>Continue to Reset</Text>
-            <Ionicons name="arrow-forward" size={20} color={COLORS.white} />
-          </TouchableOpacity>
 
           <TouchableOpacity onPress={() => navigation.navigate('Login')} style={styles.backLink}>
             <Text style={styles.backLinkText}>{t('backToLogin')}</Text>
