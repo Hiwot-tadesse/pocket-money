@@ -73,6 +73,16 @@ const WELCOME_HTML = (username) => `
     <p style="text-align:center;color:#6B7280;">Your Pocket Money account is ready. Start tracking your finances today!</p>
   </div>`;
 
+const VERIFY_HTML = (code) => `
+  <div style="font-family:Arial,sans-serif;max-width:480px;margin:auto;padding:32px;background:#f9fafb;border-radius:16px;">
+    <h2 style="text-align:center;color:#111827;">Verify Your Email</h2>
+    <p style="text-align:center;color:#6B7280;">Use the 6-digit code below to verify your email address. It expires in <strong>15 minutes</strong>.</p>
+    <div style="background:#EEF2FF;border:2px solid #6366F1;border-radius:12px;padding:20px 32px;text-align:center;margin:24px 0;">
+      <span style="font-size:36px;font-weight:900;letter-spacing:10px;color:#4F46E5;">${code}</span>
+    </div>
+    <p style="text-align:center;color:#9CA3AF;font-size:13px;">If you didn't create this account, you can ignore this email.</p>
+  </div>`;
+
 const trySend = async (toEmail, toName, subject, html, text) => {
   if (process.env.BREVO_API_KEY) {
     console.log(`[Email] Sending via Brevo to ${toEmail}...`);
@@ -112,4 +122,19 @@ const sendWelcomeEmail = async (toEmail, username) => {
   );
 };
 
-module.exports = { sendPasswordResetEmail, sendWelcomeEmail, isConfigured, verifyTransporter };
+const sendVerificationEmail = async (toEmail, code) => {
+  return trySend(
+    toEmail, toEmail,
+    'Verify Your Email – Pocket Money',
+    VERIFY_HTML(code),
+    `Your verification code is: ${code}\nThis code expires in 15 minutes.`,
+  );
+};
+
+module.exports = {
+  sendPasswordResetEmail,
+  sendWelcomeEmail,
+  sendVerificationEmail,
+  isConfigured,
+  verifyTransporter,
+};

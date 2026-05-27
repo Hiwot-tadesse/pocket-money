@@ -14,6 +14,36 @@ const PORT = process.env.PORT || 5000;
 
 const mask = (v) => (!v ? '(not set)' : v.length <= 6 ? '****' : v.slice(0, 4) + '****' + v.slice(-4));
 
+const verifyGeminiKey = async () => {
+  const key = process.env.GEMINI_API_KEY;
+  if (!key) {
+    console.log('[Gemini] API key: ✗ NOT SET – chatbot will not work');
+    return;
+  }
+  try {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-latest:generateContent?key=${key}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: 'ping' }] }],
+          generationConfig: { maxOutputTokens: 8 },
+        }),
+      }
+    );
+    const data = await res.json();
+    if (res.ok && data?.candidates) {
+      console.log('[Gemini] API key: ✓ VALID – chatbot ready');
+    } else {
+      const msg = data?.error?.message || `HTTP ${res.status}`;
+      console.log('[Gemini] API key: ✗ INVALID / QUOTA –', msg);
+    }
+  } catch (e) {
+    console.log('[Gemini] API key: ✗ NETWORK ERROR –', e.message);
+  }
+};
+
 const printEnvDiagnostics = () => {
   console.log('\n========== ENV DIAGNOSTICS ==========');
   console.log(`.env path:       ${envPath}`);
@@ -36,19 +66,29 @@ const printEnvDiagnostics = () => {
 const startServer = async () => {
   try {
     await connectDB();
-    app.listen(PORT, () => {
+    app.listen(PORT, async () => {
       console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
-      console.log('[Email] Config check → SMTP_HOST:', process.env.SMTP_HOST || '(not set)');
-      console.log('[Email] Config check → SMTP_USER:', process.env.SMTP_USER || '(not set)');
-      console.log('[Email] Config check → SMTP_PASS:', process.env.SMTP_PASS ? '****' + process.env.SMTP_PASS.slice(-4) : '(not set)');
-      if (isConfigured()) {
-        verifyTransporter().then((ok) => {
-          if (ok) console.log('[Email] SMTP connection verified ✓');
-          else console.warn('[Email] SMTP configured but connection failed – check credentials');
-        });
+      printEnvDiagnostics();          // ← prints every key from .env on every restart
+
+      // --- Verify every external API declared in .env ---
+      console.log('--- API VERIFICATION ---');
+
+      // 1. Gemini (chatbot)
+      await verifyGeminiKey();
+
+      // 2. Email (SMTP or Brevo)
+      if (process.env.BREVO_API_KEY) {
+        console.log('[Email] Using Brevo HTTP API – no port 587/465 needed');
+        console.log('[Email] Brevo API key: ✓ PRESENT');
+      } else if (isConfigured()) {
+        const ok = await verifyTransporter();
+        if (ok) console.log('[Email] SMTP connection verified ✓');
+        else console.warn('[Email] SMTP configured but connection failed – check credentials / firewall');
       } else {
-        console.warn('[Email] SMTP not configured – emails disabled. Add SMTP_USER & SMTP_PASS to .env');
+        console.warn('[Email] No email provider configured – welcome & reset emails will be skipped');
       }
+
+      console.log('--- ALL CHECKS COMPLETE ---\n');
     });
   } catch (error) {
     console.error('Failed to start server:', error.message);

@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const { validationResult } = require('express-validator');
 const User = require('../models/User');
-const { sendPasswordResetEmail, sendWelcomeEmail } = require('../utils/emailService');
+const { sendPasswordResetEmail, sendWelcomeEmail, sendVerificationEmail } = require('../utils/emailService');
 
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -36,10 +36,20 @@ const register = async (req, res, next) => {
 
     const user = await User.create({ username, email, password, pin });
 
+    // Generate email verification code (6 digits, 15 min expiry)
+    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+    user.verificationCode = verificationCode;
+    user.verificationExpires = new Date(Date.now() + 15 * 60 * 1000);
+    await user.save({ validateBeforeSave: false });
+
     const token = generateToken(user._id);
 
+    // Send welcome + verification emails (non-blocking)
     sendWelcomeEmail(email, username).catch((err) => {
       console.error('[Email] Welcome email failed:', err.message);
+    });
+    sendVerificationEmail(email, verificationCode).catch((err) => {
+      console.error('[Email] Verification email failed:', err.message);
     });
 
     res.status(201).json({
@@ -51,6 +61,7 @@ const register = async (req, res, next) => {
         phone: user.phone || '',
         currency: user.currency,
         notificationsEnabled: user.notificationsEnabled,
+        emailVerified: user.emailVerified,
         token,
       },
     });
@@ -97,6 +108,7 @@ const login = async (req, res, next) => {
         phone: user.phone || '',
         currency: user.currency,
         notificationsEnabled: user.notificationsEnabled,
+        emailVerified: user.emailVerified,
         token,
       },
     });
@@ -145,6 +157,7 @@ const loginWithPin = async (req, res, next) => {
         phone: user.phone || '',
         currency: user.currency,
         notificationsEnabled: user.notificationsEnabled,
+        emailVerified: user.emailVerified,
         token,
       },
     });
@@ -264,4 +277,77 @@ const resetPassword = async (req, res, next) => {
   }
 };
 
-module.exports = { register, login, loginWithPin, getProfile, updateProfile, forgotPassword, resetPassword };
+// @desc    Verify email with 6-digit code
+// @route   POST /api/auth/verify-email
+const verifyEmail = async (req, res, next) => {
+  try {
+    const { code } = req.body;
+    if (!code) {
+      return res.status(400).json({ success: false, message: 'Verification code is required' });
+    }
+
+    const user = await User.findById(req.user._id).select('+verificationCode +verificationExpires');
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+    if (user.emailVerified) {
+      return res.json({ success: true, message: 'Email is already verified' });
+    }
+    if (!user.verificationCode || user.verificationCode !== code) {
+      return res.status(400).json({ success: false, message: 'Invalid verification code' });
+    }
+    if (!user.verificationExpires || user.verificationExpires < Date.now()) {
+      return res.status(400).json({ success: false, message: 'Verification code has expired. Please request a new one.' });
+    }
+
+    user.emailVerified = true;
+    user.verificationCode = undefined;
+    user.verificationExpires = undefined;
+    await user.save({ validateBeforeSave: false });
+
+    res.json({ success: true, message: 'Email verified successfully' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Resend verification code
+// @route   POST /api/auth/resend-verification
+const resendVerification = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+    if (user.emailVerified) {
+      return res.json({ success: true, message: 'Email is already verified' });
+    }
+
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    user.verificationCode = code;
+    user.verificationExpires = new Date(Date.now() + 15 * 60 * 1000);
+    await user.save({ validateBeforeSave: false });
+
+    const sent = await sendVerificationEmail(user.email, code).catch(() => false);
+
+    res.json({
+      success: true,
+      message: sent ? 'Verification code sent to your email' : 'Verification code generated (email not configured)',
+      data: { expiresIn: '15 minutes', emailSent: !!sent },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = {
+  register,
+  login,
+  loginWithPin,
+  getProfile,
+  updateProfile,
+  forgotPassword,
+  resetPassword,
+  verifyEmail,
+  resendVerification,
+};

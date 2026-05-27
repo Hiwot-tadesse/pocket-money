@@ -47,6 +47,8 @@ export const authAPI = {
   updateProfile: (data) => api.put('/auth/me', data),
   forgotPassword: (email) => api.post('/auth/forgot-password', { email }),
   resetPassword: (data) => api.post('/auth/reset-password', data),
+  verifyEmail: (code) => api.post('/auth/verify-email', { code }),
+  resendVerification: () => api.post('/auth/resend-verification'),
 };
 
 // ============ TRANSACTIONS ============

@@ -60,9 +60,10 @@ const callGemini = async (systemPrompt, history, userMessage) => {
     { role: 'user', parts: [{ text: userMessage }] },
   ];
 
-  const model = 'gemini-1.5-flash';
+  // Use the current stable v1 endpoint + -latest alias (widely available in 2025-2026)
+  const model = 'gemini-1.5-flash-latest';
   const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+    `https://generativelanguage.googleapis.com/v1/models/${model}:generateContent?key=${apiKey}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

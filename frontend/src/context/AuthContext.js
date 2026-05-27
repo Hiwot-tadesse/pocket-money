@@ -73,6 +73,21 @@ export const AuthProvider = ({ children }) => {
     return response;
   };
 
+  // Email verification
+  const verifyEmail = async (code) => {
+    const res = await authAPI.verifyEmail(code);
+    // Refresh user profile to get latest emailVerified status
+    const profileRes = await authAPI.getProfile();
+    const freshUser = profileRes.data;
+    await AsyncStorage.setItem('user', JSON.stringify(freshUser));
+    setUser(freshUser);
+    return res;
+  };
+
+  const resendVerification = async () => {
+    return authAPI.resendVerification();
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -85,6 +100,8 @@ export const AuthProvider = ({ children }) => {
         loginWithPin,
         logout,
         updateUser,
+        verifyEmail,
+        resendVerification,
       }}
     >
       {children}
