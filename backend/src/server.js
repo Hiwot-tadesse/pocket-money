@@ -10,7 +10,8 @@ const app = require('./app');
 const { connectDB } = require('./config/database');
 const { verifyTransporter, isConfigured } = require('./utils/emailService');
 
-const PORT = process.env.PORT || 5000;
+const PORT = Number(process.env.PORT) || 5000;
+const MAX_PORT_RETRIES = 5;
 
 const mask = (v) => (!v ? '(not set)' : v.length <= 6 ? '****' : v.slice(0, 4) + '****' + v.slice(-4));
 
@@ -18,7 +19,6 @@ const getOpenRouterModels = async () => {
   const configured = process.env.OPENROUTER_MODEL;
   const fallbackModels = [
     configured,
-    'deepseek/deepseek-chat-v3-0324:free',
     'deepseek/deepseek-chat:free',
     'deepseek/deepseek-r1:free',
     'deepseek/deepseek-r1-0528:free',
@@ -89,7 +89,7 @@ const printEnvDiagnostics = () => {
   console.log(`MONGODB_URI:     ${process.env.MONGODB_URI ? '✓ set (' + mask(process.env.MONGODB_URI) + ')' : '✗ NOT SET'}`);
   console.log(`JWT_SECRET:      ${process.env.JWT_SECRET ? '✓ set' : '✗ NOT SET'}`);
   console.log(`OPENROUTER_API_KEY: ${process.env.OPENROUTER_API_KEY ? '✓ set (' + mask(process.env.OPENROUTER_API_KEY) + ')' : '✗ NOT SET'}`);
-  console.log(`OPENROUTER_MODEL:   deepseek/deepseek-chat-v3-0324:free`);
+  console.log(`OPENROUTER_MODEL:   ${process.env.OPENROUTER_MODEL || '(not set)'}`);
   console.log(`SMTP_HOST:       ${process.env.SMTP_HOST || '(not set)'}`);
   console.log(`SMTP_USER:       ${process.env.SMTP_USER || '(not set)'}`);
   console.log(`SMTP_PASS:       ${process.env.SMTP_PASS ? '✓ set (' + mask(process.env.SMTP_PASS) + ')' : '✗ NOT SET'}`);
@@ -97,11 +97,33 @@ const printEnvDiagnostics = () => {
   console.log('=====================================\n');
 };
 
+const startListeningWithFallback = ({ startPort, maxRetries, onListening }) => {
+  const tryListen = (port, retriesLeft) => {
+    const server = app.listen(port, () => onListening(port));
+
+    server.on('error', (error) => {
+      if (error.code === 'EADDRINUSE' && retriesLeft > 0) {
+        const nextPort = port + 1;
+        console.warn(`[Server] Port ${port} is in use. Retrying on ${nextPort}...`);
+        tryListen(nextPort, retriesLeft - 1);
+        return;
+      }
+      console.error('Failed to start server:', error.message);
+      process.exit(1);
+    });
+  };
+
+  tryListen(startPort, maxRetries);
+};
+
 const startServer = async () => {
   try {
     await connectDB();
-    app.listen(PORT, async () => {
-      console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
+    startListeningWithFallback({
+      startPort: PORT,
+      maxRetries: MAX_PORT_RETRIES,
+      onListening: async (activePort) => {
+      console.log(`Server running in ${process.env.NODE_ENV} mode on port ${activePort}`);
       printEnvDiagnostics();          // ← prints every key from .env on every restart
 
       // --- Verify every external API declared in .env ---
@@ -123,6 +145,7 @@ const startServer = async () => {
       }
 
       console.log('--- ALL CHECKS COMPLETE ---\n');
+      },
     });
   } catch (error) {
     console.error('Failed to start server:', error.message);
