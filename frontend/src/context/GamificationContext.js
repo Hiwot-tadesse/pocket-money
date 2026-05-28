@@ -21,66 +21,36 @@ const DEFAULT_DATA = {
   lastPointsEarned: null,
 };
 
-const DEMO_EMAIL = 'demo@gmail.com';
-
-const DEMO_DATA = {
-  totalPoints: 2450,
-  streak: 30,
-  lastActiveDate: new Date().toISOString().split('T')[0],
-  totalTransactions: 48,
-  totalIncome: 35400,
-  totalBudgets: 3,
-  budgetUnderControl: true,
-  unlockedAchievements: [
-    'first_transaction',
-    'ten_transactions',
-    'fifty_transactions',
-    'streak_3',
-    'streak_7',
-    'streak_30',
-    'budget_hero',
-    'first_budget',
-    'saver_100',
-  ],
-  pointsHistory: [
-    { amount: 240, reason: '48 demo transactions', date: new Date().toISOString() },
-    { amount: 250, reason: '30-day streak', date: new Date().toISOString() },
-    { amount: 100, reason: 'dedicated tracker', date: new Date().toISOString() },
-    { amount: 30, reason: 'budget hero', date: new Date().toISOString() },
-  ],
-  newAchievement: null,
-  lastPointsEarned: null,
+const getUserStorageKey = (user) => {
+  if (!user) return null;
+  const identifier = user._id || user.email;
+  return identifier ? `${STORAGE_KEY}_${identifier}` : null;
 };
 
 export const GamificationProvider = ({ children }) => {
   const { user } = useAuth();
   const [data, setData] = useState(DEFAULT_DATA);
   const [loaded, setLoaded] = useState(false);
-
-  useEffect(() => {
-    loadData();
-  }, []);
+  const [activeStorageKey, setActiveStorageKey] = useState(null);
 
   useEffect(() => {
     if (loaded) {
       saveData();
     }
-  }, [data, loaded]);
+  }, [data, loaded, activeStorageKey]);
 
-  useEffect(() => {
-    if (!loaded || user?.email !== DEMO_EMAIL) return;
-    setData((prev) => {
-      if (prev.totalPoints >= DEMO_DATA.totalPoints) return prev;
-      return { ...DEFAULT_DATA, ...DEMO_DATA };
-    });
-  }, [loaded, user?.email]);
-
-  const loadData = async () => {
+  const loadDataForKey = async (storageKey) => {
     try {
-      const stored = await AsyncStorage.getItem(STORAGE_KEY);
-      if (stored) {
+      if (!storageKey) {
+        setData(DEFAULT_DATA);
+        return;
+      }
+      const stored = await AsyncStorage.getItem(storageKey);
+      if (stored && stored !== 'null') {
         const parsed = JSON.parse(stored);
         setData({ ...DEFAULT_DATA, ...parsed, newAchievement: null, lastPointsEarned: null });
+      } else {
+        setData(DEFAULT_DATA);
       }
     } catch (e) {
       console.error('Failed to load gamification data:', e);
@@ -89,10 +59,18 @@ export const GamificationProvider = ({ children }) => {
     }
   };
 
+  useEffect(() => {
+    const storageKey = getUserStorageKey(user);
+    setActiveStorageKey(storageKey);
+    setLoaded(false);
+    loadDataForKey(storageKey);
+  }, [user?._id, user?.email]);
+
   const saveData = async () => {
     try {
+      if (!activeStorageKey) return;
       const toSave = { ...data, newAchievement: null, lastPointsEarned: null };
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
+      await AsyncStorage.setItem(activeStorageKey, JSON.stringify(toSave));
     } catch (e) {
       console.error('Failed to save gamification data:', e);
     }
@@ -230,18 +208,8 @@ export const GamificationProvider = ({ children }) => {
     });
   }, [checkAchievements]);
 
-  const onDailyLogin = useCallback(() => {
-    const today = new Date().toISOString().split('T')[0];
-    setData((prev) => {
-      if (prev.lastActiveDate === today) return prev;
-      checkAndUpdateStreak();
-      return {
-        ...prev,
-        totalPoints: prev.totalPoints + POINTS.DAILY_LOGIN,
-        lastPointsEarned: { amount: POINTS.DAILY_LOGIN, reason: 'daily_login' },
-      };
-    });
-  }, [checkAndUpdateStreak]);
+  // Intentionally no points for app-open login; points must come from real finance actions.
+  const onDailyLogin = useCallback(() => {}, []);
 
   const currentLevel = getLevelForPoints(data.totalPoints);
   const nextLevel = getNextLevel(data.totalPoints);

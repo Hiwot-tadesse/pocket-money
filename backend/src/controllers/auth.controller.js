@@ -54,10 +54,12 @@ const register = async (req, res, next) => {
 
     const token = generateToken(user._id);
 
-    // Send welcome email in the background - never blocks signup
-    sendWelcomeEmail(email, username).catch((err) => {
+    let welcomeEmailSent = false;
+    try {
+      welcomeEmailSent = await sendWelcomeEmail(email, username);
+    } catch (err) {
       console.error('[Email] Welcome email failed:', err.message);
-    });
+    }
 
     res.status(201).json({
       success: true,
@@ -69,6 +71,7 @@ const register = async (req, res, next) => {
         currency: user.currency,
         notificationsEnabled: user.notificationsEnabled,
         token,
+        welcomeEmailSent,
       },
     });
   } catch (error) {
@@ -316,14 +319,24 @@ const forgotPassword = async (req, res, next) => {
       : `${normalizedBase}/reset-password?token=${resetToken}`;
     const deepLinkUrl = `pocketmoney://reset-password?token=${resetToken}`;
 
-    const emailSent = await sendPasswordResetEmail(user.email, webResetUrl, deepLinkUrl, expiresInLabel).catch(() => false);
+    let emailSent = false;
+    try {
+      emailSent = await sendPasswordResetEmail(user.email, webResetUrl, deepLinkUrl, expiresInLabel);
+    } catch (sendError) {
+      console.error('[Email] Reset email failed:', sendError.message);
+    }
+
+    if (!emailSent) {
+      return res.status(503).json({
+        success: false,
+        message: 'Password reset email could not be sent. Please try again later.',
+      });
+    }
 
     res.json({
       success: true,
-      message: emailSent
-        ? 'If an account exists, a reset link has been sent to your email.'
-        : 'If an account exists, a reset link has been generated (email not configured).',
-      data: { expiresIn: expiresInLabel, emailSent: !!emailSent },
+      message: 'If an account exists, a reset link has been sent to your email.',
+      data: { expiresIn: expiresInLabel, emailSent: true },
     });
   } catch (error) {
     next(error);

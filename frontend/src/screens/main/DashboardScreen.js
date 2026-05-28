@@ -31,7 +31,7 @@ const DashboardScreen = ({ navigation }) => {
   const { user } = useAuth();
   const { theme } = useTheme();
   const { language, setLanguage, t } = useLanguage();
-  const { onDailyLogin, onBudgetUnderControl } = useGamification();
+  const { onBudgetUnderControl } = useGamification();
   const {
     generateDailyTip, generateVersionAlert, generateExpenseReminder,
     checkBudgetAlerts, checkNoSavingsAlert, checkInactivityAlert, unreadCount: smartUnread,
@@ -73,7 +73,6 @@ const DashboardScreen = ({ navigation }) => {
   useFocusEffect(
     useCallback(() => {
       fetchData();
-      onDailyLogin();
     }, [])
   );
 

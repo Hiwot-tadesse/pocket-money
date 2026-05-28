@@ -103,24 +103,44 @@ const WELCOME_HTML = (username) => `
   </div>`;
 
 const trySend = async (toEmail, toName, subject, html, text) => {
+  const attempts = [];
   if (process.env.BREVO_API_KEY) {
-    console.log(`[Email] Sending via Brevo to ${toEmail}...`);
-    await sendViaBrevo(toEmail, toName, subject, html, text);
-    console.log(`[Email] Sent via Brevo ✓`);
-    return true;
+    attempts.push(async () => {
+      console.log(`[Email] Sending via Brevo to ${toEmail}...`);
+      await sendViaBrevo(toEmail, toName, subject, html, text);
+      console.log('[Email] Sent via Brevo ✓');
+      return true;
+    });
   }
   if (isConfigured()) {
-    console.log(`[Email] Sending via SMTP to ${toEmail}...`);
-    const transporter = createTransporter();
-    const info = await transporter.sendMail({
-      from: `"${process.env.SMTP_FROM_NAME || 'Pocket Money'}" <${process.env.SMTP_USER}>`,
-      to: toEmail, subject, html, text,
+    attempts.push(async () => {
+      console.log(`[Email] Sending via SMTP to ${toEmail}...`);
+      const transporter = createTransporter();
+      const info = await transporter.sendMail({
+        from: `"${process.env.SMTP_FROM_NAME || 'Pocket Money'}" <${process.env.SMTP_USER}>`,
+        to: toEmail, subject, html, text,
+      });
+      console.log(`[Email] Sent via SMTP ✓ msgId: ${info.messageId}`);
+      return true;
     });
-    console.log(`[Email] Sent via SMTP ✓ msgId: ${info.messageId}`);
-    return true;
   }
-  console.warn('[Email] No email provider configured – skipping.');
-  return false;
+
+  if (attempts.length === 0) {
+    console.warn('[Email] No email provider configured – skipping.');
+    return false;
+  }
+
+  let lastError = null;
+  for (const attempt of attempts) {
+    try {
+      return await attempt();
+    } catch (error) {
+      lastError = error;
+      console.warn('[Email] Provider send attempt failed:', error.message);
+    }
+  }
+
+  throw lastError || new Error('All email provider attempts failed');
 };
 
 const sendPasswordResetEmail = async (toEmail, resetUrl, deepLinkUrl, expiresIn = '1 hour') => {
