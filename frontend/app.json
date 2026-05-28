@@ -9,11 +9,25 @@
     "splash": {
       "backgroundColor": "#4F46E5"
     },
+    "plugins": [
+      [
+        "@react-native-voice/voice",
+        {
+          "microphonePermission": "Pocket Money uses your microphone so you can add income and expenses by voice.",
+          "speechRecognitionPermission": "Pocket Money converts your speech to text to fill transaction details."
+        }
+      ]
+    ],
     "assetBundlePatterns": ["**/*"],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "Pocket Money uses your microphone so you can add income and expenses by voice.",
+        "NSSpeechRecognitionUsageDescription": "Pocket Money converts your speech to text to fill transaction details."
+      }
     },
     "android": {
+      "permissions": ["android.permission.RECORD_AUDIO"],
       "adaptiveIcon": {
         "backgroundColor": "#4F46E5"
       }

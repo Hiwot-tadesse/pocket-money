@@ -48,8 +48,8 @@ const ChatScreen = ({ navigation }) => {
       .filter((m) => m.id !== '0')
       .slice(-14)
       .map((m) => ({
-        role: m.role === 'assistant' ? 'model' : 'user',
-        parts: [{ text: m.text }],
+        role: m.role,
+        content: m.text,
       }));
 
   const sendMessage = async (text = input.trim()) => {
@@ -62,15 +62,18 @@ const ChatScreen = ({ navigation }) => {
 
     try {
       const res = await chatAPI.send(text, buildHistory());
-      const botMsg = { id: `a-${Date.now()}`, role: 'assistant', text: res.data.reply };
+      const reply = res?.data?.reply?.trim();
+      if (!reply) {
+        throw new Error('The AI returned a blank response. Please try again.');
+      }
+      const botMsg = { id: `a-${Date.now()}`, role: 'assistant', text: reply };
       setMessages((prev) => [...prev, botMsg]);
     } catch (e) {
+      console.error('[ChatScreen] Failed to send chat message:', e.message);
       const errMsg = {
         id: `e-${Date.now()}`,
         role: 'assistant',
-        text: e.response?.data?.message?.includes('GEMINI_API_KEY')
-          ? "⚠️ The AI key isn't set up on the server yet. See setup instructions."
-          : "Sorry, I couldn't connect right now. Please try again.",
+        text: e.message || "Sorry, I couldn't connect right now. Please try again.",
       };
       setMessages((prev) => [...prev, errMsg]);
     } finally {
@@ -121,7 +124,7 @@ const ChatScreen = ({ navigation }) => {
           </View>
           <View>
             <Text style={styles.headerTitle}>Finance AI</Text>
-            <Text style={styles.headerSubtitle}>Powered by Google Gemini</Text>
+            <Text style={styles.headerSubtitle}>Powered by OpenRouter</Text>
           </View>
         </View>
         <View style={{ width: 44 }} />

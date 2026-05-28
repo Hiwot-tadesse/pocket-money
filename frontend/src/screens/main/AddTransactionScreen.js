@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import Voice from '@react-native-voice/voice';
 import { reportAPI, receiptAPI, transactionAPI } from '../../services/api';
 import { COLORS, SIZES, CATEGORIES, SHADOWS } from '../../constants/theme';
 import { useLanguage } from '../../context/LanguageContext';
@@ -39,6 +40,47 @@ const descriptionHasKeyword = (descriptionText, keyword) => {
   const normalizedKeyword = normalizeText(keyword).trim();
   if (!normalizedKeyword) return false;
   return normalizedDescription.includes(` ${normalizedKeyword} `);
+};
+
+const normalizeSpokenAmount = (text) => {
+  const match = text
+    .replace(/,/g, '')
+    .match(/(?:etb|birr)?\s*(\d+(?:\.\d{1,2})?)|(\d+(?:\.\d{1,2})?)\s*(?:etb|birr)?/i);
+  return match ? match[1] || match[2] : '';
+};
+
+const extractVoiceCategory = (text, categories) => {
+  const normalized = normalizeText(text);
+  const explicit = normalized.match(/\b(?:on|for|from|as|at)\s+([a-z0-9\s&]+)$/i)?.[1]?.trim();
+  const direct = categories.find((cat) => descriptionHasKeyword(normalized, cat));
+  if (direct) return direct;
+  if (explicit) {
+    const explicitDirect = categories.find((cat) => descriptionHasKeyword(explicit, cat));
+    if (explicitDirect) return explicitDirect;
+    const title = explicit
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+    return title || '';
+  }
+  return '';
+};
+
+const parseVoiceTransaction = (text, type, categories) => {
+  const amountValue = normalizeSpokenAmount(text);
+  const categoryValue = extractVoiceCategory(text, categories);
+  const descriptionValue = text
+    .replace(/(?:etb|birr)?\s*\d+(?:\.\d{1,2})?\s*(?:etb|birr)?/i, '')
+    .replace(/\b(spent|paid|bought|received|got|earned|income|expense|on|for|from)\b/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return {
+    amount: amountValue,
+    category: categoryValue,
+    description: descriptionValue || (categoryValue && !categories.includes(categoryValue) ? categoryValue : ''),
+    type: /\b(received|got|earned|salary|allowance|income|paid me)\b/i.test(text) ? 'income' : /\b(spent|paid|bought|expense)\b/i.test(text) ? 'expense' : type,
+  };
 };
 
 const EXPENSE_CATEGORIES = [
@@ -84,6 +126,8 @@ const AddTransactionScreen = ({ navigation, route }) => {
   const [amountError, setAmountError] = useState('');
   const [summary, setSummary] = useState(null);
   const [receiptData, setReceiptData] = useState(null);
+  const [voiceLoading, setVoiceLoading] = useState(false);
+  const [voiceText, setVoiceText] = useState('');
 
   // Auto-detect category from description keywords
   useEffect(() => {
@@ -202,6 +246,65 @@ const AddTransactionScreen = ({ navigation, route }) => {
     const custom = getCategories('expense');
     return [...EXPENSE_CATEGORIES.filter(c => c !== 'Other Expense'), ...custom, 'Other Expense'];
   }, [type, getCategories]);
+
+  useEffect(() => {
+    Voice.onSpeechStart = () => setVoiceLoading(true);
+    Voice.onSpeechEnd = () => setVoiceLoading(false);
+    Voice.onSpeechError = (event) => {
+      setVoiceLoading(false);
+      Alert.alert(t('error'), event?.error?.message || 'Voice input failed. Please try again.');
+    };
+    Voice.onSpeechResults = (event) => {
+      const spokenText = event?.value?.[0]?.trim();
+      if (!spokenText) return;
+      setVoiceText(spokenText);
+      const parsed = parseVoiceTransaction(spokenText, type, categories);
+      if (parsed.type !== type) {
+        setType(parsed.type);
+        setCategory('');
+      }
+      if (parsed.amount) {
+        handleAmountChange(parsed.amount);
+      }
+      if (parsed.description) {
+        setDescription(parsed.description);
+      } else {
+        setDescription(spokenText);
+      }
+      if (parsed.category) {
+        const targetCategories = parsed.type === 'income'
+          ? [...INCOME_SOURCES.filter(c => c !== 'Other Income'), ...getCategories('income'), 'Other Income']
+          : [...EXPENSE_CATEGORIES.filter(c => c !== 'Other Expense'), ...getCategories('expense'), 'Other Expense'];
+        if (targetCategories.includes(parsed.category)) {
+          setCategory(parsed.category);
+          setAutoDetected(true);
+          setMatchedKeyword('voice');
+        } else {
+          setCategory(parsed.type === 'income' ? 'Other Income' : 'Other Expense');
+          setCustomCategoryName(parsed.category);
+        }
+      }
+    };
+    return () => {
+      Voice.destroy().then(Voice.removeAllListeners);
+    };
+  }, [type, categories, getCategories]);
+
+  const handleVoiceInput = async () => {
+    if (voiceLoading) {
+      await Voice.stop();
+      setVoiceLoading(false);
+      return;
+    }
+    try {
+      setVoiceText('');
+      setVoiceLoading(true);
+      await Voice.start('en-US');
+    } catch (error) {
+      setVoiceLoading(false);
+      Alert.alert(t('error'), error.message || 'Voice input is not available on this device.');
+    }
+  };
 
   const handleSubmit = async () => {
     const trimmedAmount = amount.trim();
@@ -346,6 +449,24 @@ const AddTransactionScreen = ({ navigation, route }) => {
           <View style={[styles.amountUnderline, { backgroundColor: type === 'income' ? COLORS.income : COLORS.expense }]} />
           {!!amountError && (
             <Text style={styles.amountErrorText}>{amountError}</Text>
+          )}
+          <TouchableOpacity
+            style={[
+              styles.voiceButton,
+              { backgroundColor: type === 'income' ? COLORS.income : COLORS.expense },
+              voiceLoading && styles.voiceButtonActive,
+            ]}
+            onPress={handleVoiceInput}
+          >
+            {voiceLoading ? (
+              <ActivityIndicator color={COLORS.white} size="small" />
+            ) : (
+              <Ionicons name="mic" size={18} color={COLORS.white} />
+            )}
+            <Text style={styles.voiceButtonText}>{voiceLoading ? 'Listening...' : 'Speak transaction'}</Text>
+          </TouchableOpacity>
+          {!!voiceText && (
+            <Text style={styles.voiceResultText} numberOfLines={2}>{voiceText}</Text>
           )}
         </View>
 
@@ -586,6 +707,10 @@ const getStyles = (theme) => StyleSheet.create({
   selectedBadgeText: { fontSize: SIZES.sm, fontWeight: '700' },
   currencySymbol: { fontSize: 28, fontWeight: '800', color: theme.textSecondary, marginRight: 8 },
   amountInput: { fontSize: 56, fontWeight: '800', minWidth: 140, textAlign: 'center', letterSpacing: -1 },
+  voiceButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingHorizontal: 16, paddingVertical: 10, borderRadius: 22, marginTop: 16, ...SHADOWS.small },
+  voiceButtonActive: { opacity: 0.85 },
+  voiceButtonText: { color: COLORS.white, fontSize: SIZES.sm, fontWeight: '800' },
+  voiceResultText: { marginTop: 10, color: theme.textSecondary, fontSize: SIZES.xs, fontWeight: '600', textAlign: 'center' },
   inputGroup: { paddingHorizontal: SIZES.margin, marginBottom: 24 },
   label: { fontSize: SIZES.sm, fontWeight: '700', color: theme.textSecondary, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 },
   inputContainer: {

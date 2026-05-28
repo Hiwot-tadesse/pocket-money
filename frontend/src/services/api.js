@@ -93,7 +93,7 @@ export const alertAPI = {
 
 // ============ CHAT / AI ============
 export const chatAPI = {
-  send: (message, history = []) => api.post('/chat', { message, history }),
+  send: (message, history = []) => api.post('/chat', { message, history }, { timeout: 60000 }),
 };
 
 // ============ GOALS ============

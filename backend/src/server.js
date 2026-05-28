@@ -89,7 +89,7 @@ const printEnvDiagnostics = () => {
   console.log(`MONGODB_URI:     ${process.env.MONGODB_URI ? '✓ set (' + mask(process.env.MONGODB_URI) + ')' : '✗ NOT SET'}`);
   console.log(`JWT_SECRET:      ${process.env.JWT_SECRET ? '✓ set' : '✗ NOT SET'}`);
   console.log(`OPENROUTER_API_KEY: ${process.env.OPENROUTER_API_KEY ? '✓ set (' + mask(process.env.OPENROUTER_API_KEY) + ')' : '✗ NOT SET'}`);
-  console.log(`OPENROUTER_MODEL:   ${process.env.OPENROUTER_MODEL || 'deepseek/deepseek-chat:free'}`);
+  console.log(`OPENROUTER_MODEL:   deepseek/deepseek-chat-v3-0324:free`);
   console.log(`SMTP_HOST:       ${process.env.SMTP_HOST || '(not set)'}`);
   console.log(`SMTP_USER:       ${process.env.SMTP_USER || '(not set)'}`);
   console.log(`SMTP_PASS:       ${process.env.SMTP_PASS ? '✓ set (' + mask(process.env.SMTP_PASS) + ')' : '✗ NOT SET'}`);

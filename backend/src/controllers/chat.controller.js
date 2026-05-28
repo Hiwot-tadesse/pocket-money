@@ -2,6 +2,9 @@ const Transaction = require('../models/Transaction');
 const Budget = require('../models/Budget');
 const Goal = require('../models/Goal');
 
+const OPENROUTER_MODEL = 'deepseek/deepseek-chat-v3-0324:free';
+const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
+
 const buildSystemPrompt = ({ income, expenses, budgets, goals, recentTx }) => {
   const net = income - expenses;
   const savingsRate = income > 0 ? ((net / income) * 100).toFixed(1) : 0;
@@ -54,51 +57,52 @@ const normalizeHistory = (history = []) => {
     }));
 };
 
-const getOpenRouterModels = async () => {
-  const configured = process.env.OPENROUTER_MODEL;
-  const fallbackModels = [
-    configured,
-    'deepseek/deepseek-chat-v3-0324:free',
-    'deepseek/deepseek-chat:free',
-    'deepseek/deepseek-r1:free',
-    'deepseek/deepseek-r1-0528:free',
-  ].filter(Boolean);
-
+const readJsonSafely = async (response) => {
+  const text = await response.text();
+  if (!text) return {};
   try {
-    const response = await fetch('https://openrouter.ai/api/v1/models');
-    const result = await response.json();
-    const liveDeepSeekFreeModels = (result?.data || [])
-      .map((model) => model.id)
-      .filter((id) => id?.startsWith('deepseek/') && id.endsWith(':free'));
-    return [...new Set([...fallbackModels, ...liveDeepSeekFreeModels])];
-  } catch (_) {
-    return [...new Set(fallbackModels)];
+    return JSON.parse(text);
+  } catch (error) {
+    console.error('[Chat] Failed to parse OpenRouter response JSON:', error.message);
+    return { raw: text };
   }
+};
+
+const getClientErrorMessage = (status, providerMessage) => {
+  if (status === 401 || status === 403) {
+    return 'The AI service is not configured correctly. Please check the server OpenRouter API key.';
+  }
+  if (status === 429) {
+    return 'The AI service is busy or rate-limited right now. Please wait a moment and try again.';
+  }
+  if (status >= 500) {
+    return 'The AI service is temporarily unavailable. Please try again shortly.';
+  }
+  return providerMessage || 'The AI service could not answer right now. Please try again.';
 };
 
 const callOpenRouter = async (systemPrompt, history, userMessage) => {
   const apiKey = process.env.OPENROUTER_API_KEY;
-  if (!apiKey) throw new Error('OPENROUTER_API_KEY is not set on the server');
+  if (!apiKey) {
+    const error = new Error('OPENROUTER_API_KEY is not set on the server');
+    error.statusCode = 503;
+    throw error;
+  }
 
-  let lastError = null;
-
-  for (const model of await getOpenRouterModels()) {
-    const response = await fetch(
-      'https://openrouter.ai/api/v1/chat/completions',
-      {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-          'HTTP-Referer': process.env.APP_PUBLIC_URL || 'http://localhost:5000',
-          'X-Title': 'Pocket Money Finance Assistant',
-        },
-        body: JSON.stringify({
-          model,
-          messages: [
-            {
-              role: 'system',
-              content: `${systemPrompt}
+  const response = await fetch(OPENROUTER_URL, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+      'HTTP-Referer': process.env.APP_PUBLIC_URL || 'http://localhost:5000',
+      'X-Title': 'Pocket Money Finance Assistant',
+    },
+    body: JSON.stringify({
+      model: OPENROUTER_MODEL,
+      messages: [
+        {
+          role: 'system',
+          content: `${systemPrompt}
 
 SAFETY RULES:
 - Help users manage budgets, understand expenses, and learn financial concepts clearly.
@@ -106,28 +110,41 @@ SAFETY RULES:
 - Do not claim access to bank accounts, cards, mobile money, or external financial accounts.
 - Do not give unsafe investment advice, guaranteed returns, or high-risk recommendations.
 - If data is missing, say what information is needed instead of guessing.`,
-            },
-            ...normalizeHistory(history),
-            { role: 'user', content: userMessage },
-          ],
-          max_tokens: 512,
-          temperature: 0.7,
-        }),
-      }
-    );
+        },
+        ...normalizeHistory(history),
+        { role: 'user', content: userMessage },
+      ],
+      max_tokens: 512,
+      temperature: 0.7,
+    }),
+  });
 
-    const data = await response.json();
+  const data = await readJsonSafely(response);
 
-    if (response.ok) {
-      const text = data?.choices?.[0]?.message?.content;
-      if (!text) throw new Error('Empty response from OpenRouter');
-      return text;
-    }
-
-    lastError = data?.error?.message || `OpenRouter API error: ${response.status}`;
+  if (!response.ok) {
+    const providerMessage = data?.error?.message || data?.message || data?.raw;
+    console.error('[Chat] OpenRouter request failed:', {
+      status: response.status,
+      model: OPENROUTER_MODEL,
+      message: providerMessage,
+    });
+    const error = new Error(getClientErrorMessage(response.status, providerMessage));
+    error.statusCode = response.status;
+    throw error;
   }
 
-  throw new Error(lastError || 'OpenRouter request failed');
+  const text = data?.choices?.[0]?.message?.content || data?.choices?.[0]?.text;
+  if (!text?.trim()) {
+    console.error('[Chat] OpenRouter returned an empty reply:', {
+      model: OPENROUTER_MODEL,
+      responseKeys: Object.keys(data || {}),
+    });
+    const error = new Error('The AI service returned a blank response. Please try again.');
+    error.statusCode = 502;
+    throw error;
+  }
+
+  return text.trim();
 };
 
 // @route POST /api/chat
@@ -137,6 +154,12 @@ const chat = async (req, res, next) => {
     if (!message?.trim()) {
       return res.status(400).json({ success: false, message: 'Message is required' });
     }
+
+    console.log('[Chat] Request received:', {
+      userId: req.user?._id?.toString(),
+      messageLength: message.trim().length,
+      historyLength: Array.isArray(history) ? history.length : 0,
+    });
 
     const userId = req.user._id;
     const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
@@ -168,6 +191,8 @@ const chat = async (req, res, next) => {
 
     res.json({ success: true, data: { reply } });
   } catch (error) {
+    if (error.statusCode) res.status(error.statusCode);
+    console.error('[Chat] Request failed:', error.message);
     next(error);
   }
 };
